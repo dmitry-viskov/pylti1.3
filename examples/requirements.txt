@@ -1,0 +1,4 @@
+django==1.11.20
+jwcrypto==0.6.0
+pyjwt==1.7.1
+requests==2.22.0

@@ -1,0 +1,42 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Game Example</title>
+<link href="{% static 'breakout.css' %}" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css?family=Gugi" rel="stylesheet">
+<script>
+// Set game difficulty if it has been set in deep linking
+var curr_diff = "{{ curr_diff }}";
+var curr_user_name = "{{ curr_user_name }}";
+var launch_id = "{{ launch_id }}";
+</script>
+<script type="text/javascript" src="{% static 'breakout.js' %}" charset="utf-8"></script>
+</head>
+<body>
+{% if is_deep_link_launch %}
+<div class="dl-config">
+    <h1>Pick a Difficulty</h1>
+    <ul>
+        <li><a href="{% url 'game-configure' launch_id=launch_id difficulty='easy' %}">Easy</a></li>
+        <li><a href="{% url 'game-configure' launch_id=launch_id difficulty='normal' %}">Normal</a></li>
+        <li><a href="{% url 'game-configure' launch_id=launch_id difficulty='hard' %}">Hard</a></li>
+    </ul>
+</div>
+{% endif %}
+<div id="game-screen">
+    <div style="position:absolute;width:1000px;margin-left:-500px;left:50%; display:block">
+        <div id="scoreboard" style="position:absolute; right:0; width:200px">
+            <h2 style="margin-left:12px;">Scoreboard</h2>
+            <table id="leadertable" style="margin-left:12px;">
+            </table>
+        </div>
+        <canvas id="breakoutbg" width="800" height="500" style="position:absolute;left:0;border:0;">
+        </canvas>
+        <canvas id="breakout" width="800" height="500" style="position:absolute;left:0;">
+        </canvas>
+    </div>
+</div>
+</body>
+</html>
