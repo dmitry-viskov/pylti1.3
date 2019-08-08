@@ -225,6 +225,8 @@ class MessageLaunch(object):
     def validate_state(self):
         # Check State for OIDC.
         state_from_request = self._get_request_param('state')
+        if not state_from_request:
+            raise LtiException("Missing state param")
         state_from_cookie = self._cookie_service.get_cookie(state_from_request)
         if state_from_request != state_from_cookie:
             # Error if state doesn't match.

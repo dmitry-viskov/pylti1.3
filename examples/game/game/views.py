@@ -13,6 +13,22 @@ from pylti1p3.grade import Grade
 from pylti1p3.lineitem import LineItem
 
 
+class ExtendedDjangoMessageLaunch(DjangoMessageLaunch):
+
+    def validate_nonce(self):
+        """
+        Probably it is bug on "https://lti-ri.imsglobal.org":
+        site passes invalid "nonce" value during deep links launch.
+        Because of this in case of iss == http://imsglobal.org just skip nonce validation.
+
+        """
+        iss = self._get_iss()
+        deep_link_launch = self.is_deep_link_launch()
+        if iss == "http://imsglobal.org" and deep_link_launch:
+            return self
+        return super(ExtendedDjangoMessageLaunch, self).validate_nonce()
+
+
 def get_lti_config():
     return os.path.join(settings.BASE_DIR, '..', 'configs', 'game.json')
 
@@ -33,7 +49,7 @@ def login(request):
 @require_POST
 def launch(request):
     tool_conf = ToolConf(get_lti_config())
-    message_launch = DjangoMessageLaunch(request, tool_conf)
+    message_launch = ExtendedDjangoMessageLaunch(request, tool_conf)
     message_launch_data = message_launch.validate()\
         .get_launch_data()
 
@@ -48,7 +64,7 @@ def launch(request):
 
 def configure(request, launch_id, difficulty):
     tool_conf = ToolConf(get_lti_config())
-    message_launch = DjangoMessageLaunch.from_cache(launch_id, request, tool_conf)
+    message_launch = ExtendedDjangoMessageLaunch.from_cache(launch_id, request, tool_conf)
 
     if not message_launch.is_deep_link_launch():
         raise Exception('Must be a deep link!')
@@ -64,7 +80,7 @@ def configure(request, launch_id, difficulty):
 
 def score(request, launch_id, earned_score, time_spent):
     tool_conf = ToolConf(get_lti_config())
-    message_launch = DjangoMessageLaunch.from_cache(launch_id, request, tool_conf)
+    message_launch = ExtendedDjangoMessageLaunch.from_cache(launch_id, request, tool_conf)
 
     if not message_launch.has_ags():
         raise Exception("Don't have grades!")
@@ -108,7 +124,7 @@ def score(request, launch_id, earned_score, time_spent):
 
 def scoreboard(request, launch_id):
     tool_conf = ToolConf(get_lti_config())
-    message_launch = DjangoMessageLaunch.from_cache(launch_id, request, tool_conf)
+    message_launch = ExtendedDjangoMessageLaunch.from_cache(launch_id, request, tool_conf)
 
     if not message_launch.has_nrps():
         raise Exception("Don't have names and roles!")
