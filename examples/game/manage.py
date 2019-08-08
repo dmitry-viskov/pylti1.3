@@ -3,7 +3,10 @@ import os
 import sys
 
 if __name__ == "__main__":
-    sys.path.append(os.path.abspath('../../'))
+    sys.path.extend([
+        os.path.abspath('../'),  # Docker usage
+        os.path.abspath('../../')  # local usage
+    ])
 
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "game.settings")
     try:
