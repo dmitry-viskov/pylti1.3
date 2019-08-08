@@ -27,7 +27,7 @@ setup(
         'jwcrypto',
         'requests'
     ],
-    license='Apache Software License 2.0',
+    license='MIT',
     url='https://github.com/dmitry-viskov/pylti1.3',
     packages=find_packages(exclude=["examples"]),
     zip_safe=False,
