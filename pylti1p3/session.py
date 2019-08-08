@@ -7,16 +7,16 @@ class SessionService(object):
 
     @abstractmethod
     def get_launch_data(self, key):
-        raise NotImplemented
+        raise NotImplementedError
 
     @abstractmethod
     def save_launch_data(self, key, jwt_body):
-        raise NotImplemented
+        raise NotImplementedError
 
     @abstractmethod
     def save_nonce(self, nonce):
-        raise NotImplemented
+        raise NotImplementedError
 
     @abstractmethod
     def check_nonce(self, nonce):
-        raise NotImplemented
+        raise NotImplementedError

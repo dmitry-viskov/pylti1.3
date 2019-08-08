@@ -23,7 +23,7 @@ class OIDCLogin(object):
 
     @abstractmethod
     def get_redirect(self, url):
-        raise NotImplemented
+        raise NotImplementedError
 
     def _get_request_param(self, key):
         return self._request.get_param(key)
@@ -32,7 +32,8 @@ class OIDCLogin(object):
         """
         Calculate the redirect location to return to based on an OIDC third party initiated login request.
 
-        :param launch_url: URL to redirect back to after the OIDC login. This URL must match exactly a URL white listed in the platform.
+        :param launch_url: URL to redirect back to after the OIDC login.
+        This URL must match exactly a URL white listed in the platform.
         :return: Returns a redirect object containing the fully formed OIDC login URL.
         """
         if not launch_url:

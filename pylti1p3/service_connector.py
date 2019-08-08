@@ -1,9 +1,9 @@
 import hashlib
-import requests
-import jwt
 import time
 import sys
 import uuid
+import jwt
+import requests
 
 from .exception import LtiException
 

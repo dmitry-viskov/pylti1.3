@@ -6,16 +6,16 @@ class Redirect(object):
 
     @abstractmethod
     def do_redirect(self):
-        raise NotImplemented
+        raise NotImplementedError
 
     @abstractmethod
     def do_js_redirect(self):
-        raise NotImplemented
+        raise NotImplementedError
 
     @abstractmethod
     def set_redirect_url(self, location):
-        raise NotImplemented
+        raise NotImplementedError
 
     @abstractmethod
     def get_redirect_url(self):
-        raise NotImplemented
+        raise NotImplementedError

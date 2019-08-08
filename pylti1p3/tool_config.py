@@ -6,8 +6,8 @@ class ToolConfAbstract(object):
 
     @abstractmethod
     def find_registration_by_issuer(self, iss):
-        raise NotImplemented
+        raise NotImplementedError
 
     @abstractmethod
     def find_deployment(self, iss, deployment_id):
-        raise NotImplemented
+        raise NotImplementedError

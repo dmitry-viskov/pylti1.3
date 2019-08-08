@@ -6,8 +6,8 @@ class Request(object):
 
     @abstractmethod
     def set_request(self, request):
-        raise NotImplemented
+        raise NotImplementedError
 
     @abstractmethod
     def get_param(self, key):
-        raise NotImplemented
+        raise NotImplementedError

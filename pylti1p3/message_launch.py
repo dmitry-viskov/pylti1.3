@@ -1,11 +1,11 @@
 import base64
 import json
+import string  # pylint: disable=deprecated-module
+import uuid
+from abc import ABCMeta, abstractmethod
 import jwt
 import requests
-import string
-import uuid
 from jwcrypto.jwk import JWK
-from abc import ABCMeta, abstractmethod
 
 from .assignments_grades import AssignmentsGradesService
 from .deep_link import DeepLink
@@ -35,7 +35,7 @@ class MessageLaunch(object):
 
     @abstractmethod
     def _get_request_param(self, key):
-        raise NotImplemented
+        raise NotImplementedError
 
     def set_launch_id(self, launch_id):
         self._launch_id = launch_id
@@ -43,11 +43,14 @@ class MessageLaunch(object):
     def set_jwt(self, val):
         self._jwt = val
 
+    def get_session_service(self):
+        return self._session_service
+
     @classmethod
     def from_cache(cls, launch_id, request, tool_config, session_service=None, cookie_service=None):
         obj = cls(request, tool_config, session_service=session_service, cookie_service=cookie_service)
         obj.set_launch_id(launch_id)
-        obj.set_jwt({'body': obj._session_service.get_launch_data(launch_id)})
+        obj.set_jwt({'body': obj.get_session_service().get_launch_data(launch_id)})
         return obj.validate_registration()
 
     def validate(self):

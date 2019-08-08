@@ -1,6 +1,6 @@
-import jwt
 import time
 import uuid
+import jwt
 
 
 class DeepLink(object):
@@ -23,7 +23,7 @@ class DeepLink(object):
             'https://purl.imsglobal.org/spec/lti/claim/deployment_id': self._deployment_id,
             'https://purl.imsglobal.org/spec/lti/claim/message_type': 'LtiDeepLinkingResponse',
             'https://purl.imsglobal.org/spec/lti/claim/version': '1.3.0',
-            'https://purl.imsglobal.org/spec/lti-dl/claim/content_items': list(map(lambda r: r.to_dict(), resources)),
+            'https://purl.imsglobal.org/spec/lti-dl/claim/content_items': [r.to_dict() for r in resources],
             'https://purl.imsglobal.org/spec/lti-dl/claim/data': self._deep_link_settings['data']
         }
         return jwt.encode(message_jwt, self._registration.get_tool_private_key(), algorithm='RS256')

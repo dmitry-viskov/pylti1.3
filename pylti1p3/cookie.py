@@ -7,8 +7,8 @@ class CookieService(object):
 
     @abstractmethod
     def get_cookie(self, name):
-        raise NotImplemented
+        raise NotImplementedError
 
     @abstractmethod
     def set_cookie(self, name, value, exp=3600):
-        raise NotImplemented
+        raise NotImplementedError

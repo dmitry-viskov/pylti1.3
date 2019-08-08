@@ -7,11 +7,11 @@ class MessageValidatorAbstract(object):
 
     @abstractmethod
     def validate(self, jwt_body):
-        raise NotImplemented
+        raise NotImplementedError
 
     @abstractmethod
     def can_validate(self, jwt_body):
-        raise NotImplemented
+        raise NotImplementedError
 
     def common_validators(self, jwt_body):
         if not jwt_body.get('sub'):
