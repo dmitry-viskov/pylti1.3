@@ -167,7 +167,7 @@ class TestResourceLink(TestLinkBase):
         launch_request = DjangoFakeRequest(post=self.post_launch_data,
                                            cookies=login_response.get_cookies_dict(),
                                            session=login_request.session)
-        with self.assertRaisesRegexp(LtiException, 'Invalid response'):
+        with self.assertRaisesRegexp(LtiException, 'Invalid response'):  # pylint: disable=deprecated-method
             self._launch(launch_request, tool_conf, 'invalid_key_set')
 
     def test_res_link_launch_invalid_state(self):
@@ -179,12 +179,12 @@ class TestResourceLink(TestLinkBase):
         launch_request = DjangoFakeRequest(post=post_data,
                                            cookies=login_response.get_cookies_dict(),
                                            session=login_request.session)
-        with self.assertRaisesRegexp(LtiException, 'Missing state param'):
+        with self.assertRaisesRegexp(LtiException, 'Missing state param'):  # pylint: disable=deprecated-method
             self._launch(launch_request, tool_conf)
 
         launch_request = DjangoFakeRequest(post=self.post_launch_data,
                                            session=login_request.session)
-        with self.assertRaisesRegexp(LtiException, 'State not found'):
+        with self.assertRaisesRegexp(LtiException, 'State not found'):  # pylint: disable=deprecated-method
             self._launch(launch_request, tool_conf)
 
     def test_res_link_launch_invalid_jwt_format(self):
@@ -196,7 +196,7 @@ class TestResourceLink(TestLinkBase):
         launch_request = DjangoFakeRequest(post=post_data,
                                            cookies=login_response.get_cookies_dict(),
                                            session=login_request.session)
-        with self.assertRaisesRegexp(LtiException, 'Invalid id_token'):
+        with self.assertRaisesRegexp(LtiException, 'Invalid id_token'):  # pylint: disable=deprecated-method
             self._launch(launch_request, tool_conf)
 
         post_data = self.post_launch_data.copy()
@@ -205,7 +205,7 @@ class TestResourceLink(TestLinkBase):
         launch_request = DjangoFakeRequest(post=post_data,
                                            cookies=login_response.get_cookies_dict(),
                                            session=login_request.session)
-        with self.assertRaisesRegexp(LtiException, 'Invalid JWT format'):
+        with self.assertRaisesRegexp(LtiException, 'Invalid JWT format'):  # pylint: disable=deprecated-method
             self._launch(launch_request, tool_conf)
 
     def test_res_link_launch_invalid_jwt_signature(self):
@@ -217,7 +217,7 @@ class TestResourceLink(TestLinkBase):
         launch_request = DjangoFakeRequest(post=post_data,
                                            cookies=login_response.get_cookies_dict(),
                                            session=login_request.session)
-        with self.assertRaisesRegexp(LtiException, "Can't decode id_token"):
+        with self.assertRaisesRegexp(LtiException, "Can't decode id_token"):  # pylint: disable=deprecated-method
             self._launch(launch_request, tool_conf)
 
     def _get_data_without_nonce(self, *args):  # pylint: disable=unused-argument
@@ -249,13 +249,13 @@ class TestResourceLink(TestLinkBase):
                                            cookies=login_response.get_cookies_dict(),
                                            session=login_request.session)
 
-        with self.assertRaisesRegexp(LtiException, '"nonce" is empty'):
+        with self.assertRaisesRegexp(LtiException, '"nonce" is empty'):  # pylint: disable=deprecated-method
             self._launch_with_invalid_jwt_body(self._get_data_without_nonce, launch_request, tool_conf)
 
         launch_request = DjangoFakeRequest(post=post_data,
                                            cookies=login_response.get_cookies_dict())
 
-        with self.assertRaisesRegexp(LtiException, "Invalid Nonce"):
+        with self.assertRaisesRegexp(LtiException, "Invalid Nonce"):  # pylint: disable=deprecated-method
             self._launch(launch_request, tool_conf)
 
     def test_res_link_launch_invalid_registration(self):
@@ -266,6 +266,7 @@ class TestResourceLink(TestLinkBase):
                                            cookies=login_response.get_cookies_dict(),
                                            session=login_request.session)
 
+        # pylint: disable=deprecated-method
         with self.assertRaisesRegexp(LtiException, 'Client id not registered for this issuer'):
             self._launch_with_invalid_jwt_body(self._get_data_with_invalid_aud, launch_request, tool_conf)
 
@@ -277,7 +278,7 @@ class TestResourceLink(TestLinkBase):
                                            cookies=login_response.get_cookies_dict(),
                                            session=login_request.session)
 
-        with self.assertRaisesRegexp(LtiException, 'Unable to find deployment'):
+        with self.assertRaisesRegexp(LtiException, 'Unable to find deployment'):  # pylint: disable=deprecated-method
             self._launch_with_invalid_jwt_body(self._get_data_with_invalid_deployment, launch_request, tool_conf)
 
     def test_res_link_launch_invalid_message(self):
@@ -288,5 +289,5 @@ class TestResourceLink(TestLinkBase):
                                            cookies=login_response.get_cookies_dict(),
                                            session=login_request.session)
 
-        with self.assertRaisesRegexp(LtiException, 'Incorrect version'):
+        with self.assertRaisesRegexp(LtiException, 'Incorrect version'):  # pylint: disable=deprecated-method
             self._launch_with_invalid_jwt_body(self._get_data_with_invalid_message, launch_request, tool_conf)

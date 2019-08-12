@@ -70,6 +70,9 @@ disable=
     consider-using-dict-comprehension,
     consider-using-set-comprehension,
 
+# python2-compatible
+    useless-object-inheritance,
+
 [REPORTS]
 
 # Set the output format. Available formats are text, parseable, colorized, msvs
