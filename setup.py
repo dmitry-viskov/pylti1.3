@@ -11,17 +11,18 @@ if sys.version_info < (2, 7):
     print(error, file=sys.stderr)
     sys.exit(1)
 
+with open("README.rst", "rt") as readme:
+    long_description = readme.read().strip()
+
 setup(
     name='PyLTI1p3',
     version=__version__,
-    description='LTI 1.3 Tool implementation in Python',
+    description='LTI 1.3 Advantage Tool implementation in Python',
     keywords="pylti,pylti1p3,lti,lti1.3,lti1p3,django",
     author='Dmitry Viskov',
     author_email='dmitry.viskov@webenterprise.ru',
     maintainer="Dmitry Viskov",
-    long_description="\n\n".join([
-        open(os.path.join(os.path.dirname(__file__), 'README.rst')).read(),
-    ]),
+    long_description=long_description,
     install_requires=[
         'pyjwt>=1.5',
         'jwcrypto',
