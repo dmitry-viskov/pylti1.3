@@ -452,7 +452,7 @@ function main_game() {
         var time_taken = Math.floor(Date.now() / 1000) - start_time;
         var xhttp = new XMLHttpRequest();
         xhttp.addEventListener("load", getScoreBoard);
-        xhttp.open("GET", "/api/score/" + launch_id + "/" + score + "/" + time_taken + "/", false);
+        xhttp.open("POST", "/api/score/" + launch_id + "/" + score + "/" + time_taken + "/", false);
         xhttp.send();
     };
 

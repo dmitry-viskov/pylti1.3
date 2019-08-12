@@ -29,7 +29,7 @@ setup(
     ],
     license='MIT',
     url='https://github.com/dmitry-viskov/pylti1.3',
-    packages=find_packages(exclude=["examples"]),
+    packages=find_packages(exclude=["examples", "tests"]),
     zip_safe=False,
     include_package_data=True,
     classifiers=[

@@ -5,7 +5,7 @@ from .abstract import MessageValidatorAbstract
 class DeepLinkMessageValidator(MessageValidatorAbstract):
 
     def validate(self, jwt_body):
-        self.common_validators(jwt_body)
+        self.run_common_validators(jwt_body)
 
         if not jwt_body.get('https://purl.imsglobal.org/spec/lti-dl/claim/deep_linking_settings'):
             raise LtiException('Missing Deep Linking Settings')

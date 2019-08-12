@@ -1,9 +1,9 @@
 import uuid
 from abc import ABCMeta, abstractmethod
 try:
-    from urllib import urlencode  # python2
+    from urllib import urlencode
 except ImportError:
-    from urllib.parse import urlencode  # python3
+    from urllib.parse import urlencode
 
 from .exception import OIDCException
 
@@ -28,6 +28,9 @@ class OIDCLogin(object):
     def _get_request_param(self, key):
         return self._request.get_param(key)
 
+    def _get_uuid(self):
+        return str(uuid.uuid4())
+
     def do_oidc_login_redirect(self, launch_url):
         """
         Calculate the redirect location to return to based on an OIDC third party initiated login request.
@@ -46,11 +49,11 @@ class OIDCLogin(object):
 
         # generate state
         # set cookie (short lived)
-        state = 'state-' + str(uuid.uuid4())
+        state = 'state-' + self._get_uuid()
         self._cookie_service.set_cookie(state, state)
 
         # generate nonce
-        nonce = 'nonce-' + str(uuid.uuid4())
+        nonce = self._get_uuid()
         self._session_service.save_nonce(nonce)
 
         # build Response

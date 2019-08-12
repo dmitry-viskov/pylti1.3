@@ -78,6 +78,7 @@ def configure(request, launch_id, difficulty):
     return HttpResponse(html)
 
 
+@require_POST
 def score(request, launch_id, earned_score, time_spent):
     tool_conf = ToolConf(get_lti_config())
     message_launch = ExtendedDjangoMessageLaunch.from_cache(launch_id, request, tool_conf)
@@ -117,9 +118,9 @@ def score(request, launch_id, earned_score, time_spent):
         .set_score_maximum(999)\
         .set_label('Time Taken')
 
-    grades.put_grade(tm, tm_line_item)
+    result = grades.put_grade(tm, tm_line_item)
 
-    return JsonResponse({'success': True})
+    return JsonResponse({'success': True, 'result': result.get('body')})
 
 
 def scoreboard(request, launch_id):

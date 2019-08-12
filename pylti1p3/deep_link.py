@@ -30,13 +30,8 @@ class DeepLink(object):
 
     def output_response_form(self, resources):
         jwt_val = self.get_response_jwt(resources)
-        html = '''
-        <form id="auto_submit" action="%s" method="POST">
-            <input type="hidden" name="JWT" value="%s" />
-            <input type="submit" name="Go" />
-        </form>
-        <script>
-            document.getElementById('auto_submit').submit();
-        </script>
-        ''' % (self._deep_link_settings['deep_link_return_url'], jwt_val)
+        html = '<form id="lti13_deep_link_auto_submit" action="%s" method="POST">' \
+               '<input type="hidden" name="JWT" value="%s" /></form>' \
+               '<script type="text/javascript">document.getElementById(\'lti13_deep_link_auto_submit\').submit();' \
+               '</script>' % (self._deep_link_settings['deep_link_return_url'], jwt_val)
         return html

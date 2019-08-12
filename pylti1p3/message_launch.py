@@ -66,8 +66,11 @@ class MessageLaunch(object):
             .validate_message()\
             .save_launch_data()
 
+    def _get_jwt_body(self):
+        return self._jwt.get('body', {})
+
     def _get_iss(self):
-        iss = self._jwt.get('body', {}).get('iss')
+        iss = self._get_jwt_body().get('iss')
         if not iss:
             raise LtiException('"iss" is empty')
         return iss
@@ -79,7 +82,7 @@ class MessageLaunch(object):
         return id_token
 
     def _get_deployment_id(self):
-        deployment_id = self._jwt.get('body', {}).get('https://purl.imsglobal.org/spec/lti/claim/deployment_id')
+        deployment_id = self._get_jwt_body().get('https://purl.imsglobal.org/spec/lti/claim/deployment_id')
         if not deployment_id:
             raise LtiException("deployment_id is not set in jwt body")
         return deployment_id
@@ -90,7 +93,7 @@ class MessageLaunch(object):
 
         :return: bool  Returns a boolean indicating the availability of names and roles.
         """
-        return self._jwt.get('body', {}).get('https://purl.imsglobal.org/spec/lti-nrps/claim/namesroleservice', {})\
+        return self._get_jwt_body().get('https://purl.imsglobal.org/spec/lti-nrps/claim/namesroleservice', {})\
             .get('context_memberships_url', None) is not None
 
     def get_nrps(self):
@@ -100,7 +103,7 @@ class MessageLaunch(object):
         :return: NamesRolesProvisioningService
         """
         connector = ServiceConnector(self._registration)
-        names_role_service = self._jwt.get('body', {})\
+        names_role_service = self._get_jwt_body()\
             .get('https://purl.imsglobal.org/spec/lti-nrps/claim/namesroleservice')
         if not names_role_service:
             raise LtiException('namesroleservice is not set in jwt body')
@@ -112,7 +115,7 @@ class MessageLaunch(object):
 
         :return: bool  Returns a boolean indicating the availability of assignments and grades.
         """
-        return self._jwt.get('body', {}).get('https://purl.imsglobal.org/spec/lti-ags/claim/endpoint', None) is not None
+        return self._get_jwt_body().get('https://purl.imsglobal.org/spec/lti-ags/claim/endpoint', None) is not None
 
     def get_ags(self):
         """
@@ -121,7 +124,7 @@ class MessageLaunch(object):
         :return: AssignmentsGradesService
         """
         connector = ServiceConnector(self._registration)
-        endpoint = self._jwt.get('body', {}) \
+        endpoint = self._get_jwt_body() \
             .get('https://purl.imsglobal.org/spec/lti-ags/claim/endpoint')
         if not endpoint:
             raise LtiException('endpoint is not set in jwt body')
@@ -134,7 +137,7 @@ class MessageLaunch(object):
         :return: DeepLink
         """
         deployment_id = self._get_deployment_id()
-        deep_linking_settings = self._jwt.get('body', {}) \
+        deep_linking_settings = self._get_jwt_body() \
             .get('https://purl.imsglobal.org/spec/lti-dl/claim/deep_linking_settings')
         if not deep_linking_settings:
             raise LtiException('deep_linking_settings is not set in jwt body')
@@ -147,7 +150,7 @@ class MessageLaunch(object):
 
         :return: bool  Returns true if the current launch is a deep linking launch.
         """
-        return self._jwt.get('body', {})\
+        return self._get_jwt_body() \
                    .get('https://purl.imsglobal.org/spec/lti/claim/message_type', None) == 'LtiDeepLinkingRequest'
 
     def is_resource_launch(self):
@@ -156,7 +159,7 @@ class MessageLaunch(object):
 
         :return: bool  Returns true if the current launch is a resource launch.
         """
-        return self._jwt.get('body', {}) \
+        return self._get_jwt_body() \
                    .get('https://purl.imsglobal.org/spec/lti/claim/message_type', None) == 'LtiResourceLinkRequest'
 
     def get_launch_data(self):
@@ -165,7 +168,7 @@ class MessageLaunch(object):
 
         :return: dict  Returns the decoded json body of the launch
         """
-        return self._jwt.get('body', {})
+        return self._get_jwt_body()
 
     def get_launch_id(self):
         """
@@ -218,9 +221,12 @@ class MessageLaunch(object):
             key_kid = key.get('kid')
             key_alg = key.get('alg', 'RS256')
             if key_kid and key_kid == kid and key_alg == alg:
-                key_json = json.dumps(key)
-                jwk_obj = JWK.from_json(key_json)
-                return jwk_obj.export_to_pem()
+                try:
+                    key_json = json.dumps(key)
+                    jwk_obj = JWK.from_json(key_json)
+                    return jwk_obj.export_to_pem()
+                except (ValueError, TypeError):
+                    raise LtiException("Can't convert JWT key to PEM format")
 
         # Could not find public key with a matching kid and alg.
         raise LtiException("Unable to find public key")
@@ -245,18 +251,21 @@ class MessageLaunch(object):
             # Invalid number of parts in JWT.
             raise LtiException("Invalid id_token, JWT must contain 3 parts")
 
-        # Decode JWT headers.
-        header = self.urlsafe_b64decode(jwt_parts[0])
-        self._jwt['header'] = json.loads(header)
+        try:
+            # Decode JWT headers.
+            header = self.urlsafe_b64decode(jwt_parts[0])
+            self._jwt['header'] = json.loads(header)
 
-        # Decode JWT body.
-        body = self.urlsafe_b64decode(jwt_parts[1])
-        self._jwt['body'] = json.loads(body)
+            # Decode JWT body.
+            body = self.urlsafe_b64decode(jwt_parts[1])
+            self._jwt['body'] = json.loads(body)
+        except Exception:
+            raise LtiException("Invalid JWT format, can't be decoded")
 
         return self
 
     def validate_nonce(self):
-        nonce = self._jwt.get('body', {}).get('nonce')
+        nonce = self._get_jwt_body().get('nonce')
         if not nonce:
             raise LtiException('"nonce" is empty')
 
@@ -275,7 +284,7 @@ class MessageLaunch(object):
             raise LtiException('Registration not found.')
 
         # Check client id
-        aud = self._jwt.get('body', {}).get('aud')
+        aud = self._get_jwt_body().get('aud')
         client_id = aud[0] if isinstance(aud, list) else aud
         if client_id != self._registration.get_client_id():
             raise LtiException("Client id not registered for this issuer")
@@ -307,7 +316,7 @@ class MessageLaunch(object):
         return self
 
     def validate_message(self):
-        jwt_body = self._jwt.get('body', {})
+        jwt_body = self._get_jwt_body()
         message_type = jwt_body.get('https://purl.imsglobal.org/spec/lti/claim/message_type', None)
         if not message_type:
             raise LtiException("Invalid message type")

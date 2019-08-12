@@ -76,7 +76,7 @@ class ServiceConnector(object):
         else:
             r = requests.get(url, headers=headers)
 
-        if r.status_code != 200:
+        if r.status_code not in (200, 201):
             raise LtiException('HTTP response [%s]: %s - %s' % (url, str(r.status_code), r.text))
 
         return {
