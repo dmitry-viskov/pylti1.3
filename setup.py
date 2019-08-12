@@ -14,7 +14,7 @@ if sys.version_info < (2, 7):
 setup(
     name='PyLTI1p3',
     version=__version__,
-    description='LTI 1.3 implementation in Python',
+    description='LTI 1.3 Tool implementation in Python',
     keywords="pylti,pylti1p3,lti,lti1.3,lti1p3,django",
     author='Dmitry Viskov',
     author_email='dmitry.viskov@webenterprise.ru',
@@ -42,7 +42,7 @@ setup(
         "Framework :: Django :: 2.2",
         "Intended Audience :: Developers",
         "Intended Audience :: Information Technology",
-        "License :: OSI Approved :: Apache Software License",
+        "License :: OSI Approved :: MIT License",
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         "Programming Language :: Python :: 2.7",

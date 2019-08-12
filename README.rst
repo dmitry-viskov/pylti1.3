@@ -1,2 +1,2 @@
-LTI 1.3 Advantage Python Library
+LTI 1.3 Tool implementation in Python
 ===============
