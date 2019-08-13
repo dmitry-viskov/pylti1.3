@@ -1,6 +1,18 @@
 LTI 1.3 Advantage Tool implementation in Python
 ===============================================
 
+
+.. image:: https://travis-ci.org/dmitry-viskov/pylti1.3.svg?branch=master
+    :scale: 100%
+    :target: https://travis-ci.org/dmitry-viskov/pylti1.3
+    :alt: Build Status
+
+.. image:: https://img.shields.io/github/license/dmitry-viskov/pylti1.3
+    :scale: 100%
+    :target: https://raw.githubusercontent.com/dmitry-viskov/pylti1.3/master/LICENSE
+    :alt: MIT
+
+
 This project is a Python implementation of the similar `PHP tool`_.
 Library contains adapter for usage from Django Web Framework but there is no difficult to adapt it to from other frameworks: you should just re-implement ``OIDCLogin`` and ``MessageLaunch`` classes as it already done for Django.
 
