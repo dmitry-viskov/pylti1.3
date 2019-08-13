@@ -12,7 +12,7 @@ Example
 The most simple way to check example is to use ``docker`` + ``docker-compose``.
 Change the necessary configs in the ``examples/configs/game.json``:
 
-.. code-block:: shell
+.. code-block:: javascript
 
     {
         "<issuer>" : { // This will usually look something like 'http://example.com'
