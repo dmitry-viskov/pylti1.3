@@ -164,8 +164,8 @@ class TestDeepLink(TestLinkBase):
         launch_request = DjangoFakeRequest(post=self.post_launch_data,
                                            cookies=login_response.get_cookies_dict(),
                                            session=login_request.session)
-        message_launch = self._launch(launch_request, tool_conf)
-        message_launch_data = message_launch.get_launch_data()
+        validated_message_launch = self._launch(launch_request, tool_conf, force_validation=True)
+        message_launch_data = validated_message_launch.get_launch_data()
         self.assertDictEqual(message_launch_data, self.expected_message_launch_data)
 
         resource = DeepLinkResource()
@@ -176,7 +176,7 @@ class TestDeepLink(TestLinkBase):
         deep_link_return_url = message_launch_data.get('https://purl.imsglobal.org/spec/lti-dl/'
                                                        'claim/deep_linking_settings').get('deep_link_return_url')
 
-        html = message_launch.get_deep_link().output_response_form([resource])
+        html = validated_message_launch.get_deep_link().output_response_form([resource])
         self.assertTrue(html.startswith('<form id="lti13_deep_link_auto_submit" action="%s" method="POST">'
                                         % deep_link_return_url))
         self.assertTrue('<input type="hidden" name="JWT" value=' in html)

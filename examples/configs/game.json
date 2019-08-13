@@ -17,9 +17,7 @@
             ]
         },
         "private_key_file": "private.key",
-        "deployment": {
-            "py1234": "py1234"
-        }
+        "deployment_ids": ["py1234"]
     },
     "https://canvas.instructure.com": {
         "client_id": "10000000000004",
@@ -28,8 +26,6 @@
         "key_set_url": "http://canvas.docker/api/lti/security/jwks",
         "key_set": null,
         "private_key_file": "private.key",
-        "deployment": {
-            "6:8865aa05b4b79b64a91a86042e43af5ea8ae79eb": "6:8865aa05b4b79b64a91a86042e43af5ea8ae79eb"
-        }
+        "deployment_ids": ["6:8865aa05b4b79b64a91a86042e43af5ea8ae79eb"]
     }
 }

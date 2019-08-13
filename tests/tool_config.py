@@ -1,6 +1,4 @@
-from pylti1p3.tool_config import ToolConfAbstract
-from pylti1p3.registration import Registration
-from pylti1p3.deployment import Deployment
+from pylti1p3.tool_config import ToolConfDict
 
 
 TOOL_CONFIG = {
@@ -11,9 +9,7 @@ TOOL_CONFIG = {
         "key_set_url": "https://lti-ri.imsglobal.org/platforms/370/platform_keys/361.json",
         "key_set": None,
         "private_key_file": "private.key",
-        "deployment": {
-            "py1234": "py1234"
-        }
+        "deployment_ids": ["py1234"]
     },
     "https://canvas.instructure.com": {
         "client_id": "10000000000004",
@@ -22,34 +18,12 @@ TOOL_CONFIG = {
         "key_set_url": "http://canvas.docker/api/lti/security/jwks",
         "key_set": None,
         "private_key_file": "private.key",
-        "deployment": {
-            "6:8865aa05b4b79b64a91a86042e43af5ea8ae79eb": "6:8865aa05b4b79b64a91a86042e43af5ea8ae79eb"
-        }
+        "deployment_ids": ["6:8865aa05b4b79b64a91a86042e43af5ea8ae79eb"]
     }
 }
 
 
-class TestToolConf(ToolConfAbstract):
-
-    def find_registration_by_issuer(self, iss):
-        iss_conf = TOOL_CONFIG[iss]
-
-        reg = Registration()
-        return reg.set_auth_login_url(iss_conf['auth_login_url'])\
-            .set_auth_token_url(iss_conf['auth_token_url'])\
-            .set_client_id(iss_conf['client_id'])\
-            .set_key_set(iss_conf['key_set'])\
-            .set_key_set_url(iss_conf['key_set_url'])\
-            .set_issuer(iss)\
-            .set_tool_private_key(self._get_private_key())
-
-    def find_deployment(self, iss, deployment_id):
-        if deployment_id in TOOL_CONFIG[iss]['deployment']:
-            return Deployment().set_deployment_id(TOOL_CONFIG[iss]['deployment'][deployment_id])
-        return None
-
-    def _get_private_key(self):
-        return """-----BEGIN RSA PRIVATE KEY-----
+PRIVATE_KEY = """-----BEGIN RSA PRIVATE KEY-----
 MIIJKwIBAAKCAgEAuvEnCaUOy1l9gk3wjW3Pib1dBc5g92+6rhvZZOsN1a77fdOq
 KsrjWG1lDu8kq2nL+wbAzR3DdEPVw/1WUwtr/Q1d5m+7S4ciXT63pENs1EPwWmeN
 33O0zkGx8I7vdiOTSVoywEyUZe6UyS+ujLfsRc2ImeLP5OHxpE1yULEDSiMLtSvg
@@ -101,3 +75,10 @@ N53Mn3jBFOA3Ms2Oyq+gh3Rqa/FOkRMlW3m/7wunQWS7t5xIPs70qErMvLxA3gbx
 PXczMbwczExTwi+tQXgrR/6YRg6qV/T6bm9pDF3h9y9q3/+eTa7zcJXU1SaRuTI=
 -----END RSA PRIVATE KEY-----
 """
+
+
+def get_test_tool_conf():
+    tool_conf = ToolConfDict(TOOL_CONFIG)
+    for iss in TOOL_CONFIG:
+        tool_conf.set_private_key(iss, PRIVATE_KEY)
+    return tool_conf

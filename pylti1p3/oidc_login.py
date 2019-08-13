@@ -31,14 +31,7 @@ class OIDCLogin(object):
     def _get_uuid(self):
         return str(uuid.uuid4())
 
-    def do_oidc_login_redirect(self, launch_url):
-        """
-        Calculate the redirect location to return to based on an OIDC third party initiated login request.
-
-        :param launch_url: URL to redirect back to after the OIDC login.
-        This URL must match exactly a URL white listed in the platform.
-        :return: Returns a redirect object containing the fully formed OIDC login URL.
-        """
+    def _prepare_redirect(self, launch_url):
         if not launch_url:
             raise OIDCException("No launch URL configured")
 
@@ -79,6 +72,23 @@ class OIDCLogin(object):
 
         # return auth redirect
         return self.get_redirect(auth_login_return_url)
+
+    def redirect(self, launch_url, js_redirect=False):
+        """
+        Calculate the redirect location to return to based on an OIDC third party initiated login request.
+
+        :param launch_url: URL to redirect back to after the OIDC login.
+        This URL must match exactly a URL white listed in the platform.
+        :param js_redirect: Redirect through JS
+        :return: Returns a redirect object containing the fully formed OIDC login URL.
+        """
+        redirect_obj = self._prepare_redirect(launch_url)
+        if js_redirect:
+            return redirect_obj.do_js_redirect()
+        return redirect_obj.do_redirect()
+
+    def get_redirect_object(self, launch_url):
+        return self._prepare_redirect(launch_url)
 
     def validate_oidc_login(self):
         # validate Issuer

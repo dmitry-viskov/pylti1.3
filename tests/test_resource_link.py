@@ -158,7 +158,7 @@ class TestResourceLink(TestLinkBase):
         launch_request = DjangoFakeRequest(post=self.post_launch_data,
                                            cookies=login_response.get_cookies_dict(),
                                            session=login_request.session)
-        message_launch_data = self._launch(launch_request, tool_conf).get_launch_data()
+        message_launch_data = self._launch(launch_request, tool_conf)
         self.assertDictEqual(message_launch_data, self.expected_message_launch_data)
 
     def test_res_link_launch_invalid_public_key(self):
@@ -278,7 +278,7 @@ class TestResourceLink(TestLinkBase):
                                            cookies=login_response.get_cookies_dict(),
                                            session=login_request.session)
 
-        with self.assertRaisesRegexp(LtiException, 'Unable to find deployment'):  # pylint: disable=deprecated-method
+        with self.assertRaisesRegexp(Exception, 'Unable to find deployment'):  # pylint: disable=deprecated-method
             self._launch_with_invalid_jwt_body(self._get_data_with_invalid_deployment, launch_request, tool_conf)
 
     def test_res_link_launch_invalid_message(self):

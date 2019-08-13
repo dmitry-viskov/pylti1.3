@@ -24,6 +24,9 @@ class MessageLaunch(object):
     _jwt = None
     _registration = None
     _launch_id = None
+    _validated = False
+    _auto_validation = True
+    _restored = False
 
     def __init__(self, request, tool_config, session_service, cookie_service):
         self._request = request
@@ -32,6 +35,9 @@ class MessageLaunch(object):
         self._cookie_service = cookie_service
         self._launch_id = "lti1p3-launch-" + str(uuid.uuid4())
         self._jwt = {}
+        self._validated = False
+        self._auto_validation = True
+        self._restored = False
 
     @abstractmethod
     def _get_request_param(self, key):
@@ -39,9 +45,19 @@ class MessageLaunch(object):
 
     def set_launch_id(self, launch_id):
         self._launch_id = launch_id
+        return self
+
+    def set_auto_validation(self, enable):
+        self._auto_validation = enable
+        return self
 
     def set_jwt(self, val):
         self._jwt = val
+        return self
+
+    def set_restored(self):
+        self._restored = True
+        return self
 
     def get_session_service(self):
         return self._session_service
@@ -49,24 +65,36 @@ class MessageLaunch(object):
     @classmethod
     def from_cache(cls, launch_id, request, tool_config, session_service=None, cookie_service=None):
         obj = cls(request, tool_config, session_service=session_service, cookie_service=cookie_service)
-        obj.set_launch_id(launch_id)
-        obj.set_jwt({'body': obj.get_session_service().get_launch_data(launch_id)})
-        return obj.validate_registration()
+        launch_data = obj.get_session_service().get_launch_data(launch_id)
+        return obj.set_launch_id(launch_id)\
+            .set_auto_validation(enable=False)\
+            .set_jwt({'body': launch_data})\
+            .set_restored()\
+            .validate_registration()
 
     def validate(self):
         """
         Validates all aspects of an incoming LTI message launch and caches the launch if successful.
         """
-        return self.validate_state()\
-            .validate_jwt_format()\
-            .validate_nonce()\
-            .validate_registration()\
-            .validate_jwt_signature()\
-            .validate_deployment()\
-            .validate_message()\
-            .save_launch_data()
+        if self._restored:
+            raise LtiException("Can't validate restored launch")
+        self._validated = True
+        try:
+            return self.validate_state()\
+                .validate_jwt_format()\
+                .validate_nonce()\
+                .validate_registration()\
+                .validate_jwt_signature()\
+                .validate_deployment()\
+                .validate_message()\
+                .save_launch_data()
+        except Exception:
+            self._validated = False
+            raise
 
     def _get_jwt_body(self):
+        if not self._validated and self._auto_validation:
+            self.validate()
         return self._jwt.get('body', {})
 
     def _get_iss(self):

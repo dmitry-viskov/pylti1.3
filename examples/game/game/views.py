@@ -6,11 +6,11 @@ from django.urls import reverse
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_POST
-from .tool_config import ToolConf
 from pylti1p3.contrib.django import DjangoOIDCLogin, DjangoMessageLaunch
 from pylti1p3.deep_link_resource import DeepLinkResource
 from pylti1p3.grade import Grade
 from pylti1p3.lineitem import LineItem
+from pylti1p3.tool_config import ToolConfJsonFile
 
 
 class ExtendedDjangoMessageLaunch(DjangoMessageLaunch):
@@ -29,7 +29,7 @@ class ExtendedDjangoMessageLaunch(DjangoMessageLaunch):
         return super(ExtendedDjangoMessageLaunch, self).validate_nonce()
 
 
-def get_lti_config():
+def get_lti_config_path():
     return os.path.join(settings.BASE_DIR, '..', 'configs', 'game.json')
 
 
@@ -38,20 +38,16 @@ def get_launch_url(request):
 
 
 def login(request):
-    tool_conf = ToolConf(get_lti_config())
+    tool_conf = ToolConfJsonFile(get_lti_config_path())
     oidc_login = DjangoOIDCLogin(request, tool_conf)
-
-    return oidc_login\
-        .do_oidc_login_redirect(get_launch_url(request))\
-        .do_redirect()
+    return oidc_login.redirect(get_launch_url(request))
 
 
 @require_POST
 def launch(request):
-    tool_conf = ToolConf(get_lti_config())
+    tool_conf = ToolConfJsonFile(get_lti_config_path())
     message_launch = ExtendedDjangoMessageLaunch(request, tool_conf)
-    message_launch_data = message_launch.validate()\
-        .get_launch_data()
+    message_launch_data = message_launch.get_launch_data()
 
     return render(request, 'game.html', {
         'is_deep_link_launch': message_launch.is_deep_link_launch(),
@@ -63,7 +59,7 @@ def launch(request):
 
 
 def configure(request, launch_id, difficulty):
-    tool_conf = ToolConf(get_lti_config())
+    tool_conf = ToolConfJsonFile(get_lti_config_path())
     message_launch = ExtendedDjangoMessageLaunch.from_cache(launch_id, request, tool_conf)
 
     if not message_launch.is_deep_link_launch():
@@ -80,7 +76,7 @@ def configure(request, launch_id, difficulty):
 
 @require_POST
 def score(request, launch_id, earned_score, time_spent):
-    tool_conf = ToolConf(get_lti_config())
+    tool_conf = ToolConfJsonFile(get_lti_config_path())
     message_launch = ExtendedDjangoMessageLaunch.from_cache(launch_id, request, tool_conf)
 
     if not message_launch.has_ags():
@@ -124,7 +120,7 @@ def score(request, launch_id, earned_score, time_spent):
 
 
 def scoreboard(request, launch_id):
-    tool_conf = ToolConf(get_lti_config())
+    tool_conf = ToolConfJsonFile(get_lti_config_path())
     message_launch = ExtendedDjangoMessageLaunch.from_cache(launch_id, request, tool_conf)
 
     if not message_launch.has_nrps():

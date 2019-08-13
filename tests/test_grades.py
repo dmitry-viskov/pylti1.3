@@ -9,7 +9,7 @@ from parameterized import parameterized
 from pylti1p3.grade import Grade
 from pylti1p3.lineitem import LineItem
 from .request import DjangoFakeRequest
-from .tool_config import TestToolConf
+from .tool_config import get_test_tool_conf
 from .base import TestServicesBase
 
 
@@ -18,7 +18,7 @@ class TestGrades(TestServicesBase):
     @parameterized.expand([['line_items_exist', True], ['line_items_dont_exist', False]])
     def test_get_grades(self, name, line_items_exist):  # pylint: disable=unused-argument
         from pylti1p3.contrib.django import DjangoMessageLaunch
-        tool_conf = TestToolConf()
+        tool_conf = get_test_tool_conf()
 
         with patch.object(DjangoMessageLaunch, "_get_jwt_body", autospec=True) as get_jwt_body:
             message_launch = DjangoMessageLaunch(DjangoFakeRequest(), tool_conf)
@@ -76,7 +76,7 @@ class TestGrades(TestServicesBase):
 
     def test_send_scores(self):
         from pylti1p3.contrib.django import DjangoMessageLaunch
-        tool_conf = TestToolConf()
+        tool_conf = get_test_tool_conf()
 
         with patch.object(DjangoMessageLaunch, "_get_jwt_body", autospec=True) as get_jwt_body:
             message_launch = DjangoMessageLaunch(DjangoFakeRequest(), tool_conf)

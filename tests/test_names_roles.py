@@ -5,7 +5,7 @@ try:
 except ImportError:
     from mock import patch
 from .request import DjangoFakeRequest
-from .tool_config import TestToolConf
+from .tool_config import get_test_tool_conf
 from .base import TestServicesBase
 
 
@@ -13,7 +13,7 @@ class TestNamesRolesProvisioningService(TestServicesBase):
 
     def test_get_members(self):
         from pylti1p3.contrib.django import DjangoMessageLaunch
-        tool_conf = TestToolConf()
+        tool_conf = get_test_tool_conf()
 
         with patch.object(DjangoMessageLaunch, "_get_jwt_body", autospec=True) as get_jwt_body:
             message_launch = DjangoMessageLaunch(DjangoFakeRequest(), tool_conf)

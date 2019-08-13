@@ -12,7 +12,7 @@ except ImportError:
     from urllib.parse import quote
 from .request import DjangoFakeRequest
 from .response import DjangoFakeResponse
-from .tool_config import TestToolConf, TOOL_CONFIG
+from .tool_config import get_test_tool_conf, TOOL_CONFIG
 
 
 class TestLinkBase(unittest.TestCase):
@@ -21,7 +21,7 @@ class TestLinkBase(unittest.TestCase):
     post_login_data = {}
 
     def _make_oidc_login(self, uuid_val=None):
-        tool_conf = TestToolConf()
+        tool_conf = get_test_tool_conf()
         request = None
         login_data = {}
         if not uuid_val:
@@ -41,7 +41,7 @@ class TestLinkBase(unittest.TestCase):
                 oidc_login = DjangoOIDCLogin(request, tool_conf)
                 mock_redirect.side_effect = lambda x: DjangoFakeResponse(x)  # pylint: disable=unnecessary-lambda
                 launch_url = 'http://lti.django.test/launch/'
-                response = oidc_login.do_oidc_login_redirect(launch_url).do_redirect()
+                response = oidc_login.redirect(launch_url)
 
                 # check cookie data
                 self.assertEqual(len(response.cookies), 1)
@@ -70,7 +70,7 @@ class TestLinkBase(unittest.TestCase):
 
         return tool_conf, request, response
 
-    def _launch(self, request, tool_conf, key_set_url_response=None):
+    def _launch(self, request, tool_conf, key_set_url_response=None, force_validation=False):
         from pylti1p3.contrib.django import DjangoMessageLaunch
         obj = DjangoMessageLaunch(request, tool_conf)
 
@@ -78,13 +78,16 @@ class TestLinkBase(unittest.TestCase):
             with requests_mock.Mocker() as m:
                 key_set_url_text = key_set_url_response if key_set_url_response else json.dumps(self.jwt_canvas_keys)
                 m.get(TOOL_CONFIG[self.iss]['key_set_url'], text=key_set_url_text)
-                return obj.validate()
+                if force_validation:
+                    return obj.validate()
+                else:
+                    return obj.get_launch_data()
 
     def _launch_with_invalid_jwt_body(self, side_effect, request, tool_conf):
         from pylti1p3.contrib.django import DjangoMessageLaunch
         with patch.object(DjangoMessageLaunch, "_get_jwt_body", autospec=True) as get_jwt_body:
             get_jwt_body.side_effect = side_effect
-            return self._launch(request, tool_conf)
+            return self._launch(request, tool_conf, force_validation=True)
 
 
 class TestServicesBase(unittest.TestCase):

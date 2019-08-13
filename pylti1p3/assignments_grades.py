@@ -10,7 +10,7 @@ class AssignmentsGradesService(object):
         self._service_connector = service_connector
         self._service_data = service_data
 
-    def put_grade(self, grade, line_item):
+    def put_grade(self, grade, line_item=None):
         if "https://purl.imsglobal.org/spec/lti-ags/scope/score" not in self._service_data['scope']:
             raise LtiException('Missing required scope')
 
