@@ -30,18 +30,18 @@ and execute:
 
 .. code-block:: shell
 
-    docker-compose up --build
+    $ docker-compose up --build
 
 You may use virtualenv instead of docker:
 
 .. code-block:: shell
 
-    virtualenv venv
-    source venv/bin/activate
-    cd examples
-    pip install -r requirements.txt
-    cd game
-    python manage.py runserver 127.0.0.1:9001
+    $ virtualenv venv
+    $ source venv/bin/activate
+    $ cd examples
+    $ pip install -r requirements.txt
+    $ cd game
+    $ python manage.py runserver 127.0.0.1:9001
 
 Now there is game example tool you can launch into on the port 9001:
 
