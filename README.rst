@@ -69,7 +69,8 @@ To configure your own tool you may use built-in adapters:
         "<issuer_2>": { }
     }
     private_key = '...'
-    tool_conf = ToolConfDict(settings, private_key)
+    tool_conf = ToolConfDict(settings)
+    tool_conf.set_private_key(iss, private_key)
 
 or create your own implementation. The ``pylti1p3.tool_config.ToolConfAbstract`` interface must be fully implemented for this to work.
 
