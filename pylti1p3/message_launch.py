@@ -218,21 +218,24 @@ class MessageLaunch(object):
             tmp = str(val).translate(string.maketrans('-_', '+/'))
             return base64.b64decode(tmp)
 
+    def fetch_public_key(self, key_set_url):
+        try:
+            resp = requests.get(key_set_url)
+        except requests.exceptions.RequestException as e:
+            raise LtiException("Error during fetch URL " + key_set_url + ": " + str(e))
+        try:
+            return resp.json()
+        except ValueError:
+            raise LtiException("Invalid response from " + key_set_url + ". Must be JSON: " + resp.text)
+
     def get_public_key(self):
         public_key_set = self._registration.get_key_set()
         key_set_url = self._registration.get_key_set_url()
 
         if not public_key_set:
             if key_set_url.startswith(('http://', 'https://')):
-                try:
-                    resp = requests.get(key_set_url)
-                except requests.exceptions.RequestException as e:
-                    raise LtiException("Error during fetch URL " + key_set_url + ": " + str(e))
-                try:
-                    public_key_set = resp.json()
-                    self._registration.set_key_set(public_key_set)
-                except ValueError:
-                    raise LtiException("Invalid response from " + key_set_url + ". Must be JSON: " + resp.text)
+                public_key_set = self.fetch_public_key(key_set_url)
+                self._registration.set_key_set(public_key_set)
             else:
                 raise LtiException("Invalid URL: " + key_set_url)
 
@@ -368,3 +371,7 @@ class MessageLaunch(object):
     def save_launch_data(self):
         self._session_service.save_launch_data(self._launch_id, self._jwt['body'])
         return self
+
+    def get_params_from_login(self):
+        state = self._get_request_param('state')
+        return self._session_service.get_state_params(state)

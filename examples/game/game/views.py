@@ -1,8 +1,8 @@
 import datetime
 import os
+import pprint
 
 from django.conf import settings
-from django.urls import reverse
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_POST
@@ -34,13 +34,17 @@ def get_lti_config_path():
 
 
 def get_launch_url(request):
-    return request.build_absolute_uri(reverse('game-launch'))
+    target_link_uri = request.POST.get('target_link_uri', request.GET.get('target_link_uri'))
+    if not target_link_uri:
+        raise Exception('Missing "target_link_uri" param')
+    return target_link_uri
 
 
 def login(request):
     tool_conf = ToolConfJsonFile(get_lti_config_path())
     oidc_login = DjangoOIDCLogin(request, tool_conf)
-    return oidc_login.redirect(get_launch_url(request))
+    target_link_uri = get_launch_url(request)
+    return oidc_login.redirect(target_link_uri)
 
 
 @require_POST
@@ -48,6 +52,7 @@ def launch(request):
     tool_conf = ToolConfJsonFile(get_lti_config_path())
     message_launch = ExtendedDjangoMessageLaunch(request, tool_conf)
     message_launch_data = message_launch.get_launch_data()
+    pprint.pprint(message_launch_data)
 
     return render(request, 'game.html', {
         'is_deep_link_launch': message_launch.is_deep_link_launch(),

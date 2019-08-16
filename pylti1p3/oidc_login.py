@@ -14,6 +14,7 @@ class OIDCLogin(object):
     _tool_config = None
     _session_service = None
     _cookie_service = None
+    _state_params = {}
 
     def __init__(self, request, tool_config, session_service, cookie_service):
         self._request = request
@@ -48,6 +49,8 @@ class OIDCLogin(object):
         # generate nonce
         nonce = self._get_uuid()
         self._session_service.save_nonce(nonce)
+        if self._state_params:
+            self._session_service.save_state_params(self._state_params)
 
         # build Response
         auth_params = {
@@ -109,3 +112,9 @@ class OIDCLogin(object):
             raise OIDCException("Could not find registration details")
 
         return registration
+
+    def pass_params_to_launch(self, params):
+        """
+        Ability to pass custom params from oidc login to launch.
+        """
+        self._state_params = params
