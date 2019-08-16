@@ -35,7 +35,7 @@ class AssignmentsGradesService(object):
             content_type='application/vnd.ims.lis.v1.score+json'
         )
 
-    def find_or_create_lineitem(self, new_line_item):
+    def get_lineitems(self):
         if "https://purl.imsglobal.org/spec/lti-ags/scope/lineitem" not in self._service_data['scope']:
             raise LtiException('Missing required scope')
 
@@ -44,8 +44,12 @@ class AssignmentsGradesService(object):
             self._service_data['lineitems'],
             accept='application/vnd.ims.lis.v2.lineitemcontainer+json'
         )
+        return line_items['body']
 
-        for line_item in line_items['body']:
+    def find_or_create_lineitem(self, new_line_item):
+        line_items = self.get_lineitems()
+
+        for line_item in line_items:
             if line_item['tag'] == new_line_item.get_tag():
                 return LineItem(line_item)
 

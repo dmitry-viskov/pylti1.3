@@ -21,8 +21,10 @@ class DjangoSessionService(SessionService):
 
     def check_nonce(self, nonce):
         nonce_key = self._get_key('nonce', nonce)
-        try:
-            del self._request.session[nonce_key]
-            return True
-        except KeyError:
-            return False
+        return nonce_key in self._request.session
+
+    def save_state_params(self, state, params):
+        self._request.session[self._get_key(state)] = params
+
+    def get_state_params(self, state):
+        return self._request.session[self._get_key(state)]

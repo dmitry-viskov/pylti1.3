@@ -20,3 +20,11 @@ class SessionService(object):
     @abstractmethod
     def check_nonce(self, nonce):
         raise NotImplementedError
+
+    @abstractmethod
+    def save_state_params(self, state, params):
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_state_params(self, state):
+        raise NotImplementedError
