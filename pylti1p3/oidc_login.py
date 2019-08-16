@@ -50,7 +50,7 @@ class OIDCLogin(object):
         nonce = self._get_uuid()
         self._session_service.save_nonce(nonce)
         if self._state_params:
-            self._session_service.save_state_params(self._state_params)
+            self._session_service.save_state_params(state, self._state_params)
 
         # build Response
         auth_params = {
