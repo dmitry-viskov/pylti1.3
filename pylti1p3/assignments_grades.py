@@ -17,13 +17,14 @@ class AssignmentsGradesService(object):
         if line_item and not line_item.get_id():
             line_item = self.find_or_create_lineitem(line_item)
             score_url = line_item.get_id()
-        elif not line_item and not self._service_data.get('lineitem'):
+        elif not line_item and self._service_data.get('lineitem'):
             score_url = self._service_data.get('lineitem')
         else:
-            line_item = LineItem()
-            line_item.set_label('default')\
-                .set_score_maximum(100)
-            line_item = self.find_or_create_lineitem(line_item)
+            if not line_item:
+                line_item = LineItem()
+                line_item.set_label('default')\
+                    .set_score_maximum(100)
+                line_item = self.find_or_create_lineitem(line_item)
             score_url = line_item.get_id()
 
         score_url += '/scores'
@@ -46,12 +47,34 @@ class AssignmentsGradesService(object):
         )
         return line_items['body']
 
-    def find_or_create_lineitem(self, new_line_item):
+    def find_lineitem_by_id(self, ln_id):
         line_items = self.get_lineitems()
 
         for line_item in line_items:
-            if line_item['tag'] == new_line_item.get_tag():
+            line_item_id = line_item.get('id')
+            if line_item_id == ln_id:
                 return LineItem(line_item)
+        return None
+
+    def find_lineitem_by_tag(self, tag):
+        line_items = self.get_lineitems()
+
+        for line_item in line_items:
+            line_item_tag = line_item.get('tag')
+            if line_item_tag == tag:
+                return LineItem(line_item)
+        return None
+
+    def find_or_create_lineitem(self, new_line_item, find_by='tag'):
+        if find_by == 'tag':
+            line_item = self.find_lineitem_by_tag(new_line_item.get_tag())
+        elif find_by == 'id':
+            line_item = self.find_lineitem_by_id(new_line_item.get_id())
+        else:
+            raise LtiException('Invalid "find_by" value: ' + str(find_by))
+
+        if line_item:
+            return line_item
 
         created_line_item = self._service_connector.make_service_request(
             self._service_data['scope'],
@@ -64,7 +87,16 @@ class AssignmentsGradesService(object):
         return LineItem(created_line_item['body'])
 
     def get_grades(self, line_item):
-        line_item = self.find_or_create_lineitem(line_item)
+        line_item_id = line_item.get_id()
+        line_item_tag = line_item.get_tag()
+
+        find_by = None
+        if line_item_id:
+            find_by = 'id'
+        elif line_item_tag:
+            find_by = 'tag'
+
+        line_item = self.find_or_create_lineitem(line_item, find_by=find_by)
         scores = self._service_connector.make_service_request(
             self._service_data['scope'],
             line_item.get_id() + '/results',

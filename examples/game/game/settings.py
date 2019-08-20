@@ -54,7 +54,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'game.wsgi.application'
-
+SESSION_COOKIE_SAMESITE = None  # important for Django >= 2.1
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases

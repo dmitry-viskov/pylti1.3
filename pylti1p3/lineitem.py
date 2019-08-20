@@ -72,8 +72,8 @@ class LineItem(object):
 
     def get_value(self):
         data = {
-            'id': int(self._id) if self._id else None,
-            'scoreMaximum': int(self._score_maximum) if self._score_maximum else None,
+            'id': self._id if self._id else None,
+            'scoreMaximum': self._score_maximum if self._score_maximum else None,
             'label': self._label,
             'resourceId': self._resource_id,
             'tag': self._tag,

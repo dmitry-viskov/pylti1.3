@@ -3,7 +3,7 @@ import os
 import pprint
 
 from django.conf import settings
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_POST
 from pylti1p3.contrib.django import DjangoOIDCLogin, DjangoMessageLaunch
@@ -68,7 +68,7 @@ def configure(request, launch_id, difficulty):
     message_launch = ExtendedDjangoMessageLaunch.from_cache(launch_id, request, tool_conf)
 
     if not message_launch.is_deep_link_launch():
-        raise Exception('Must be a deep link!')
+        return HttpResponseForbidden('Must be a deep link!')
 
     resource = DeepLinkResource()
     resource.set_url(get_launch_url(request))\
@@ -85,10 +85,12 @@ def score(request, launch_id, earned_score, time_spent):
     message_launch = ExtendedDjangoMessageLaunch.from_cache(launch_id, request, tool_conf)
 
     if not message_launch.has_ags():
-        raise Exception("Don't have grades!")
+        return HttpResponseForbidden("Don't have grades!")
 
     sub = message_launch.get_launch_data().get('sub')
-    timestamp = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S+0000')
+    timestamp = datetime.datetime.utcnow().isoformat()
+    earned_score = int(earned_score)
+    time_spent = int(time_spent)
 
     grades = message_launch.get_ags()
     sc = Grade()
@@ -129,10 +131,10 @@ def scoreboard(request, launch_id):
     message_launch = ExtendedDjangoMessageLaunch.from_cache(launch_id, request, tool_conf)
 
     if not message_launch.has_nrps():
-        raise Exception("Don't have names and roles!")
+        return HttpResponseForbidden("Don't have names and roles!")
 
     if not message_launch.has_ags():
-        raise Exception("Don't have grades!")
+        return HttpResponseForbidden("Don't have grades!")
 
     ags = message_launch.get_ags()
 
