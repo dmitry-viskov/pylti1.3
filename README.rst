@@ -30,6 +30,16 @@ Library contains adapter for usage from Django Web Framework but there is no dif
 Example
 =======
 
+First of all choose and configure test LTI 1.3 Platform. It may be:
+
+* `IMS Global test site`_
+* `Canvas LMS`_ (Detailed `instruction`_ how to setup Canvas as LTI 1.3 Platform is `here`_)
+
+.. _IMS Global test site: https://lti-ri.imsglobal.org
+.. _Canvas LMS: https://github.com/instructure/canvas-lms
+.. _instruction: https://github.com/dmitry-viskov/pylti1.3/wiki/Configure-Canvas-as-LTI-1.3-Platform
+.. _here: https://github.com/dmitry-viskov/pylti1.3/wiki/Configure-Canvas-as-LTI-1.3-Platform
+
 The most simple way to check example is to use ``docker`` + ``docker-compose``.
 Change the necessary configs in the ``examples/configs/game.json``:
 
