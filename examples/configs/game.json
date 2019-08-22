@@ -27,5 +27,14 @@
         "key_set": null,
         "private_key_file": "private.key",
         "deployment_ids": ["6:8865aa05b4b79b64a91a86042e43af5ea8ae79eb"]
+    },
+    "ltiadvantagevalidator.imsglobal.org": {
+        "client_id": "imstestuser",
+        "auth_login_url": "https://ltiadvantagevalidator.imsglobal.org/ltitool/oidcauthurl.html",
+        "auth_token_url": "https://oauth2server.imsglobal.org/oauth2server/authcodejwt",
+        "key_set_url": "https://oauth2server.imsglobal.org/jwks",
+        "key_set": null,
+        "private_key_file": "cert_suite_private.key",
+        "deployment_ids": ["testdeploy"]
     }
 }

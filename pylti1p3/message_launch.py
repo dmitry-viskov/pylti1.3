@@ -328,9 +328,10 @@ class MessageLaunch(object):
         # Fetch public key.
         public_key = self.get_public_key()
 
+        options = {'verify_aud': False}
         try:
-            jwt.decode(id_token, public_key, algorithms=['RS256'], verify=False)
-        except jwt.DecodeError as e:
+            jwt.decode(id_token, public_key, algorithms=['RS256'], options=options)
+        except jwt.InvalidTokenError as e:
             raise LtiException("Can't decode id_token: " + str(e))
 
         return self
