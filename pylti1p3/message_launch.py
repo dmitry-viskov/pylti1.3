@@ -22,6 +22,7 @@ class MessageLaunch(object):
     _session_service = None
     _cookie_service = None
     _jwt = None
+    _jwt_verify_options = None
     _registration = None
     _launch_id = None
     _validated = False
@@ -35,6 +36,7 @@ class MessageLaunch(object):
         self._cookie_service = cookie_service
         self._launch_id = "lti1p3-launch-" + str(uuid.uuid4())
         self._jwt = {}
+        self._jwt_verify_options = {'verify_aud': False}
         self._validated = False
         self._auto_validation = True
         self._restored = False
@@ -53,6 +55,10 @@ class MessageLaunch(object):
 
     def set_jwt(self, val):
         self._jwt = val
+        return self
+
+    def set_jwt_verify_options(self, val):
+        self._jwt_verify_options = val
         return self
 
     def set_restored(self):
@@ -328,9 +334,8 @@ class MessageLaunch(object):
         # Fetch public key.
         public_key = self.get_public_key()
 
-        options = {'verify_aud': False}
         try:
-            jwt.decode(id_token, public_key, algorithms=['RS256'], options=options)
+            jwt.decode(id_token, public_key, algorithms=['RS256'], options=self._jwt_verify_options)
         except jwt.InvalidTokenError as e:
             raise LtiException("Can't decode id_token: " + str(e))
 

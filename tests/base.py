@@ -73,6 +73,10 @@ class TestLinkBase(unittest.TestCase):
     def _launch(self, request, tool_conf, key_set_url_response=None, force_validation=False):
         from pylti1p3.contrib.django import DjangoMessageLaunch
         obj = DjangoMessageLaunch(request, tool_conf)
+        obj.set_jwt_verify_options({
+            'verify_aud': False,
+            'verify_exp': False
+        })
 
         with patch('socket.gethostbyname', return_value="127.0.0.1"):
             with requests_mock.Mocker() as m:
