@@ -28,9 +28,12 @@ class DeepLink(object):
         }
         return message_jwt
 
+    def encode_jwt(self, message):
+        return jwt.encode(message, self._registration.get_tool_private_key(), algorithm='RS256')
+
     def get_response_jwt(self, resources):
         message_jwt = self.get_message_jwt(resources)
-        return jwt.encode(message_jwt, self._registration.get_tool_private_key(), algorithm='RS256')
+        return self.encode_jwt(message_jwt)
 
     def get_response_form_html(self, jwt_val):
         html = '<form id="lti13_deep_link_auto_submit" action="%s" method="POST">' \
