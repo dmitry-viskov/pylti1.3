@@ -62,6 +62,7 @@ disable=
     C0111,
 
     duplicate-code,
+    import-outside-toplevel,
 
 # We can decide if names are invalid on our own
     invalid-name,
