@@ -53,14 +53,24 @@ class DeepLinkResource(object):
             'type': self._type,
             'title': self._title,
             'url': self._url,
-            'presentation': {
-                'documentTarget': self._target
-            },
             'custom': self._custom_params
         }
         if self._lineitem:
-            res['lineItem'] = {
+            line_item = {
                 'scoreMaximum': self._lineitem.get_score_maximum(),
-                'label': self._lineitem.get_label()
             }
+
+            label = self._lineitem.get_label()
+            if label:
+                line_item['label'] = label
+
+            resource_id = self._lineitem.get_resource_id()
+            if resource_id:
+                line_item['resourceId'] = resource_id
+
+            tag = self._lineitem.get_tag()
+            if tag:
+                line_item['tag'] = tag
+
+            res['lineItem'] = line_item
         return res
