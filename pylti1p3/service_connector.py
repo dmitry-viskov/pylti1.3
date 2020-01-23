@@ -80,6 +80,6 @@ class ServiceConnector(object):
             raise LtiException('HTTP response [%s]: %s - %s' % (url, str(r.status_code), r.text))
 
         return {
-            'headers': r.headers,
+            'headers': dict(r.headers),
             'body': r.json() if r.content else None
         }
