@@ -1,6 +1,8 @@
+from parameterized import parameterized
 from pylti1p3.exception import LtiException
 from .request import DjangoFakeRequest
 from .base import TestLinkBase
+from .tool_config import ToolConfDeprecated
 
 
 class TestResourceLink(TestLinkBase):
@@ -152,8 +154,9 @@ class TestResourceLink(TestLinkBase):
         'sub': 'a445ca99-1a64-4697-9bfa-508a118245ea'
     }
 
-    def test_res_link_launch_success(self):
-        tool_conf, login_request, login_response = self._make_oidc_login()
+    @parameterized.expand([['base', None], ['tool_conf_deprecated', ToolConfDeprecated]])
+    def test_res_link_launch_success(self, name, tool_conf_cls):  # pylint: disable=unused-argument
+        tool_conf, login_request, login_response = self._make_oidc_login(tool_conf_cls=tool_conf_cls)
 
         launch_request = DjangoFakeRequest(post=self.post_launch_data,
                                            cookies=login_response.get_cookies_dict(),

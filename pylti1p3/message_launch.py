@@ -7,6 +7,7 @@ import jwt
 import requests
 from jwcrypto.jwk import JWK
 
+from .actions import Action
 from .assignments_grades import AssignmentsGradesService
 from .deep_link import DeepLink
 from .exception import LtiException
@@ -314,14 +315,15 @@ class MessageLaunch(object):
 
     def validate_registration(self):
         iss = self._get_iss()
+        jwt_body = self._get_jwt_body()
 
         # Find registration
-        self._registration = self._tool_config.find_registration_by_issuer(iss)
+        self._registration = self._tool_config.find_registration(iss, action=Action.MESSAGE_LAUNCH, jwt_body=jwt_body)
         if not self._registration:
             raise LtiException('Registration not found.')
 
         # Check client id
-        aud = self._get_jwt_body().get('aud')
+        aud = jwt_body.get('aud')
         client_id = aud[0] if isinstance(aud, list) else aud
         if client_id != self._registration.get_client_id():
             raise LtiException("Client id not registered for this issuer")

@@ -20,8 +20,8 @@ class TestLinkBase(unittest.TestCase):
     get_login_data = {}
     post_login_data = {}
 
-    def _make_oidc_login(self, uuid_val=None):
-        tool_conf = get_test_tool_conf()
+    def _make_oidc_login(self, uuid_val=None, tool_conf_cls=None):
+        tool_conf = get_test_tool_conf(tool_conf_cls)
         request = None
         login_data = {}
         if not uuid_val:
