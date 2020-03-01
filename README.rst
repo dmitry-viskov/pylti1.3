@@ -43,7 +43,7 @@ First of all choose and configure test LTI 1.3 Platform. It may be:
 The most simple way to check example is to use ``docker`` + ``docker-compose``.
 Change the necessary configs in the ``examples/configs/game.json`` (`here is instruction`_ how to generate your own public + private keys):
 
-.. _here is instruction: https://github.com/dmitry-viskov/pylti1.3/wiki/How-to-generate-JWT-RS256-key-and-JWKS
+.. _here is instruction:  https://github.com/dmitry-viskov/pylti1.3/wiki/How-to-generate-JWT-RS256-key-and-JWKS
 
 .. code-block:: javascript
 
