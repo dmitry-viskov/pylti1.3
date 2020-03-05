@@ -5,6 +5,7 @@ try:
 except ImportError:
     from urllib.parse import urlencode
 
+from .actions import Action
 from .exception import OIDCException
 
 
@@ -105,7 +106,7 @@ class OIDCLogin(object):
             raise OIDCException('Could not find login hint')
 
         # fetch registration details
-        registration = self._tool_config.find_registration_by_issuer(iss)
+        registration = self._tool_config.find_registration(iss, action=Action.OIDC_LOGIN, request=self._request)
 
         # check we got something
         if not registration:

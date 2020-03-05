@@ -1,3 +1,4 @@
+import warnings
 from pylti1p3.tool_config import ToolConfDict
 
 
@@ -77,8 +78,26 @@ PXczMbwczExTwi+tQXgrR/6YRg6qV/T6bm9pDF3h9y9q3/+eTa7zcJXU1SaRuTI=
 """
 
 
-def get_test_tool_conf():
-    tool_conf = ToolConfDict(TOOL_CONFIG)
+def get_test_tool_conf(tool_conf_cls=None):
+    tool_conf = tool_conf_cls(TOOL_CONFIG) if tool_conf_cls else ToolConfDict(TOOL_CONFIG)
     for iss in TOOL_CONFIG:
         tool_conf.set_private_key(iss, PRIVATE_KEY)
     return tool_conf
+
+
+class ToolConfDeprecated(ToolConfDict):
+    """
+    Conf class to check backward compatibility with the previous implementation
+    of ToolConfAbstract.find_registration_by_issuer
+
+    """
+    def find_registration(self, iss, *args, **kwargs):
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            result = super(ToolConfDeprecated, self).find_registration(iss, *args, **kwargs)
+            assert issubclass(w[-1].category, DeprecationWarning)
+            assert "find_registration_by_issuer" in str(w[-1].message)
+            return result
+
+    def find_registration_by_issuer(self, iss):  # pylint: disable=arguments-differ,useless-super-delegation
+        return super(ToolConfDeprecated, self).find_registration_by_issuer(iss)

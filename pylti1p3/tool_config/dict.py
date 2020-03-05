@@ -8,9 +8,10 @@ class ToolConfDict(ToolConfAbstract):
     _private_key = {}
 
     def __init__(self, json_data):
+        super(ToolConfDict, self).__init__()
         self._config = json_data
 
-    def find_registration_by_issuer(self, iss):
+    def find_registration_by_issuer(self, iss, *args, **kwargs):
         if iss not in self._config:
             raise Exception('iss %s not found in settings' % iss)
 
