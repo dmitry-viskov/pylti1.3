@@ -318,7 +318,8 @@ class MessageLaunch(object):
         jwt_body = self._get_jwt_body()
 
         # Find registration
-        self._registration = self._tool_config.find_registration(iss, action=Action.MESSAGE_LAUNCH, jwt_body=jwt_body)
+        self._registration = self._tool_config.find_registration(
+            iss, action=Action.MESSAGE_LAUNCH, request=self._request, jwt_body=jwt_body)
         if not self._registration:
             raise LtiException('Registration not found.')
 
