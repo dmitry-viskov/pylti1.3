@@ -3,6 +3,7 @@ import collections
 
 class FakeSession(collections.MutableMapping):
     def __init__(self, *args, **kwargs):
+        # pylint: disable=super-init-not-called
         self.store = dict()
         self.update(dict(*args, **kwargs))
 
