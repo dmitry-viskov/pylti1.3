@@ -59,4 +59,4 @@ class Grade(object):
             'timestamp': self._timestamp,
             'userId': self._user_id
         }
-        return json.dumps({k: v for k, v in data.items() if v})
+        return json.dumps({k: v for k, v in data.items() if v is not None})

@@ -1,3 +1,4 @@
+import sys
 import time
 import uuid
 import jwt
@@ -29,7 +30,8 @@ class DeepLink(object):
         return message_jwt
 
     def encode_jwt(self, message):
-        return jwt.encode(message, self._registration.get_tool_private_key(), algorithm='RS256')
+        encoded_jwt = jwt.encode(message, self._registration.get_tool_private_key(), algorithm='RS256')
+        return encoded_jwt.decode('utf-8') if sys.version_info[0] > 2 else encoded_jwt
 
     def get_response_jwt(self, resources):
         message_jwt = self.get_message_jwt(resources)
