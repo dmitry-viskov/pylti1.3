@@ -1,7 +1,9 @@
 import datetime
 import os
 import pprint
+import uuid
 
+from django.core.cache import caches
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import render
@@ -12,6 +14,9 @@ from pylti1p3.deep_link_resource import DeepLinkResource
 from pylti1p3.grade import Grade
 from pylti1p3.lineitem import LineItem
 from pylti1p3.tool_config import ToolConfJsonFile
+
+
+PAGE_TITLE = 'Game Example'
 
 
 class ExtendedDjangoMessageLaunch(DjangoMessageLaunch):
@@ -30,6 +35,25 @@ class ExtendedDjangoMessageLaunch(DjangoMessageLaunch):
         return super(ExtendedDjangoMessageLaunch, self).validate_nonce()
 
 
+class DjangoFakeRequest(object):
+
+    GET = {}
+    POST = {}
+    COOKIES = {}
+    session = None
+    _is_secure = False
+
+    def __init__(self, GET, POST, COOKIES, session, is_secure):
+        self.GET = GET
+        self.POST = POST
+        self.COOKIES = COOKIES
+        self._is_secure = is_secure
+        self.session = session
+
+    def is_secure(self):
+        return self._is_secure
+
+
 def get_lti_config_path():
     return os.path.join(settings.BASE_DIR, '..', 'configs', 'game.json')
 
@@ -41,11 +65,44 @@ def get_launch_url(request):
     return target_link_uri
 
 
+def check_cookies_allowed(request):
+    test_cookie_val = request.COOKIES.get('test_cookie', None)
+    request_ts = request.GET.get('ts', None)
+    cookie_sent = bool(request_ts and test_cookie_val and request_ts == test_cookie_val)
+    return JsonResponse({'cookies_allowed': cookie_sent})
+
+
 def login(request):
-    tool_conf = ToolConfJsonFile(get_lti_config_path())
-    oidc_login = DjangoOIDCLogin(request, tool_conf)
-    target_link_uri = get_launch_url(request)
-    return oidc_login.redirect(target_link_uri)
+    cache = caches['default']
+    cookies_allowed = str(request.GET.get('cookies_allowed', 0))
+    if cookies_allowed == '1':
+        login_unique_id = str(request.GET.get('login_unique_id', ''))
+        if not login_unique_id:
+            raise Exception('Missing "login_unique_id" param')
+
+        login_data = cache.get(login_unique_id)
+        if not login_data:
+            raise Exception("Can't restore login data from cache")
+
+        tool_conf = ToolConfJsonFile(get_lti_config_path())
+        request_like_obj = DjangoFakeRequest(
+            login_data['GET'], login_data['POST'],
+            login_data['COOKIES'], request.session, request.is_secure())
+        oidc_login = DjangoOIDCLogin(request_like_obj, tool_conf)
+        target_link_uri = get_launch_url(request_like_obj)
+        return oidc_login.redirect(target_link_uri)
+    else:
+        login_unique_id = str(uuid.uuid4())
+        cache.set(login_unique_id, {
+            'GET': {k: v for k, v in request.GET.items()},
+            'POST': {k: v for k, v in request.POST.items()},
+            'COOKIES': {k: v for k, v in request.COOKIES.items()}
+        }, 3600)
+        return render(request, 'check_cookie.html', {
+            'login_unique_id': login_unique_id,
+            'same_site': getattr(settings, 'SESSION_COOKIE_SAMESITE'),
+            'page_title': PAGE_TITLE
+        })
 
 
 @require_POST
@@ -56,6 +113,7 @@ def launch(request):
     pprint.pprint(message_launch_data)
 
     return render(request, 'game.html', {
+        'page_title': PAGE_TITLE,
         'is_deep_link_launch': message_launch.is_deep_link_launch(),
         'launch_data': message_launch.get_launch_data(),
         'launch_id': message_launch.get_launch_id(),

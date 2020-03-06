@@ -1,5 +1,5 @@
 from pylti1p3.deep_link_resource import DeepLinkResource
-from .request import DjangoFakeRequest
+from .request import FakeRequest
 from .base import TestLinkBase
 
 
@@ -161,9 +161,9 @@ class TestDeepLink(TestLinkBase):
     def test_deep_link_launch_success(self):
         tool_conf, login_request, login_response = self._make_oidc_login(uuid_val='462a941bbf6a4356afa7')
 
-        launch_request = DjangoFakeRequest(post=self.post_launch_data,
-                                           cookies=login_response.get_cookies_dict(),
-                                           session=login_request.session)
+        launch_request = FakeRequest(post=self.post_launch_data,
+                                     cookies=login_response.get_cookies_dict(),
+                                     session=login_request.session)
         validated_message_launch = self._launch(launch_request, tool_conf, force_validation=True)
         message_launch_data = validated_message_launch.get_launch_data()
         self.assertDictEqual(message_launch_data, self.expected_message_launch_data)

@@ -4,7 +4,7 @@ try:
     from unittest.mock import patch
 except ImportError:
     from mock import patch
-from .request import DjangoFakeRequest
+from .request import FakeRequest
 from .tool_config import get_test_tool_conf
 from .base import TestServicesBase
 
@@ -16,7 +16,7 @@ class TestNamesRolesProvisioningService(TestServicesBase):
         tool_conf = get_test_tool_conf()
 
         with patch.object(DjangoMessageLaunch, "_get_jwt_body", autospec=True) as get_jwt_body:
-            message_launch = DjangoMessageLaunch(DjangoFakeRequest(), tool_conf)
+            message_launch = DjangoMessageLaunch(FakeRequest(), tool_conf)
             get_jwt_body.side_effect = lambda x: self._get_jwt_body()
             with patch('socket.gethostbyname', return_value="127.0.0.1"):
                 with requests_mock.Mocker() as m:

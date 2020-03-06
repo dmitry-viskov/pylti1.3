@@ -1,4 +1,4 @@
-class DjangoFakeResponse(object):
+class FakeResponse(object):
     data = None
     cookies = None
 

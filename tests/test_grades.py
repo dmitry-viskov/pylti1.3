@@ -8,7 +8,7 @@ except ImportError:
 from parameterized import parameterized
 from pylti1p3.grade import Grade
 from pylti1p3.lineitem import LineItem
-from .request import DjangoFakeRequest
+from .request import FakeRequest
 from .tool_config import get_test_tool_conf
 from .base import TestServicesBase
 
@@ -21,7 +21,7 @@ class TestGrades(TestServicesBase):
         tool_conf = get_test_tool_conf()
 
         with patch.object(DjangoMessageLaunch, "_get_jwt_body", autospec=True) as get_jwt_body:
-            message_launch = DjangoMessageLaunch(DjangoFakeRequest(), tool_conf)
+            message_launch = DjangoMessageLaunch(FakeRequest(), tool_conf)
             line_items_url = 'http://canvas.docker/api/lti/courses/1/line_items'
             get_jwt_body.side_effect = lambda x: self._get_jwt_body()
             with patch('socket.gethostbyname', return_value="127.0.0.1"):
@@ -79,7 +79,7 @@ class TestGrades(TestServicesBase):
         tool_conf = get_test_tool_conf()
 
         with patch.object(DjangoMessageLaunch, "_get_jwt_body", autospec=True) as get_jwt_body:
-            message_launch = DjangoMessageLaunch(DjangoFakeRequest(), tool_conf)
+            message_launch = DjangoMessageLaunch(FakeRequest(), tool_conf)
             get_jwt_body.side_effect = lambda x: self._get_jwt_body()
             with patch('socket.gethostbyname', return_value="127.0.0.1"):
                 with requests_mock.Mocker() as m:
