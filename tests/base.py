@@ -10,8 +10,8 @@ try:
     from urllib import quote
 except ImportError:
     from urllib.parse import quote
-from .request import DjangoFakeRequest
-from .response import DjangoFakeResponse
+from .request import FakeRequest
+from .response import FakeResponse
 from .tool_config import get_test_tool_conf, TOOL_CONFIG
 
 
@@ -28,10 +28,10 @@ class TestLinkBase(unittest.TestCase):
             uuid_val = 'test-uuid-1234'
 
         if self.get_login_data:
-            request = DjangoFakeRequest(get=self.get_login_data)
+            request = FakeRequest(get=self.get_login_data)
             login_data = self.get_login_data.copy()
         elif self.post_login_data:
-            request = DjangoFakeRequest(post=self.post_login_data)
+            request = FakeRequest(post=self.post_login_data)
             login_data = self.post_login_data.copy()
 
         with patch('django.shortcuts.redirect') as mock_redirect:
@@ -39,7 +39,7 @@ class TestLinkBase(unittest.TestCase):
             with patch.object(DjangoOIDCLogin, "_get_uuid", autospec=True) as get_uuid:
                 get_uuid.side_effect = lambda x: uuid_val  # pylint: disable=unnecessary-lambda
                 oidc_login = DjangoOIDCLogin(request, tool_conf)
-                mock_redirect.side_effect = lambda x: DjangoFakeResponse(x)  # pylint: disable=unnecessary-lambda
+                mock_redirect.side_effect = lambda x: FakeResponse(x)  # pylint: disable=unnecessary-lambda
                 launch_url = 'http://lti.django.test/launch/'
                 response = oidc_login.redirect(launch_url)
 

@@ -3,14 +3,14 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Game Example</title>
+<title>{{ page_title }}</title>
 <link href="{% static 'breakout.css' %}" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css?family=Gugi" rel="stylesheet">
-<script>
+<link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
+<script type="text/javascript">
 // Set game difficulty if it has been set in deep linking
-var curr_diff = "{{ curr_diff }}";
-var curr_user_name = "{{ curr_user_name }}";
-var launch_id = "{{ launch_id }}";
+var currDiff = "{{ curr_diff }}";
+var currUserName = "{{ curr_user_name }}";
+var launchId = "{{ launch_id }}";
 </script>
 <script type="text/javascript" src="{% static 'breakout.js' %}" charset="utf-8"></script>
 </head>

@@ -19,3 +19,6 @@ class DjangoRequest(Request):
 
     def get_cookie(self, key):
         return self._request.COOKIES.get(key)
+
+    def is_secure(self):
+        return self._request.is_secure()

@@ -1,5 +1,4 @@
-function main_game() {
-
+function mainGame() {
     var c = document.getElementById("breakout");
     var ctx = c.getContext("2d");
 
@@ -28,7 +27,7 @@ function main_game() {
         easy: {
             speed_multiplier: 0.7
         },
-    }
+    };
 
     var ball = {
         pos: {
@@ -36,8 +35,8 @@ function main_game() {
             y: c.height / 2 - 2,
         },
         vel: {
-            x: 6 * difficulty[curr_diff]['speed_multiplier'],
-            y: 6 * difficulty[curr_diff]['speed_multiplier'],
+            x: 6 * difficulty[currDiff]['speed_multiplier'],
+            y: 6 * difficulty[currDiff]['speed_multiplier'],
         },
         r: 10,
         rot: 0,
@@ -147,7 +146,7 @@ function main_game() {
             }
             if (hitx) {
                 var xdiff = ball.pos.x - (this.pos.x + (this.width / 2));
-                ball.vel.x = (xdiff > 0 ? Math.ceil(xdiff / 5) : Math.floor(xdiff / 5)) * difficulty[curr_diff]['speed_multiplier'];
+                ball.vel.x = (xdiff > 0 ? Math.ceil(xdiff / 5) : Math.floor(xdiff / 5)) * difficulty[currDiff]['speed_multiplier'];
                 ball.pos.x += ball.vel.x;
             }
             return 1;
@@ -171,12 +170,12 @@ function main_game() {
             return 1;
         },
         move: function () {
-            if (press_left) {
+            if (pressLeft) {
                 if (this.pos.x > 0) {
                     this.pos.x -= 8;
                 }
             }
-            if (press_right) {
+            if (pressRight) {
                 if (this.pos.x < c.width - this.width) {
                     this.pos.x += 8;
                 }
@@ -185,183 +184,181 @@ function main_game() {
     };
 
     function fire() {
-        this.r = 0,
-            this.a = 0,
-            this.render = function () {
-                if (this.a < 0.2) {
-                    this.reset();
-                }
-
-                this.pos.x += this.vel.x + (Math.random() * 2) - 1;
-                this.pos.y += this.vel.y + (Math.random() * 2) - 1;
-
-                this.r *= 0.95;
-                this.a *= 0.95;
-
-                ctx.beginPath();
-                ctx.fillStyle = 'rgba(' + (239 - this.green) + ', ' + this.green + ', 66,' + this.a + ')';
-                ctx.arc(this.pos.x, this.pos.y, this.r, 0, 2 * Math.PI);
-                ctx.fill();
-
-                if (this.green < 232) {
-                    this.green += 8;
-                }
-            },
-            this.reset = function () {
-                this.pos = {
-                    x: ball.pos.x,
-                    y: ball.pos.y,
-                };
-                this.vel = {
-                    x: (Math.random() * 4) - 2,
-                    y: (Math.random() * 4) - 2,
-                };
-                this.r = (Math.random() * 5) + 1;
-                this.a = 0.9;
-                this.green = 62;
+        this.r = 0;
+        this.a = 0;
+        this.render = function () {
+            if (this.a < 0.2) {
+                this.reset();
             }
+
+            this.pos.x += this.vel.x + (Math.random() * 2) - 1;
+            this.pos.y += this.vel.y + (Math.random() * 2) - 1;
+
+            this.r *= 0.95;
+            this.a *= 0.95;
+
+            ctx.beginPath();
+            ctx.fillStyle = 'rgba(' + (239 - this.green) + ', ' + this.green + ', 66,' + this.a + ')';
+            ctx.arc(this.pos.x, this.pos.y, this.r, 0, 2 * Math.PI);
+            ctx.fill();
+
+            if (this.green < 232) {
+                this.green += 8;
+            }
+        };
+        this.reset = function () {
+            this.pos = {
+                x: ball.pos.x,
+                y: ball.pos.y,
+            };
+            this.vel = {
+                x: (Math.random() * 4) - 2,
+                y: (Math.random() * 4) - 2,
+            };
+            this.r = (Math.random() * 5) + 1;
+            this.a = 0.9;
+            this.green = 62;
+        };
     }
 
     function brick() {
-        this.id = 0,
-            this.pos = {
-                x: 40,
-                y: 40,
-            },
-            this.vely = 0,
-            this.rot = 0,
-            this.velr = 0,
-            this.hit = false,
-            this.last_hitx = false,
-            this.last_hity = false,
-            this.width = 40,
-            this.height = 20,
-            this.render = function () {
-                if (this.hit) {
-                    if (this.pos.y > c.height + 60) {
-                        return;
-                    }
-                    this.vely++;
-                    this.pos.y += this.vely;
-                    ctx.save()
-                    ctx.beginPath();
-                    this.rot += this.velr;
-                    ctx.translate(this.pos.x + (this.width / 2), this.pos.y + (this.height / 2));
-                    ctx.rotate(this.rot * Math.PI);
-                    var gradient = ctx.createRadialGradient(-(this.width / 2) + 10, -(this.height / 2) + 5, 0, -(this.width / 2) + 40, -(this.height / 2) + 15, 40);
-                    gradient.addColorStop(0, 'rgba(137, 211, 234, 0.2)');
-                    gradient.addColorStop(1, 'rgba(137, 211, 234, 1)');
-                    ctx.strokeStyle = 'rgba(254, 254, 254, 0.8)';
-                    ctx.fillStyle = gradient;
-                    ctx.rect(-(this.width / 2), -(this.height / 2), this.width, this.height);
-                    ctx.fill();
-                    ctx.stroke();
-                    ctx.restore();
+        this.id = 0;
+        this.pos = {
+            x: 40,
+            y: 40,
+        };
+        this.vely = 0;
+        this.rot = 0;
+        this.velr = 0;
+        this.hit = false;
+        this.last_hitx = false;
+        this.last_hity = false;
+        this.width = 40;
+        this.height = 20;
+        this.render = function () {
+            if (this.hit) {
+                if (this.pos.y > c.height + 60) {
                     return;
                 }
+                this.vely++;
+                this.pos.y += this.vely;
+                ctx.save();
                 ctx.beginPath();
-                var gradient = ctx.createRadialGradient(this.pos.x + 10, this.pos.y + 5, 0, this.pos.x + 40, this.pos.y + 15, 40);
+                this.rot += this.velr;
+                ctx.translate(this.pos.x + (this.width / 2), this.pos.y + (this.height / 2));
+                ctx.rotate(this.rot * Math.PI);
+                var gradient = ctx.createRadialGradient(-(this.width / 2) + 10, -(this.height / 2) + 5, 0, -(this.width / 2) + 40, -(this.height / 2) + 15, 40);
                 gradient.addColorStop(0, 'rgba(137, 211, 234, 0.2)');
                 gradient.addColorStop(1, 'rgba(137, 211, 234, 1)');
                 ctx.strokeStyle = 'rgba(254, 254, 254, 0.8)';
                 ctx.fillStyle = gradient;
-                ctx.rect(this.pos.x, this.pos.y, this.width, this.height);
+                ctx.rect(-(this.width / 2), -(this.height / 2), this.width, this.height);
                 ctx.fill();
                 ctx.stroke();
-            },
-            this.test_hit = function () {
-                if (this.hit) {
-                    return 0;
-                }
-                var hitx = this.test_hit_x();
-                var hity = this.test_hit_y();
-                if (!hitx || !hity) {
-                    this.last_hitx = hitx;
-                    this.last_hity = hity;
-                    return 0;
-                }
-                if (this.last_hity) {
-                    ball.vel.y = -ball.vel.y;
-                    ball.pos.y += ball.vel.y;
-                    ball.pos.x -= ball.vel.x;
-                }
-                if (this.last_hitx) {
-                    ball.vel.x = -ball.vel.x;
-                    ball.pos.x += ball.vel.x;
-                    ball.pos.y -= ball.vel.y;
-                }
-                if (!this.last_hity && this.last_hitx) {
-                    ball.vel.x = -ball.vel.x;
-                    ball.pos.x += ball.vel.x;
-                    ball.vel.y = -ball.vel.y;
-                    ball.pos.y += ball.vel.y;
-                }
+                ctx.restore();
+                return;
+            }
+            ctx.beginPath();
+            var gradient = ctx.createRadialGradient(this.pos.x + 10, this.pos.y + 5, 0, this.pos.x + 40, this.pos.y + 15, 40);
+            gradient.addColorStop(0, 'rgba(137, 211, 234, 0.2)');
+            gradient.addColorStop(1, 'rgba(137, 211, 234, 1)');
+            ctx.strokeStyle = 'rgba(254, 254, 254, 0.8)';
+            ctx.fillStyle = gradient;
+            ctx.rect(this.pos.x, this.pos.y, this.width, this.height);
+            ctx.fill();
+            ctx.stroke();
+        };
+        this.test_hit = function () {
+            if (this.hit) {
+                return 0;
+            }
+            var hitx = this.test_hit_x();
+            var hity = this.test_hit_y();
+            if (!hitx || !hity) {
                 this.last_hitx = hitx;
                 this.last_hity = hity;
-                this.hit = true;
-                this.velr = (Math.random() * 0.04) - 0.02;
-                score++;
-                return 1;
-            },
-            this.test_hit_x = function () {
-                if (this.left() > ball.right()) {
-                    return 0;
-                }
-                if (this.right() < ball.left()) {
-                    return 0;
-                }
-                return 1;
-            },
-            this.test_hit_y = function () {
-                if (this.top() > ball.bottom()) {
-                    return 0;
-                }
-                if (this.bottom() < ball.top()) {
-                    return 0;
-                }
-                return 1;
-            },
-
-
-            this.left = function () {
-                return this.pos.x;
-            },
-            this.right = function () {
-                return this.pos.x + this.width;
-            },
-            this.top = function () {
-                return this.pos.y;
-            },
-            this.bottom = function () {
-                return this.pos.y + this.height;
+                return 0;
             }
-    };
+            if (this.last_hity) {
+                ball.vel.y = -ball.vel.y;
+                ball.pos.y += ball.vel.y;
+                ball.pos.x -= ball.vel.x;
+            }
+            if (this.last_hitx) {
+                ball.vel.x = -ball.vel.x;
+                ball.pos.x += ball.vel.x;
+                ball.pos.y -= ball.vel.y;
+            }
+            if (!this.last_hity && this.last_hitx) {
+                ball.vel.x = -ball.vel.x;
+                ball.pos.x += ball.vel.x;
+                ball.vel.y = -ball.vel.y;
+                ball.pos.y += ball.vel.y;
+            }
+            this.last_hitx = hitx;
+            this.last_hity = hity;
+            this.hit = true;
+            this.velr = (Math.random() * 0.04) - 0.02;
+            score++;
+            return 1;
+        };
+        this.test_hit_x = function () {
+            if (this.left() > ball.right()) {
+                return 0;
+            }
+            if (this.right() < ball.left()) {
+                return 0;
+            }
+            return 1;
+        };
+        this.test_hit_y = function () {
+            if (this.top() > ball.bottom()) {
+                return 0;
+            }
+            if (this.bottom() < ball.top()) {
+                return 0;
+            }
+            return 1;
+        };
+        this.left = function () {
+            return this.pos.x;
+        };
+        this.right = function () {
+            return this.pos.x + this.width;
+        };
+        this.top = function () {
+            return this.pos.y;
+        };
+        this.bottom = function () {
+            return this.pos.y + this.height;
+        };
+    }
 
-    press_left = false;
-    press_right = false;
+    var pressLeft = false;
+    var pressRight = false;
 
     document.addEventListener('keydown', (event) => {
         const keyName = event.key;
         if (keyName == "ArrowLeft") {
-            press_left = true;
+            pressLeft = true;
         }
         if (keyName == "ArrowRight") {
-            press_right = true;
+            pressRight = true;
         }
     });
 
     document.addEventListener('keyup', (event) => {
         const keyName = event.key;
         if (keyName == "ArrowLeft") {
-            press_left = false;
+            pressLeft = false;
         }
         if (keyName == "ArrowRight") {
-            press_right = false;
+            pressRight = false;
         }
         if (keyName == " ") {
             if (pause && !gameover) {
-                if (!start_time) {
-                    start_time = Math.floor(Date.now() / 1000);
+                if (!startTime) {
+                    startTime = Math.floor(Date.now() / 1000);
                 }
                 pause = false;
                 frame();
@@ -387,10 +384,10 @@ function main_game() {
     for (var i = 0; i < 80; i++) {
         fires[i] = new fire();
     }
-    startFireCount = 1;
+    var startFireCount = 1;
 
-    pause = true;
-    gameover = false;
+    var pause = true;
+    var gameover = false;
 
     var frame = function () {
         if (score >= bricks.length) {
@@ -421,7 +418,7 @@ function main_game() {
                 ctx.font = "50px Gugi";
                 ctx.fillStyle = '#FFFFFF';
                 ctx.textAlign = "center";
-                ctx.fillText("Ready " + curr_user_name, c.width / 2, c.height / 2);
+                ctx.fillText("Ready " + currUserName, c.width / 2, c.height / 2);
                 ctx.fillText("Press Space to Start", c.width / 2, c.height / 2 + 60);
             }
         } else {
@@ -429,7 +426,7 @@ function main_game() {
         }
     };
 
-    start_time = false;
+    var startTime = false;
     document.fonts.load('50px Gugi').then(frame);
 
     var endGame = function () {
@@ -449,21 +446,21 @@ function main_game() {
     };
 
     var submitScore = function () {
-        var time_taken = Math.floor(Date.now() / 1000) - start_time;
+        var time_taken = Math.floor(Date.now() / 1000) - startTime;
         var xhttp = new XMLHttpRequest();
         xhttp.addEventListener("load", getScoreBoard);
-        xhttp.open("POST", "/api/score/" + launch_id + "/" + score + "/" + time_taken + "/", false);
+        xhttp.open("POST", "/api/score/" + launchId + "/" + score + "/" + time_taken + "/", false);
         xhttp.send();
     };
 
     var getScoreBoard = function () {
         var xhttp = new XMLHttpRequest();
         xhttp.addEventListener("load", refreshScoreBoard);
-        xhttp.open("GET", "/api/scoreboard/" + launch_id + "/", true);
+        xhttp.open("GET", "/api/scoreboard/" + launchId + "/", true);
         xhttp.send();
     };
 
     getScoreBoard();
 }
 
-document.addEventListener("DOMContentLoaded", main_game);
+document.addEventListener("DOMContentLoaded", mainGame);

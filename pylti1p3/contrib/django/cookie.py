@@ -1,4 +1,15 @@
+import django
+
 from pylti1p3.cookie import CookieService
+try:
+    import Cookie
+except ImportError:
+    import http.cookies as Cookie
+
+# Add support for the SameSite attribute (obsolete when PY37 is unsupported).
+# # pylint: disable=protected-access
+if 'samesite' not in Cookie.Morsel._reserved:
+    Cookie.Morsel._reserved.setdefault('samesite', 'SameSite')
 
 
 class DjangoCookieService(CookieService):
@@ -19,13 +30,32 @@ class DjangoCookieService(CookieService):
         self._cookie_data_to_set = {
             'key': self._get_key(name),
             'value': value,
-            'exp': exp
+            'exp': exp,
         }
 
     def update_response(self, response):
         if self._cookie_data_to_set:
-            response.set_cookie(
-                self._cookie_data_to_set['key'],
-                self._cookie_data_to_set['value'],
-                max_age=self._cookie_data_to_set['exp'],
-                path='/')
+            key = self._cookie_data_to_set['key']
+            kwargs = {
+                'value': self._cookie_data_to_set['value'],
+                'max_age': self._cookie_data_to_set['exp'],
+                'secure': self._request.is_secure(),
+                'httponly': True,
+                'path': '/'
+            }
+
+            if self._request.is_secure():
+                # samesite argument was added in Django 2.1, but samesite could be set as None only from Django 3.1
+                # https://github.com/django/django/pull/11894
+                django_support_samesite_none = django.VERSION[0] > 3 \
+                                               or (django.VERSION[0] == 3 and django.VERSION[1] >= 1)
+
+                # SameSite=None and Secure=True are required to work inside iframes
+                if django_support_samesite_none:
+                    kwargs['samesite'] = 'None'
+                    response.set_cookie(key, **kwargs)
+                else:
+                    response.set_cookie(key, **kwargs)
+                    response.cookies[key]['samesite'] = 'None'
+            else:
+                response.set_cookie(key, **kwargs)
