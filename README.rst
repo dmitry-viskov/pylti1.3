@@ -23,7 +23,7 @@ LTI 1.3 Advantage Tool implementation in Python
 
 
 This project is a Python implementation of the similar `PHP tool`_.
-Library contains adapter for usage from Django Web Framework but there is no difficult to adapt it to from other frameworks: you should just re-implement ``OIDCLogin`` and ``MessageLaunch`` classes as it already done for Django.
+Library contains adapters for usage from Django Web Framework and Flask Web Framework but there is no difficult to adapt it to from other frameworks: you should just re-implement ``OIDCLogin`` and ``MessageLaunch`` classes as it is already done in existing adapters.
 
 .. _PHP tool: https://github.com/IMSGlobal/lti-1-3-php-library
 
