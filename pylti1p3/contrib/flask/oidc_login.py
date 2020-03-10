@@ -4,5 +4,5 @@ from .redirect import FlaskRedirect
 
 
 class FlaskOIDCLogin(OIDCLogin):
-    def get_redirect(self, url: str) -> FlaskRedirect:
+    def get_redirect(self, url):
         return FlaskRedirect(url, self._cookie_service)

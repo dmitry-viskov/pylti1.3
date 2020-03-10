@@ -12,11 +12,11 @@ class FlaskRequest(Request):
         self.session = _session
         self._cookies = _cookies
 
-    def get_param(self, key: str) -> str:
+    def get_param(self, key):
         return self._request.get(key)
 
     def set_request(self, request: dict):
         self._request = request
 
-    def get_cookie(self, key: str) -> str:
+    def get_cookie(self, key):
         return self._cookies.get(key)

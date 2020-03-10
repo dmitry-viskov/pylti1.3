@@ -12,13 +12,13 @@ class FlaskCookieService(CookieService):
         self._request = request
         self._cookie_data_to_set = {}
 
-    def _get_key(self, key: str) -> str:
+    def _get_key(self, key):
         return self._cookie_prefix + '-' + key
 
-    def get_cookie(self, name: str) -> str:
+    def get_cookie(self, name):
         return self._request.get_cookie(self._get_key(name))
 
-    def set_cookie(self, name: str, value: str, exp=3600):
+    def set_cookie(self, name, value, exp=3600):
         self._cookie_data_to_set = {
             'key': self._get_key(name),
             'value': value,
