@@ -1,5 +1,5 @@
-from pylti1p3.cookie import CookieService
 from werkzeug.wrappers import Response
+from pylti1p3.cookie import CookieService
 
 from .request import FlaskRequest
 

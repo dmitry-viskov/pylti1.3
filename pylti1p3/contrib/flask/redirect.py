@@ -1,6 +1,7 @@
 from flask import make_response, redirect
-from pylti1p3.redirect import Redirect
 from werkzeug.wrappers import Response
+
+from pylti1p3.redirect import Redirect
 
 
 class FlaskRedirect(Redirect):
