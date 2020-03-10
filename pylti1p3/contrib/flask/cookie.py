@@ -1,14 +1,11 @@
-from werkzeug.wrappers import Response
 from pylti1p3.cookie import CookieService
-
-from .request import FlaskRequest
 
 
 class FlaskCookieService(CookieService):
     _request = None
     _cookie_data_to_set = None
 
-    def __init__(self, request: FlaskRequest):
+    def __init__(self, request):
         self._request = request
         self._cookie_data_to_set = {}
 
@@ -25,7 +22,7 @@ class FlaskCookieService(CookieService):
             'exp': exp
         }
 
-    def update_response(self, response: Response):
+    def update_response(self, response):
         if self._cookie_data_to_set:
             response.set_cookie(
                 self._cookie_data_to_set['key'],

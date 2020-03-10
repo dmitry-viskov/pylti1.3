@@ -1,12 +1,10 @@
 from pylti1p3.session import SessionService
 
-from .request import FlaskRequest
-
 
 class FlaskSessionService(SessionService):
     _request = None
 
-    def __init__(self, request: FlaskRequest):
+    def __init__(self, request):
         self._request = request
 
     def _get_key(self, key, nonce=None):
