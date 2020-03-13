@@ -5,10 +5,10 @@ class FlaskRequest(Request):
     _request = None
     _cookies = []
 
-    def __init__(self, _request, _cookies, _session):
-        self.set_request(_request)
-        self.session = _session
-        self._cookies = _cookies
+    def __init__(self, request_kwargs, cookies, session):
+        self.set_request(request_kwargs)
+        self.session = session
+        self._cookies = cookies
 
     def get_param(self, key):
         return self._request.get(key)
