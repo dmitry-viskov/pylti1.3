@@ -341,15 +341,20 @@ Usage with Flask
 Open Id Connect Login Request
 -----------------------------
 
+This is example draft of API endpoint. Wrap it in lib of your choice.
+
+Create ``FlaskRequest`` adapter. Then create instance of ``FlaskOIDCLogin``. It will return redirect to LTI platform after successful login. Handle exceptions.
+
 .. code-block:: python
 
     from flask import request, session
-    from werkzeug.utils import redirect
     from pylti1p3.flask_adapter import (FlaskCookieService, FlaskOIDCLogin,
                                         FlaskRequest, FlaskSessionService)
 
-    # Wrap API endpoint with lib of your choice
     def login(request_params_dict):
+
+        tool_conf = ... # See Configuration chapter above
+
         request = FlaskRequest(
             request=request_params_dict,
             cookies=request.cookies,
@@ -368,6 +373,8 @@ Open Id Connect Login Request
 LTI Message Launches
 --------------------
 
+Create ``FlaskRequest`` adapter. Then create instance of ``FlaskMessageLaunch``. This one lets you access data from LTI launch message successful launch. Here's place for your user creation/update/login logic and redirect to tools content. Handle exceptions.
+
 .. code-block:: python
 
     from flask import request, session
@@ -375,8 +382,10 @@ LTI Message Launches
     from pylti1p3.flask_adapter import (FlaskCookieService, FlaskMessageLaunch,
                                         FlaskRequest, FlaskSessionService)
 
-    # Wrap API endpoint with lib of your choice
     def launch(request_params_dict):
+
+        tool_conf = ... # See Configuration chapter above
+
         request = FlaskRequest(
             request=request_params_dict,
             cookies=request.cookies,
