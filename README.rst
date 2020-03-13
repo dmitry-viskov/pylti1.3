@@ -341,9 +341,9 @@ Usage with Flask
 Open Id Connect Login Request
 -----------------------------
 
-This is example draft of API endpoint. Wrap it in lib of your choice.
+This is draft of API endpoint. Wrap it in library of your choice.
 
-Create ``FlaskRequest`` adapter. Then create instance of ``FlaskOIDCLogin``. It will return redirect to LTI platform after successful login. Handle exceptions.
+Create ``FlaskRequest`` adapter. Then create instance of ``FlaskOIDCLogin``. ``redirect`` method will return instance of ``werkzeug.wrappers.Response`` that points to LTI platform if login was successful. Handle exceptions.
 
 .. code-block:: python
 
@@ -373,7 +373,9 @@ Create ``FlaskRequest`` adapter. Then create instance of ``FlaskOIDCLogin``. It 
 LTI Message Launches
 --------------------
 
-Create ``FlaskRequest`` adapter. Then create instance of ``FlaskMessageLaunch``. This one lets you access data from LTI launch message successful launch. Here's place for your user creation/update/login logic and redirect to tools content. Handle exceptions.
+This is draft of API endpoint. Wrap it in library of your choice.
+
+Create ``FlaskRequest`` adapter. Then create instance of ``FlaskMessageLaunch``. It lets you access data from LTI launch message if launch was successful. Handle exceptions.
 
 .. code-block:: python
 
@@ -400,3 +402,6 @@ Create ``FlaskRequest`` adapter. Then create instance of ``FlaskMessageLaunch``.
         )
 
         email = message_launch.get_launch_data().get('email')
+
+        # Place your user creation/update/login logic
+        # and redirect to tools content here
