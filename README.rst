@@ -83,11 +83,8 @@ Now there is game example tool you can launch into on the port 9001:
     OIDC Login URL: http://127.0.0.1:9001/login/
     LTI Launch URL: http://127.0.0.1:9001/launch/
 
-Configuration & Usage
-=====================
-
-Accessing Registration Data
----------------------------
+Configuration
+=============
 
 To configure your own tool you may use built-in adapters:
 
@@ -106,6 +103,9 @@ To configure your own tool you may use built-in adapters:
     tool_conf.set_private_key(iss, private_key)
 
 or create your own implementation. The ``pylti1p3.tool_config.ToolConfAbstract`` interface must be fully implemented for this to work.
+
+Usage with Django
+=================
 
 Open Id Connect Login Request
 -----------------------------
@@ -334,3 +334,60 @@ If you want to send multiple types of grade back, that can be done by specifying
     ags.put_grade(gr, line_item);
 
 If a lineitem with the same ``tag`` exists, that lineitem will be used, otherwise a new lineitem will be created.
+
+Usage with Flask
+================
+
+Open Id Connect Login Request
+-----------------------------
+
+.. code-block:: python
+
+    from flask import request, session
+    from werkzeug.utils import redirect
+    from pylti1p3.flask_adapter import (FlaskCookieService, FlaskOIDCLogin,
+                                        FlaskRequest, FlaskSessionService)
+
+    # Wrap API endpoint with lib of your choice
+    def login(request_params_dict):
+        request = FlaskRequest(
+            request=request_params_dict,
+            cookies=request.cookies,
+            session=session
+        )
+
+        oidc_login = FlaskOIDCLogin(
+            request=request,
+            tool_config=tool_conf,
+            session_service=FlaskSessionService(request),
+            cookie_service=FlaskCookieService(request)
+        )
+
+        return oidc_login.redirect(request.get_param('target_link_uri'))
+
+LTI Message Launches
+--------------------
+
+.. code-block:: python
+
+    from flask import request, session
+    from werkzeug.utils import redirect
+    from pylti1p3.flask_adapter import (FlaskCookieService, FlaskMessageLaunch,
+                                        FlaskRequest, FlaskSessionService)
+
+    # Wrap API endpoint with lib of your choice
+    def launch(request_params_dict):
+        request = FlaskRequest(
+            request=request_params_dict,
+            cookies=request.cookies,
+            session=session
+        )
+
+        message_launch = FlaskMessageLaunch(
+            request=request,
+            tool_config=tool_conf,
+            session_service=FlaskSessionService(request),
+            cookie_service=FlaskCookieService(request)
+        )
+
+        email = message_launch.get_launch_data().get('email')
