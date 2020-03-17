@@ -17,20 +17,32 @@ from .response import FakeResponse
 from .tool_config import get_test_tool_conf, TOOL_CONFIG
 
 
-class TestLinkBase(unittest.TestCase):
+class TestFlaskLinkBase(unittest.TestCase):
     iss = 'replace-me'
 
-    def _make_oidc_login(self, uuid_val=None, tool_conf_cls=None):
+    def _make_oidc_login(self, secure, uuid_val=None, tool_conf_cls=None):
         tool_conf = get_test_tool_conf(tool_conf_cls)
         if not uuid_val:
             uuid_val = 'test-uuid-1234'
 
-        login_data = {}
+        login_data = {
+            'iss': 'https://canvas.instructure.com',
+            'login_hint': '86157096483e6b3a50bfedc6bac902c0b20a824f',
+            'target_link_uri': 'http://lti.django.test/launch/',
+            'lti_message_hint': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ2ZXJpZmllciI6Ijg0NjMxZjc1Z'
+                                'GYxNmNiZjNmYTM5YzEwMzk4YTg0M2U1NTAwZTc5MTU2OTBhN2RjYTJhNGMzMTJjYjR'
+                                'jOWU0YWY5NzE2MWVhYjg4ODhmOWJlNDc2MmViNzUzZDE5ZmI3YWU5N2I2MjAxZWZjM'
+                                'jRmODY4NWE3NjJmY2U0ZWU4MDk4IiwiY2FudmFzX2RvbWFpbiI6ImNhbnZhcy5kb2N'
+                                'rZXIiLCJjb250ZXh0X3R5cGUiOiJDb3Vyc2UiLCJjb250ZXh0X2lkIjoxMDAwMDAwM'
+                                'DAwMDAwMSwiZXhwIjoxNTY1NDQyMzcwfQ.B1Lddgthaa-YBT4-Lkm3OM_noETl3dIz'
+                                '5E14YWJ8m_Q'
+        }
 
         request = FlaskRequest(
             request_kwargs=login_data,
             cookies={},
-            session={}
+            session={},
+            is_secure=secure
         )
 
         with patch('flask.redirect') as mock_redirect:
@@ -41,7 +53,7 @@ class TestLinkBase(unittest.TestCase):
                                             cookie_service=FlaskCookieService(request),
                                             session_service=FlaskSessionService(request))
                 mock_redirect.side_effect = lambda x: FakeResponse(x)  # pylint: disable=unnecessary-lambda
-                launch_url = 'http://lti.test/launch/'
+                launch_url = 'http://lti.django.test/launch/'
                 response = oidc_login.redirect(launch_url)
 
                 # check cookie data
@@ -49,6 +61,11 @@ class TestLinkBase(unittest.TestCase):
                 set_cookie_header = response.headers['Set-Cookie']
                 expected_cookie = 'lti1p3-state-' + uuid_val + '=state-' + uuid_val
                 self.assertTrue(expected_cookie in set_cookie_header)
+
+                if secure:
+                    self.assertTrue('Secure' in set_cookie_header)
+                else:
+                    self.assertFalse('Secure' in set_cookie_header)
 
                 # check session data
                 self.assertEqual(len(request.session), 1)

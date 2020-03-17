@@ -28,6 +28,7 @@ class FlaskCookieService(CookieService):
                 self._cookie_data_to_set['key'],
                 self._cookie_data_to_set['value'],
                 max_age=self._cookie_data_to_set['exp'],
+                secure=self._request.is_secure(),
                 path='/',
                 httponly=True,
             )
