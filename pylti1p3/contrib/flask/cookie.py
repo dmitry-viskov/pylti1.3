@@ -31,4 +31,5 @@ class FlaskCookieService(CookieService):
                 secure=self._request.is_secure(),
                 path='/',
                 httponly=True,
+                samesite='None' if self._request.is_secure() else 'Lax'
             )
