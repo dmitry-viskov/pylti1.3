@@ -23,7 +23,7 @@ LTI 1.3 Advantage Tool implementation in Python
 
 
 This project is a Python implementation of the similar `PHP tool`_.
-Library contains adapters for usage from Django Web Framework and Flask Web Framework but there is no difficult to adapt it to from other frameworks: you should just re-implement ``OIDCLogin`` and ``MessageLaunch`` classes as it is already done in existing adapters.
+Library contains adapters for usage from Django Web Framework and Flask Web Framework but there is no difficulty to adapt it to other frameworks: you should just re-implement ``OIDCLogin`` and ``MessageLaunch`` classes as it is already done in existing adapters.
 
 .. _PHP tool: https://github.com/IMSGlobal/lti-1-3-php-library
 
@@ -404,4 +404,4 @@ Create ``FlaskRequest`` adapter. Then create instance of ``FlaskMessageLaunch``.
         email = message_launch.get_launch_data().get('email')
 
         # Place your user creation/update/login logic
-        # and redirect to tools content here
+        # and redirect to tool content here
