@@ -31,7 +31,6 @@ class DjangoSessionService(SessionService):
 
     def _set_value(self, key, value):
         self._request.session[key] = value
-        self._request.session.modified = True
 
     def _get_value(self, key):
         return self._request.session.get(key, None)

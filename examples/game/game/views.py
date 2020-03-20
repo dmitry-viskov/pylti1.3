@@ -74,8 +74,8 @@ def check_cookies_allowed(request):
 
 def login(request):
     cache = caches['default']
-    cookies_allowed = str(request.GET.get('cookies_allowed', 0))
-    if cookies_allowed == '1':
+    cookies_allowed = str(request.GET.get('cookies_allowed', ''))
+    if cookies_allowed:
         login_unique_id = str(request.GET.get('login_unique_id', ''))
         if not login_unique_id:
             raise Exception('Missing "login_unique_id" param')
@@ -87,7 +87,7 @@ def login(request):
         tool_conf = ToolConfJsonFile(get_lti_config_path())
         request_like_obj = DjangoFakeRequest(
             login_data['GET'], login_data['POST'],
-            login_data['COOKIES'], request.session, request.is_secure())
+            request.COOKIES, request.session, request.is_secure())
         oidc_login = DjangoOIDCLogin(request_like_obj, tool_conf)
         target_link_uri = get_launch_url(request_like_obj)
         return oidc_login.redirect(target_link_uri)
@@ -95,8 +95,7 @@ def login(request):
         login_unique_id = str(uuid.uuid4())
         cache.set(login_unique_id, {
             'GET': {k: v for k, v in request.GET.items()},
-            'POST': {k: v for k, v in request.POST.items()},
-            'COOKIES': {k: v for k, v in request.COOKIES.items()}
+            'POST': {k: v for k, v in request.POST.items()}
         }, 3600)
         return render(request, 'check_cookie.html', {
             'login_unique_id': login_unique_id,
@@ -105,10 +104,36 @@ def login(request):
         })
 
 
-@require_POST
 def launch(request):
+    cache = caches['default']
+    launch_unique_id = str(request.GET.get('launch_id', ''))
+
+    # reload page in case if cookie is unavailable (chrome samesite issue)
+    if not request.session.session_key and not launch_unique_id:
+        launch_unique_id = str(uuid.uuid4())
+        cache.set(launch_unique_id, {
+            'GET': {k: v for k, v in request.GET.items()},
+            'POST': {k: v for k, v in request.POST.items()}
+        }, 3600)
+        current_url = request.build_absolute_uri()
+        if '?' in current_url:
+            current_url += '&'
+        else:
+            current_url += '?'
+        current_url = current_url + 'launch_id=' + launch_unique_id
+        return HttpResponse('<script type="text/javascript">window.location="%s";</script>' % current_url)
+
+    request_like_obj = None
+    if request.method == "GET":
+        launch_data = cache.get(launch_unique_id)
+        if not launch_data:
+            raise Exception("Can't restore launch data from cache")
+        request_like_obj = DjangoFakeRequest(
+            launch_data['GET'], launch_data['POST'],
+            request.COOKIES, request.session, request.is_secure())
+
     tool_conf = ToolConfJsonFile(get_lti_config_path())
-    message_launch = ExtendedDjangoMessageLaunch(request, tool_conf)
+    message_launch = ExtendedDjangoMessageLaunch(request_like_obj if request_like_obj else request, tool_conf)
     message_launch_data = message_launch.get_launch_data()
     pprint.pprint(message_launch_data)
 
