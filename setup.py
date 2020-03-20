@@ -25,7 +25,8 @@ setup(
     install_requires=[
         'pyjwt>=1.5',
         'jwcrypto',
-        'requests'
+        'requests',
+        'packaging'
     ],
     license='MIT',
     url='https://github.com/dmitry-viskov/pylti1.3',

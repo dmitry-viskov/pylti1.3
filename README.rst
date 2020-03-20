@@ -356,7 +356,8 @@ Create ``FlaskRequest`` adapter. Then create instance of ``FlaskOIDCLogin``. ``r
         tool_conf = ... # See Configuration chapter above
 
         request = FlaskRequest(
-            request=request_params_dict,
+            request_data=request_params_dict,
+            request_is_secure=request.is_secure,
             cookies=request.cookies,
             session=session
         )
@@ -389,7 +390,8 @@ Create ``FlaskRequest`` adapter. Then create instance of ``FlaskMessageLaunch``.
         tool_conf = ... # See Configuration chapter above
 
         request = FlaskRequest(
-            request=request_params_dict,
+            request_data=request_params_dict,
+            request_is_secure=request.is_secure,
             cookies=request.cookies,
             session=session
         )

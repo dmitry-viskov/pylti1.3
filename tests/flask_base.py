@@ -39,10 +39,10 @@ class TestFlaskLinkBase(unittest.TestCase):
         }
 
         request = FlaskRequest(
-            request_kwargs=login_data,
+            request_data=login_data,
             cookies={},
             session={},
-            is_secure=secure
+            request_is_secure=secure
         )
 
         with patch('flask.redirect') as mock_redirect:

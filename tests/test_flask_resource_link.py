@@ -164,10 +164,10 @@ class TestFlaskResourceLink(TestFlaskLinkBase):
     def test_res_link_launch_success(self, name, tool_conf_cls):  # pylint: disable=unused-argument
         tool_conf, login_request, login_response = self._make_oidc_login(tool_conf_cls=tool_conf_cls, secure=False)
 
-        launch_request = FlaskRequest(request_kwargs=self.launch_data,
+        launch_request = FlaskRequest(request_data=self.launch_data,
                                       cookies=self.get_cookies_dict_from_response(login_response),
                                       session=login_request.session,
-                                      is_secure=False)
+                                      request_is_secure=False)
         message_launch_data = self._launch(launch_request, tool_conf)
         self.assertDictEqual(message_launch_data, self.expected_message_launch_data)
 
@@ -175,20 +175,20 @@ class TestFlaskResourceLink(TestFlaskLinkBase):
     def test_res_link_secure_launch_success(self, name, tool_conf_cls):  # pylint: disable=unused-argument
         tool_conf, login_request, login_response = self._make_oidc_login(tool_conf_cls=tool_conf_cls, secure=True)
 
-        launch_request = FlaskRequest(request_kwargs=self.launch_data,
+        launch_request = FlaskRequest(request_data=self.launch_data,
                                       cookies=self.get_cookies_dict_from_response(login_response),
                                       session=login_request.session,
-                                      is_secure=True)
+                                      request_is_secure=True)
         message_launch_data = self._launch(launch_request, tool_conf)
         self.assertDictEqual(message_launch_data, self.expected_message_launch_data)
 
     def test_res_link_launch_invalid_public_key(self):
         tool_conf, login_request, login_response = self._make_oidc_login(secure=False)
 
-        launch_request = FlaskRequest(request_kwargs=self.launch_data,
+        launch_request = FlaskRequest(request_data=self.launch_data,
                                       cookies=self.get_cookies_dict_from_response(login_response),
                                       session=login_request.session,
-                                      is_secure=False)
+                                      request_is_secure=False)
         with self.assertRaisesRegexp(LtiException, 'Invalid response'):  # pylint: disable=deprecated-method
             self._launch(launch_request, tool_conf, 'invalid_key_set')
 
@@ -198,17 +198,17 @@ class TestFlaskResourceLink(TestFlaskLinkBase):
         post_data = self.launch_data.copy()
         post_data.pop('state', None)
 
-        launch_request = FlaskRequest(request_kwargs=post_data,
+        launch_request = FlaskRequest(request_data=post_data,
                                       cookies=self.get_cookies_dict_from_response(login_response),
                                       session=login_request.session,
-                                      is_secure=False)
+                                      request_is_secure=False)
         with self.assertRaisesRegexp(LtiException, 'Missing state param'):  # pylint: disable=deprecated-method
             self._launch(launch_request, tool_conf)
 
-        launch_request = FlaskRequest(request_kwargs=self.launch_data,
+        launch_request = FlaskRequest(request_data=self.launch_data,
                                       session=login_request.session,
                                       cookies={},
-                                      is_secure=False)
+                                      request_is_secure=False)
         with self.assertRaisesRegexp(LtiException, 'State not found'):  # pylint: disable=deprecated-method
             self._launch(launch_request, tool_conf)
 
@@ -218,20 +218,20 @@ class TestFlaskResourceLink(TestFlaskLinkBase):
         post_data = self.launch_data.copy()
         post_data['id_token'] += '.absjdbasdj'
 
-        launch_request = FlaskRequest(request_kwargs=post_data,
+        launch_request = FlaskRequest(request_data=post_data,
                                       cookies=self.get_cookies_dict_from_response(login_response),
                                       session=login_request.session,
-                                      is_secure=False)
+                                      request_is_secure=False)
         with self.assertRaisesRegexp(LtiException, 'Invalid id_token'):  # pylint: disable=deprecated-method
             self._launch(launch_request, tool_conf)
 
         post_data = self.launch_data.copy()
         post_data['id_token'] = 'jbafjjsdbjasdabsjdbasdj1212121212.sdfhdhsf.sdfdsfdsf'
 
-        launch_request = FlaskRequest(request_kwargs=post_data,
+        launch_request = FlaskRequest(request_data=post_data,
                                       cookies=self.get_cookies_dict_from_response(login_response),
                                       session=login_request.session,
-                                      is_secure=False)
+                                      request_is_secure=False)
         with self.assertRaisesRegexp(LtiException, 'Invalid JWT format'):  # pylint: disable=deprecated-method
             self._launch(launch_request, tool_conf)
 
@@ -241,10 +241,10 @@ class TestFlaskResourceLink(TestFlaskLinkBase):
         post_data = self.launch_data.copy()
         post_data['id_token'] += 'jbafjjsdbjasdabsjdbasdj'
 
-        launch_request = FlaskRequest(request_kwargs=post_data,
+        launch_request = FlaskRequest(request_data=post_data,
                                       cookies=self.get_cookies_dict_from_response(login_response),
                                       session=login_request.session,
-                                      is_secure=False)
+                                      request_is_secure=False)
         with self.assertRaisesRegexp(LtiException, "Can't decode id_token"):  # pylint: disable=deprecated-method
             self._launch(launch_request, tool_conf)
 
@@ -273,18 +273,18 @@ class TestFlaskResourceLink(TestFlaskLinkBase):
         tool_conf, login_request, login_response = self._make_oidc_login(secure=False)
 
         post_data = self.launch_data.copy()
-        launch_request = FlaskRequest(request_kwargs=post_data,
+        launch_request = FlaskRequest(request_data=post_data,
                                       cookies=self.get_cookies_dict_from_response(login_response),
                                       session=login_request.session,
-                                      is_secure=False)
+                                      request_is_secure=False)
 
         with self.assertRaisesRegexp(LtiException, '"nonce" is empty'):  # pylint: disable=deprecated-method
             self._launch_with_invalid_jwt_body(self._get_data_without_nonce, launch_request, tool_conf)
 
-        launch_request = FlaskRequest(request_kwargs=post_data,
+        launch_request = FlaskRequest(request_data=post_data,
                                       cookies=self.get_cookies_dict_from_response(login_response),
                                       session={},
-                                      is_secure=False)
+                                      request_is_secure=False)
 
         with self.assertRaisesRegexp(LtiException, "Invalid Nonce"):  # pylint: disable=deprecated-method
             self._launch(launch_request, tool_conf)
@@ -293,10 +293,10 @@ class TestFlaskResourceLink(TestFlaskLinkBase):
         tool_conf, login_request, login_response = self._make_oidc_login(secure=False)
 
         post_data = self.launch_data.copy()
-        launch_request = FlaskRequest(request_kwargs=post_data,
+        launch_request = FlaskRequest(request_data=post_data,
                                       cookies=self.get_cookies_dict_from_response(login_response),
                                       session=login_request.session,
-                                      is_secure=False)
+                                      request_is_secure=False)
 
         # pylint: disable=deprecated-method
         with self.assertRaisesRegexp(LtiException, 'Client id not registered for this issuer'):
@@ -306,10 +306,10 @@ class TestFlaskResourceLink(TestFlaskLinkBase):
         tool_conf, login_request, login_response = self._make_oidc_login(secure=False)
 
         post_data = self.launch_data.copy()
-        launch_request = FlaskRequest(request_kwargs=post_data,
+        launch_request = FlaskRequest(request_data=post_data,
                                       cookies=self.get_cookies_dict_from_response(login_response),
                                       session=login_request.session,
-                                      is_secure=False)
+                                      request_is_secure=False)
 
         with self.assertRaisesRegexp(Exception, 'Unable to find deployment'):  # pylint: disable=deprecated-method
             self._launch_with_invalid_jwt_body(self._get_data_with_invalid_deployment, launch_request, tool_conf)
@@ -318,10 +318,10 @@ class TestFlaskResourceLink(TestFlaskLinkBase):
         tool_conf, login_request, login_response = self._make_oidc_login(secure=False)
 
         post_data = self.launch_data.copy()
-        launch_request = FlaskRequest(request_kwargs=post_data,
+        launch_request = FlaskRequest(request_data=post_data,
                                       cookies=self.get_cookies_dict_from_response(login_response),
                                       session=login_request.session,
-                                      is_secure=False)
+                                      request_is_secure=False)
 
         with self.assertRaisesRegexp(LtiException, 'Incorrect version'):  # pylint: disable=deprecated-method
             self._launch_with_invalid_jwt_body(self._get_data_with_invalid_message, launch_request, tool_conf)

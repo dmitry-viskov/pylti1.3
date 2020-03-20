@@ -1,3 +1,6 @@
+import werkzeug
+from packaging.version import parse
+
 from pylti1p3.cookie import CookieService
 
 
@@ -24,12 +27,17 @@ class FlaskCookieService(CookieService):
 
     def update_response(self, response):
         if self._cookie_data_to_set:
-            response.set_cookie(
-                self._cookie_data_to_set['key'],
-                self._cookie_data_to_set['value'],
+            cookie_kwargs = dict(
+                key=self._cookie_data_to_set['key'],
+                value=self._cookie_data_to_set['value'],
                 max_age=self._cookie_data_to_set['exp'],
                 secure=self._request.is_secure(),
                 path='/',
                 httponly=True,
                 samesite='None' if self._request.is_secure() else 'Lax'
             )
+
+            if parse(werkzeug.__version__) < parse('1.0.0'):
+                del cookie_kwargs['samesite']
+
+            response.set_cookie(**cookie_kwargs)
