@@ -1,5 +1,6 @@
 import json
 import os
+
 from .dict import ToolConfDict
 
 
@@ -7,6 +8,7 @@ class ToolConfJsonFile(ToolConfDict):
     _configs_dir = None
 
     def __init__(self, config_file):
+        # type: (str) -> None
         if not os.path.isfile(config_file):
             raise Exception("LTI tool config file not found: " + config_file)
         self._configs_dir = os.path.dirname(config_file)

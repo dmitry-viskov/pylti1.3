@@ -1,16 +1,34 @@
+import typing as t
+
 from .exception import LtiException
 from .lineitem import LineItem
 
+if t.TYPE_CHECKING:
+    from .service_connector import ServiceConnector, _ServiceConnectorResponse
+    from .grade import Grade
+    from mypy_extensions import TypedDict
+    from typing_extensions import Literal
+
+    _AssignmentsGradersData = TypedDict('_AssignmentsGradersData', {
+        'scope': t.List[Literal['https://purl.imsglobal.org/spec/lti-ags/scope/score',
+                                'https://purl.imsglobal.org/spec/lti-ags/scope/lineitem',
+                                'https://purl.imsglobal.org/spec/lti-ags/scope/lineitem.readonly']],
+        'lineitems': str,
+        'lineitem': str,
+    }, total=False)
+
 
 class AssignmentsGradesService(object):
-    _service_connector = None
-    _service_data = None
+    _service_connector = None  # type: ServiceConnector
+    _service_data = None  # type: _AssignmentsGradersData
 
     def __init__(self, service_connector, service_data):
+        # type: (ServiceConnector, _AssignmentsGradersData) -> None
         self._service_connector = service_connector
         self._service_data = service_data
 
     def put_grade(self, grade, line_item=None):
+        # type: (Grade, t.Optional[LineItem]) -> _ServiceConnectorResponse
         if "https://purl.imsglobal.org/spec/lti-ags/scope/score" not in self._service_data['scope']:
             raise LtiException('Missing required scope')
 
@@ -27,6 +45,7 @@ class AssignmentsGradesService(object):
                 line_item = self.find_or_create_lineitem(line_item)
             score_url = line_item.get_id()
 
+        assert score_url is not None
         score_url += '/scores'
         return self._service_connector.make_service_request(
             self._service_data['scope'],
@@ -37,6 +56,7 @@ class AssignmentsGradesService(object):
         )
 
     def get_lineitems(self):
+        # type: () -> list
         if "https://purl.imsglobal.org/spec/lti-ags/scope/lineitem" not in self._service_data['scope']:
             raise LtiException('Missing required scope')
 
@@ -45,9 +65,12 @@ class AssignmentsGradesService(object):
             self._service_data['lineitems'],
             accept='application/vnd.ims.lis.v2.lineitemcontainer+json'
         )
+        if not isinstance(line_items['body'], list):
+            raise LtiException('Unknown response type received for line items')
         return line_items['body']
 
     def find_lineitem_by_id(self, ln_id):
+        # type: (t.Optional[str]) -> t.Optional[LineItem]
         line_items = self.get_lineitems()
 
         for line_item in line_items:
@@ -57,6 +80,7 @@ class AssignmentsGradesService(object):
         return None
 
     def find_lineitem_by_tag(self, tag):
+        # type: (t.Optional[str]) -> t.Optional[LineItem]
         line_items = self.get_lineitems()
 
         for line_item in line_items:
@@ -66,10 +90,13 @@ class AssignmentsGradesService(object):
         return None
 
     def find_or_create_lineitem(self, new_line_item, find_by='tag'):
+        # type: (LineItem, Literal['tag', 'id']) -> LineItem
         if find_by == 'tag':
-            line_item = self.find_lineitem_by_tag(new_line_item.get_tag())
+            tag = new_line_item.get_tag()
+            line_item = self.find_lineitem_by_tag(tag)
         elif find_by == 'id':
-            line_item = self.find_lineitem_by_id(new_line_item.get_id())
+            line_id = new_line_item.get_id()
+            line_item = self.find_lineitem_by_id(line_id)
         else:
             raise LtiException('Invalid "find_by" value: ' + str(find_by))
 
@@ -84,22 +111,31 @@ class AssignmentsGradesService(object):
             content_type='application/vnd.ims.lis.v2.lineitem+json',
             accept='application/vnd.ims.lis.v2.lineitem+json'
         )
+        if not isinstance(created_line_item['body'], dict):
+            raise LtiException('Unknown response type received for create line item')
         return LineItem(created_line_item['body'])
 
     def get_grades(self, line_item):
+        # type: (LineItem) -> list
         line_item_id = line_item.get_id()
         line_item_tag = line_item.get_tag()
 
-        find_by = None
+        find_by = None  # type: t.Optional[Literal['id', 'tag']]
         if line_item_id:
             find_by = 'id'
         elif line_item_tag:
             find_by = 'tag'
+        else:
+            raise LtiException('Received LineItem did not contain a tag or id')
 
         line_item = self.find_or_create_lineitem(line_item, find_by=find_by)
+        line_id = line_item.get_id()
+        assert line_id is not None
         scores = self._service_connector.make_service_request(
             self._service_data['scope'],
-            line_item.get_id() + '/results',
+            line_id + '/results',
             accept='application/vnd.ims.lis.v2.resultcontainer+json'
         )
+        if not isinstance(scores['body'], list):
+            raise LtiException('Unknown response type received for results')
         return scores['body']

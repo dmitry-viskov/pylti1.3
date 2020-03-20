@@ -2,7 +2,6 @@ language: python
 sudo: false
 cache: pip
 
-install: pip install tox
 matrix:
   include:
     - python: 2.7
@@ -20,7 +19,14 @@ matrix:
     - python: 3.8
       env:
         - TOX_ENV=py38
-script: tox -e $TOX_ENV
+
+install:
+  - pip install tox
+  - "if ! [[ $TRAVIS_PYTHON_VERSION = '2.7' ]]; then pip install mypy; fi"
+
+script:
+  - "if ! [[ $TRAVIS_PYTHON_VERSION = '2.7' ]]; then mypy pylti1p3/ && mypy --py2 pylti1p3/; fi"
+  - tox -e $TOX_ENV
 
 notifications:
   email:

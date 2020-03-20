@@ -74,6 +74,10 @@ disable=
 # python2-compatible
     useless-object-inheritance,
 
+# Conditional imports for type checking
+    unused-import,
+    import-error,
+
 [REPORTS]
 
 # Set the output format. Available formats are text, parseable, colorized, msvs

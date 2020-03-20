@@ -6,6 +6,7 @@ class DjangoRequest(Request):
     _post_only = False
 
     def __init__(self, request, post_only=False):
+        super(DjangoRequest, self).__init__()
         self.set_request(request)
         self._post_only = post_only
 
