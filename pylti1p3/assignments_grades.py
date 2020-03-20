@@ -97,8 +97,6 @@ class AssignmentsGradesService(object):
         elif find_by == 'id':
             line_id = new_line_item.get_id()
             line_item = self.find_lineitem_by_id(line_id)
-        else:
-            raise LtiException('Invalid "find_by" value: ' + str(find_by))
 
         if line_item:
             return line_item
