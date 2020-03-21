@@ -1,5 +1,4 @@
 import werkzeug
-from packaging.version import parse
 
 from pylti1p3.cookie import CookieService
 
@@ -37,7 +36,9 @@ class FlaskCookieService(CookieService):
                 samesite='None' if self._request.is_secure() else 'Lax'
             )
 
-            if parse(werkzeug.__version__) < parse('1.0.0'):
+            werkzeug_version = int(werkzeug.__version__.split('.')[0])
+
+            if werkzeug_version < 1:
                 del cookie_kwargs['samesite']
 
             response.set_cookie(**cookie_kwargs)
