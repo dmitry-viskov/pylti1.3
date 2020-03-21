@@ -17,7 +17,7 @@ setup(
     name='PyLTI1p3',
     version=__version__,
     description='LTI 1.3 Advantage Tool implementation in Python',
-    keywords="pylti,pylti1p3,lti,lti1.3,lti1p3,django",
+    keywords="pylti,pylti1p3,lti,lti1.3,lti1p3,django,flask",
     author='Dmitry Viskov',
     author_email='dmitry.viskov@webenterprise.ru',
     maintainer="Dmitry Viskov",
@@ -25,7 +25,8 @@ setup(
     install_requires=[
         'pyjwt>=1.5',
         'jwcrypto',
-        'requests'
+        'requests',
+        'packaging'
     ],
     license='MIT',
     url='https://github.com/dmitry-viskov/pylti1.3',

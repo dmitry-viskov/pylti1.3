@@ -23,7 +23,7 @@ LTI 1.3 Advantage Tool implementation in Python
 
 
 This project is a Python implementation of the similar `PHP tool`_.
-Library contains adapter for usage from Django Web Framework but there is no difficult to adapt it to from other frameworks: you should just re-implement ``OIDCLogin`` and ``MessageLaunch`` classes as it already done for Django.
+Library contains adapters for usage from Django Web Framework and Flask Web Framework but there is no difficulty to adapt it to other frameworks: you should just re-implement ``OIDCLogin`` and ``MessageLaunch`` classes as it is already done in existing adapters.
 
 .. _PHP tool: https://github.com/IMSGlobal/lti-1-3-php-library
 
@@ -83,11 +83,8 @@ Now there is game example tool you can launch into on the port 9001:
     OIDC Login URL: http://127.0.0.1:9001/login/
     LTI Launch URL: http://127.0.0.1:9001/launch/
 
-Configuration & Usage
-=====================
-
-Accessing Registration Data
----------------------------
+Configuration
+=============
 
 To configure your own tool you may use built-in adapters:
 
@@ -106,6 +103,9 @@ To configure your own tool you may use built-in adapters:
     tool_conf.set_private_key(iss, private_key)
 
 or create your own implementation. The ``pylti1p3.tool_config.ToolConfAbstract`` interface must be fully implemented for this to work.
+
+Usage with Django
+=================
 
 Open Id Connect Login Request
 -----------------------------
@@ -334,3 +334,76 @@ If you want to send multiple types of grade back, that can be done by specifying
     ags.put_grade(gr, line_item);
 
 If a lineitem with the same ``tag`` exists, that lineitem will be used, otherwise a new lineitem will be created.
+
+Usage with Flask
+================
+
+Open Id Connect Login Request
+-----------------------------
+
+This is draft of API endpoint. Wrap it in library of your choice.
+
+Create ``FlaskRequest`` adapter. Then create instance of ``FlaskOIDCLogin``. ``redirect`` method will return instance of ``werkzeug.wrappers.Response`` that points to LTI platform if login was successful. Handle exceptions.
+
+.. code-block:: python
+
+    from flask import request, session
+    from pylti1p3.flask_adapter import (FlaskCookieService, FlaskOIDCLogin,
+                                        FlaskRequest, FlaskSessionService)
+
+    def login(request_params_dict):
+
+        tool_conf = ... # See Configuration chapter above
+
+        request = FlaskRequest(
+            request_data=request_params_dict,
+            request_is_secure=request.is_secure,
+            cookies=request.cookies,
+            session=session
+        )
+
+        oidc_login = FlaskOIDCLogin(
+            request=request,
+            tool_config=tool_conf,
+            session_service=FlaskSessionService(request),
+            cookie_service=FlaskCookieService(request)
+        )
+
+        return oidc_login.redirect(request.get_param('target_link_uri'))
+
+LTI Message Launches
+--------------------
+
+This is draft of API endpoint. Wrap it in library of your choice.
+
+Create ``FlaskRequest`` adapter. Then create instance of ``FlaskMessageLaunch``. It lets you access data from LTI launch message if launch was successful. Handle exceptions.
+
+.. code-block:: python
+
+    from flask import request, session
+    from werkzeug.utils import redirect
+    from pylti1p3.flask_adapter import (FlaskCookieService, FlaskMessageLaunch,
+                                        FlaskRequest, FlaskSessionService)
+
+    def launch(request_params_dict):
+
+        tool_conf = ... # See Configuration chapter above
+
+        request = FlaskRequest(
+            request_data=request_params_dict,
+            request_is_secure=request.is_secure,
+            cookies=request.cookies,
+            session=session
+        )
+
+        message_launch = FlaskMessageLaunch(
+            request=request,
+            tool_config=tool_conf,
+            session_service=FlaskSessionService(request),
+            cookie_service=FlaskCookieService(request)
+        )
+
+        email = message_launch.get_launch_data().get('email')
+
+        # Place your user creation/update/login logic
+        # and redirect to tool content here
