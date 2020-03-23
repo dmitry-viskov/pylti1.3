@@ -33,12 +33,10 @@ class FlaskCookieService(CookieService):
                 secure=self._request.is_secure(),
                 path='/',
                 httponly=True,
-                samesite='None' if self._request.is_secure() else 'Lax'
             )
 
             werkzeug_version = int(werkzeug.__version__.split('.')[0])
-
-            if werkzeug_version < 1:
-                del cookie_kwargs['samesite']
+            if self._request.is_secure() and werkzeug_version >= 1:
+                cookie_kwargs['samesite'] = 'None'
 
             response.set_cookie(**cookie_kwargs)
