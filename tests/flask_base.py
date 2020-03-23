@@ -67,7 +67,7 @@ class TestFlaskLinkBase(unittest.TestCase):
                     self.assertTrue('SameSite=None' in set_cookie_header)
                 else:
                     self.assertFalse('Secure' in set_cookie_header)
-                    self.assertTrue('SameSite=Lax' in set_cookie_header)
+                    self.assertFalse('SameSite' in set_cookie_header)
 
                 # check session data
                 self.assertEqual(len(request.session), 1)
