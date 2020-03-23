@@ -1,7 +1,3 @@
-import json
-import unittest
-import requests_mock
-
 from pylti1p3.contrib.flask import FlaskRequest, FlaskCookieService, \
     FlaskSessionService
 
@@ -17,10 +13,24 @@ from .response import FakeResponse
 from .tool_config import get_test_tool_conf, TOOL_CONFIG
 
 
-class TestFlaskLinkBase(unittest.TestCase):
-    iss = 'replace-me'
+class FlaskMixin(object):
 
-    def _make_oidc_login(self, secure, uuid_val=None, tool_conf_cls=None):
+    def get_cookies_dict_from_response(self, response):
+        cookie_name, cookie_value = response.headers['Set-Cookie']\
+                                            .split(';')[0].split('=')
+        return {cookie_name: cookie_value}
+
+    def _get_flask_request(self, login_request, login_response, request_is_secure=False, post_data=None,
+                           empty_session=False, empty_cookies=False):
+        session = {} if empty_session else login_request.session
+        cookies = {} if empty_cookies else self.get_cookies_dict_from_response(login_response)
+        post_launch_data = post_data if post_data else self.post_launch_data
+        return FlaskRequest(request_data=post_launch_data,
+                            cookies=cookies,
+                            session=session,
+                            request_is_secure=request_is_secure)
+
+    def _make_flask_oidc_login(self, uuid_val=None, tool_conf_cls=None, secure=None):
         tool_conf = get_test_tool_conf(tool_conf_cls)
         if not uuid_val:
             uuid_val = 'test-uuid-1234'
@@ -91,27 +101,13 @@ class TestFlaskLinkBase(unittest.TestCase):
 
         return tool_conf, request, response
 
-    def _launch(self, request, tool_conf, key_set_url_response=None, force_validation=False):
+    def _get_flask_launch_obj(self, request, tool_conf):
         from pylti1p3.contrib.flask import FlaskMessageLaunch
         obj = FlaskMessageLaunch(request, tool_conf,
                                  cookie_service=FlaskCookieService(request),
                                  session_service=FlaskSessionService(request))
-        obj.set_jwt_verify_options({
-            'verify_aud': False,
-            'verify_exp': False
-        })
+        return obj
 
-        with patch('socket.gethostbyname', return_value="127.0.0.1"):
-            with requests_mock.Mocker() as m:
-                key_set_url_text = key_set_url_response if key_set_url_response else json.dumps(self.jwt_canvas_keys)
-                m.get(TOOL_CONFIG[self.iss]['key_set_url'], text=key_set_url_text)
-                if force_validation:
-                    return obj.validate()
-                else:
-                    return obj.get_launch_data()
-
-    def _launch_with_invalid_jwt_body(self, side_effect, request, tool_conf):
+    def _get_flask_launch_cls(self):
         from pylti1p3.contrib.flask import FlaskMessageLaunch
-        with patch.object(FlaskMessageLaunch, "_get_jwt_body", autospec=True) as get_jwt_body:
-            get_jwt_body.side_effect = side_effect
-            return self._launch(request, tool_conf, force_validation=True)
+        return FlaskMessageLaunch

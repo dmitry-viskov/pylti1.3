@@ -1,6 +1,5 @@
 from parameterized import parameterized
 from pylti1p3.exception import LtiException
-from .request import FakeRequest
 from .base import TestLinkBase
 from .tool_config import ToolConfDeprecated
 
@@ -154,74 +153,70 @@ class TestResourceLink(TestLinkBase):
         'sub': 'a445ca99-1a64-4697-9bfa-508a118245ea'
     }
 
-    @parameterized.expand([['base', None], ['tool_conf_deprecated', ToolConfDeprecated]])
-    def test_res_link_launch_success(self, name, tool_conf_cls):  # pylint: disable=unused-argument
-        tool_conf, login_request, login_response = self._make_oidc_login(tool_conf_cls=tool_conf_cls)
-
-        launch_request = FakeRequest(post=self.post_launch_data,
-                                     cookies=login_response.get_cookies_dict(),
-                                     session=login_request.session)
-        message_launch_data = self._launch(launch_request, tool_conf)
+    @parameterized.expand([['django_base_non_secure', 'django', False, None],
+                           ['flask_base_non_secure', 'flask', False, None],
+                           ['flask_base_secure', 'flask', True, None],
+                           ['django_tool_conf_deprecated_non_secure', 'django', False, ToolConfDeprecated],
+                           ['flask_tool_conf_deprecated_non_secure', 'flask', False, ToolConfDeprecated],
+                           ['flask_tool_conf_deprecated_secure', 'flask', True, ToolConfDeprecated]])
+    def test_res_link_launch_success(self, name, adapter, secure, tool_conf_cls):  # pylint: disable=unused-argument
+        tool_conf, login_request, login_response = self._make_oidc_login(adapter=adapter, tool_conf_cls=tool_conf_cls,
+                                                                         secure=secure)
+        launch_request = self._get_request(login_request, login_response, request_is_secure=secure, adapter=adapter)
+        message_launch_data = self._launch(launch_request, tool_conf, adapter=adapter)
         self.assertDictEqual(message_launch_data, self.expected_message_launch_data)
 
-    def test_res_link_launch_invalid_public_key(self):
-        tool_conf, login_request, login_response = self._make_oidc_login()
+    @parameterized.expand([['django'], ['flask']])
+    def test_res_link_launch_invalid_public_key(self, adapter):
+        tool_conf, login_request, login_response = self._make_oidc_login(adapter=adapter)
 
-        launch_request = FakeRequest(post=self.post_launch_data,
-                                     cookies=login_response.get_cookies_dict(),
-                                     session=login_request.session)
+        launch_request = self._get_request(login_request, login_response, adapter=adapter)
         with self.assertRaisesRegexp(LtiException, 'Invalid response'):  # pylint: disable=deprecated-method
-            self._launch(launch_request, tool_conf, 'invalid_key_set')
+            self._launch(launch_request, tool_conf, 'invalid_key_set', adapter=adapter)
 
-    def test_res_link_launch_invalid_state(self):
-        tool_conf, login_request, login_response = self._make_oidc_login()
+    @parameterized.expand([['django'], ['flask']])
+    def test_res_link_launch_invalid_state(self, adapter):
+        tool_conf, login_request, login_response = self._make_oidc_login(adapter=adapter)
 
         post_data = self.post_launch_data.copy()
         post_data.pop('state', None)
 
-        launch_request = FakeRequest(post=post_data,
-                                     cookies=login_response.get_cookies_dict(),
-                                     session=login_request.session)
+        launch_request = self._get_request(login_request, login_response, post_data=post_data, adapter=adapter)
         with self.assertRaisesRegexp(LtiException, 'Missing state param'):  # pylint: disable=deprecated-method
-            self._launch(launch_request, tool_conf)
+            self._launch(launch_request, tool_conf, adapter=adapter)
 
-        launch_request = FakeRequest(post=self.post_launch_data,
-                                     session=login_request.session)
+        launch_request = self._get_request(login_request, login_response, empty_cookies=True, adapter=adapter)
         with self.assertRaisesRegexp(LtiException, 'State not found'):  # pylint: disable=deprecated-method
-            self._launch(launch_request, tool_conf)
+            self._launch(launch_request, tool_conf, adapter=adapter)
 
-    def test_res_link_launch_invalid_jwt_format(self):
-        tool_conf, login_request, login_response = self._make_oidc_login()
+    @parameterized.expand([['django'], ['flask']])
+    def test_res_link_launch_invalid_jwt_format(self, adapter):
+        tool_conf, login_request, login_response = self._make_oidc_login(adapter=adapter)
 
         post_data = self.post_launch_data.copy()
         post_data['id_token'] += '.absjdbasdj'
 
-        launch_request = FakeRequest(post=post_data,
-                                     cookies=login_response.get_cookies_dict(),
-                                     session=login_request.session)
+        launch_request = self._get_request(login_request, login_response, post_data=post_data, adapter=adapter)
         with self.assertRaisesRegexp(LtiException, 'Invalid id_token'):  # pylint: disable=deprecated-method
-            self._launch(launch_request, tool_conf)
+            self._launch(launch_request, tool_conf, adapter=adapter)
 
         post_data = self.post_launch_data.copy()
         post_data['id_token'] = 'jbafjjsdbjasdabsjdbasdj1212121212.sdfhdhsf.sdfdsfdsf'
 
-        launch_request = FakeRequest(post=post_data,
-                                     cookies=login_response.get_cookies_dict(),
-                                     session=login_request.session)
+        launch_request = self._get_request(login_request, login_response, post_data=post_data, adapter=adapter)
         with self.assertRaisesRegexp(LtiException, 'Invalid JWT format'):  # pylint: disable=deprecated-method
-            self._launch(launch_request, tool_conf)
+            self._launch(launch_request, tool_conf, adapter=adapter)
 
-    def test_res_link_launch_invalid_jwt_signature(self):
-        tool_conf, login_request, login_response = self._make_oidc_login()
+    @parameterized.expand([['django'], ['flask']])
+    def test_res_link_launch_invalid_jwt_signature(self, adapter):
+        tool_conf, login_request, login_response = self._make_oidc_login(adapter=adapter)
 
         post_data = self.post_launch_data.copy()
         post_data['id_token'] += 'jbafjjsdbjasdabsjdbasdj'
 
-        launch_request = FakeRequest(post=post_data,
-                                     cookies=login_response.get_cookies_dict(),
-                                     session=login_request.session)
+        launch_request = self._get_request(login_request, login_response, post_data=post_data, adapter=adapter)
         with self.assertRaisesRegexp(LtiException, "Can't decode id_token"):  # pylint: disable=deprecated-method
-            self._launch(launch_request, tool_conf)
+            self._launch(launch_request, tool_conf, adapter=adapter)
 
     def _get_data_without_nonce(self, *args):  # pylint: disable=unused-argument
         message_launch_data = self.expected_message_launch_data.copy()
@@ -243,54 +238,53 @@ class TestResourceLink(TestLinkBase):
         message_launch_data['https://purl.imsglobal.org/spec/lti/claim/version'] = '1.2.0'
         return message_launch_data
 
-    def test_res_link_launch_invalid_nonce(self):
+    @parameterized.expand([['django'], ['flask']])
+    def test_res_link_launch_invalid_nonce(self, adapter):
 
-        tool_conf, login_request, login_response = self._make_oidc_login()
+        tool_conf, login_request, login_response = self._make_oidc_login(adapter=adapter)
 
         post_data = self.post_launch_data.copy()
-        launch_request = FakeRequest(post=post_data,
-                                     cookies=login_response.get_cookies_dict(),
-                                     session=login_request.session)
+        launch_request = self._get_request(login_request, login_response, post_data=post_data, adapter=adapter)
 
         with self.assertRaisesRegexp(LtiException, '"nonce" is empty'):  # pylint: disable=deprecated-method
-            self._launch_with_invalid_jwt_body(self._get_data_without_nonce, launch_request, tool_conf)
+            self._launch_with_invalid_jwt_body(self._get_data_without_nonce, launch_request, tool_conf, adapter=adapter)
 
-        launch_request = FakeRequest(post=post_data,
-                                     cookies=login_response.get_cookies_dict())
+        launch_request = self._get_request(login_request, login_response, post_data=post_data, empty_session=True,
+                                           adapter=adapter)
 
         with self.assertRaisesRegexp(LtiException, "Invalid Nonce"):  # pylint: disable=deprecated-method
-            self._launch(launch_request, tool_conf)
+            self._launch(launch_request, tool_conf, adapter=adapter)
 
-    def test_res_link_launch_invalid_registration(self):
-        tool_conf, login_request, login_response = self._make_oidc_login()
+    @parameterized.expand([['django'], ['flask']])
+    def test_res_link_launch_invalid_registration(self, adapter):
+        tool_conf, login_request, login_response = self._make_oidc_login(adapter=adapter)
 
         post_data = self.post_launch_data.copy()
-        launch_request = FakeRequest(post=post_data,
-                                     cookies=login_response.get_cookies_dict(),
-                                     session=login_request.session)
+        launch_request = self._get_request(login_request, login_response, post_data=post_data, adapter=adapter)
 
         # pylint: disable=deprecated-method
         with self.assertRaisesRegexp(LtiException, 'Client id not registered for this issuer'):
-            self._launch_with_invalid_jwt_body(self._get_data_with_invalid_aud, launch_request, tool_conf)
+            self._launch_with_invalid_jwt_body(self._get_data_with_invalid_aud, launch_request, tool_conf,
+                                               adapter=adapter)
 
-    def test_res_link_launch_invalid_deployment(self):
-        tool_conf, login_request, login_response = self._make_oidc_login()
+    @parameterized.expand([['django'], ['flask']])
+    def test_res_link_launch_invalid_deployment(self, adapter):
+        tool_conf, login_request, login_response = self._make_oidc_login(adapter=adapter)
 
         post_data = self.post_launch_data.copy()
-        launch_request = FakeRequest(post=post_data,
-                                     cookies=login_response.get_cookies_dict(),
-                                     session=login_request.session)
+        launch_request = self._get_request(login_request, login_response, post_data=post_data, adapter=adapter)
 
         with self.assertRaisesRegexp(Exception, 'Unable to find deployment'):  # pylint: disable=deprecated-method
-            self._launch_with_invalid_jwt_body(self._get_data_with_invalid_deployment, launch_request, tool_conf)
+            self._launch_with_invalid_jwt_body(self._get_data_with_invalid_deployment, launch_request, tool_conf,
+                                               adapter=adapter)
 
-    def test_res_link_launch_invalid_message(self):
-        tool_conf, login_request, login_response = self._make_oidc_login()
+    @parameterized.expand([['django'], ['flask']])
+    def test_res_link_launch_invalid_message(self, adapter):
+        tool_conf, login_request, login_response = self._make_oidc_login(adapter=adapter)
 
         post_data = self.post_launch_data.copy()
-        launch_request = FakeRequest(post=post_data,
-                                     cookies=login_response.get_cookies_dict(),
-                                     session=login_request.session)
+        launch_request = self._get_request(login_request, login_response, post_data=post_data, adapter=adapter)
 
         with self.assertRaisesRegexp(LtiException, 'Incorrect version'):  # pylint: disable=deprecated-method
-            self._launch_with_invalid_jwt_body(self._get_data_with_invalid_message, launch_request, tool_conf)
+            self._launch_with_invalid_jwt_body(self._get_data_with_invalid_message, launch_request, tool_conf,
+                                               adapter=adapter)
