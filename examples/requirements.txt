@@ -1,5 +1,0 @@
-django==3.0.4
-django-debug-toolbar==2.2
-jwcrypto==0.6.0
-pyjwt==1.7.1
-requests==2.22.0

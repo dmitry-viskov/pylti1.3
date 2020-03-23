@@ -27,61 +27,12 @@ Library contains adapters for usage from Django Web Framework and Flask Web Fram
 
 .. _PHP tool: https://github.com/IMSGlobal/lti-1-3-php-library
 
-Example
-=======
+Usage examples
+==============
 
-First of all choose and configure test LTI 1.3 Platform. It may be:
+Django: https://github.com/dmitry-viskov/pylti1.3-django-example
 
-* `IMS Global test site`_
-* `Canvas LMS`_ (Detailed `instruction`_ how to setup Canvas as LTI 1.3 Platform is `here`_)
-
-.. _IMS Global test site: https://lti-ri.imsglobal.org
-.. _Canvas LMS: https://github.com/instructure/canvas-lms
-.. _instruction: https://github.com/dmitry-viskov/pylti1.3/wiki/Configure-Canvas-as-LTI-1.3-Platform
-.. _here: https://github.com/dmitry-viskov/pylti1.3/wiki/Configure-Canvas-as-LTI-1.3-Platform
-
-The most simple way to check example is to use ``docker`` + ``docker-compose``.
-Change the necessary configs in the ``examples/configs/game.json`` (`here is instruction`_ how to generate your own public + private keys):
-
-.. _here is instruction: https://github.com/dmitry-viskov/pylti1.3/wiki/How-to-generate-JWT-RS256-key-and-JWKS
-
-.. code-block:: javascript
-
-    {
-        "<issuer>" : { // This will usually look something like 'http://example.com'
-            "client_id" : "<client_id>", // This is the id received in the 'aud' during a launch
-            "auth_login_url" : "<auth_login_url>", // The platform's OIDC login endpoint
-            "auth_token_url" : "<auth_token_url>", // The platform's service authorization endpoint
-            "key_set_url" : "<key_set_url>", // The platform's JWKS endpoint
-            "key_set": null, // in case if platform's JWKS endpoint somehow unavailable you may paste JWKS here
-            "private_key_file" : "<path_to_private_key>", // Relative path to the tool's private key
-            "deployment_ids" : ["<deployment_id>"] // The deployment_id passed by the platform during launch
-        }
-    }
-
-and execute:
-
-.. code-block:: shell
-
-    $ docker-compose up --build
-
-You may use virtualenv instead of docker:
-
-.. code-block:: shell
-
-    $ virtualenv venv
-    $ source venv/bin/activate
-    $ cd examples
-    $ pip install -r requirements.txt
-    $ cd game
-    $ python manage.py runserver 127.0.0.1:9001
-
-Now there is game example tool you can launch into on the port 9001:
-
-.. code-block:: shell
-
-    OIDC Login URL: http://127.0.0.1:9001/login/
-    LTI Launch URL: http://127.0.0.1:9001/launch/
+Flask: https://github.com/dmitry-viskov/pylti1.3-flask-example
 
 Configuration
 =============
