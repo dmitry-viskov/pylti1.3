@@ -23,7 +23,7 @@ LTI 1.3 Advantage Tool implementation in Python
 
 
 This project is a Python implementation of the similar `PHP tool`_.
-Library contains adapters for usage from Django Web Framework and Flask Web Framework but there is no difficulty to adapt it to other frameworks: you should just re-implement ``OIDCLogin`` and ``MessageLaunch`` classes as it is already done in existing adapters.
+Library contains adapters for usage from Django and Flask web frameworks but there is no difficulty to adapt it to other frameworks: you should just re-implement ``OIDCLogin`` and ``MessageLaunch`` classes as it is already done in existing adapters.
 
 .. _PHP tool: https://github.com/IMSGlobal/lti-1-3-php-library
 
@@ -299,18 +299,25 @@ Create ``FlaskRequest`` adapter. Then create instance of ``FlaskOIDCLogin``. ``r
 .. code-block:: python
 
     from flask import request, session
-    from pylti1p3.flask_adapter import (FlaskCookieService, FlaskOIDCLogin,
-                                        FlaskRequest, FlaskSessionService)
+    from pylti1p3.flask_adapter import (FlaskRequest, FlaskOIDCLogin)
 
     def login(request_params_dict):
 
         tool_conf = ... # See Configuration chapter above
 
+        # FlaskRequest by default use flask.request and flask.session
+        # so in this case you may define request object without any arguments:
+
+        request = FlaskRequest()
+
+        # in case of using different request object (for example webargs or something like this)
+        # you may pass your own values:
+
         request = FlaskRequest(
-            request_data=request_params_dict,
-            request_is_secure=request.is_secure,
             cookies=request.cookies,
-            session=session
+            session=session,
+            request_data=request_params_dict,
+            request_is_secure=request.is_secure
         )
 
         oidc_login = FlaskOIDCLogin(
@@ -333,25 +340,26 @@ Create ``FlaskRequest`` adapter. Then create instance of ``FlaskMessageLaunch``.
 
     from flask import request, session
     from werkzeug.utils import redirect
-    from pylti1p3.flask_adapter import (FlaskCookieService, FlaskMessageLaunch,
-                                        FlaskRequest, FlaskSessionService)
+    from pylti1p3.flask_adapter import (FlaskRequest, FlaskMessageLaunch)
 
     def launch(request_params_dict):
 
         tool_conf = ... # See Configuration chapter above
 
+        request = FlaskRequest()
+
+        # or
+
         request = FlaskRequest(
-            request_data=request_params_dict,
-            request_is_secure=request.is_secure,
-            cookies=request.cookies,
-            session=session
+            cookies=...,
+            session=...,
+            request_data=...,
+            request_is_secure=...
         )
 
         message_launch = FlaskMessageLaunch(
             request=request,
-            tool_config=tool_conf,
-            session_service=FlaskSessionService(request),
-            cookie_service=FlaskCookieService(request)
+            tool_config=tool_conf
         )
 
         email = message_launch.get_launch_data().get('email')
