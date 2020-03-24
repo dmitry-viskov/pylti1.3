@@ -6,35 +6,22 @@ try:
     from unittest.mock import patch
 except ImportError:
     from mock import patch
-from .django_mixin import DjangoMixin
-from .flask_mixin import FlaskMixin
 from .tool_config import TOOL_CONFIG
 
 
-class TestLinkBase(DjangoMixin, FlaskMixin, unittest.TestCase):
+class TestLinkBase(unittest.TestCase):
     iss = 'replace-me'
     get_login_data = {}
     post_login_data = {}
 
-    def _make_oidc_login(self, adapter=None, uuid_val=None, tool_conf_cls=None, secure=False):
-        if adapter == 'flask':
-            return self._make_flask_oidc_login(uuid_val, tool_conf_cls, secure)
-        else:
-            return self._make_django_oidc_login(uuid_val, tool_conf_cls)
+    def _get_launch_obj(self, request, tool_conf):
+        raise NotImplementedError
 
-    def _get_request(self, login_request, login_response, request_is_secure=False, empty_session=False,
-                     empty_cookies=False, post_data=None, adapter=None):
-        if adapter == 'flask':
-            return self._get_flask_request(login_request, login_response, request_is_secure, post_data,
-                                           empty_session, empty_cookies)
-        else:
-            return self._get_django_request(login_request, login_response, post_data, empty_session, empty_cookies)
+    def _get_launch_cls(self):
+        raise NotImplementedError
 
-    def _launch(self, request, tool_conf, key_set_url_response=None, force_validation=False, adapter=None):
-        if adapter == 'flask':
-            obj = self._get_flask_launch_obj(request, tool_conf)
-        else:
-            obj = self._get_django_launch_obj(request, tool_conf)
+    def _launch(self, request, tool_conf, key_set_url_response=None, force_validation=False):
+        obj = self._get_launch_obj(request, tool_conf)
         obj.set_jwt_verify_options({
             'verify_aud': False,
             'verify_exp': False
@@ -49,14 +36,11 @@ class TestLinkBase(DjangoMixin, FlaskMixin, unittest.TestCase):
                 else:
                     return obj.get_launch_data()
 
-    def _launch_with_invalid_jwt_body(self, side_effect, request, tool_conf, adapter=None):
-        if adapter == 'flask':
-            klass = self._get_flask_launch_cls()
-        else:
-            klass = self._get_django_launch_cls()
-        with patch.object(klass, "_get_jwt_body", autospec=True) as get_jwt_body:
+    def _launch_with_invalid_jwt_body(self, side_effect, request, tool_conf):
+        launch_cls = self._get_launch_cls()
+        with patch.object(launch_cls, "_get_jwt_body", autospec=True) as get_jwt_body:
             get_jwt_body.side_effect = side_effect
-            return self._launch(request, tool_conf, force_validation=True, adapter=adapter)
+            return self._launch(request, tool_conf, force_validation=True)
 
 
 class TestServicesBase(unittest.TestCase):

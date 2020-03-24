@@ -20,8 +20,8 @@ class FlaskMixin(object):
                                             .split(';')[0].split('=')
         return {cookie_name: cookie_value}
 
-    def _get_flask_request(self, login_request, login_response, request_is_secure=False, post_data=None,
-                           empty_session=False, empty_cookies=False):
+    def _get_request(self, login_request, login_response, request_is_secure=False, post_data=None,
+                     empty_session=False, empty_cookies=False):
         session = {} if empty_session else login_request.session
         cookies = {} if empty_cookies else self.get_cookies_dict_from_response(login_response)
         post_launch_data = post_data if post_data else self.post_launch_data
@@ -30,7 +30,7 @@ class FlaskMixin(object):
                             session=session,
                             request_is_secure=request_is_secure)
 
-    def _make_flask_oidc_login(self, uuid_val=None, tool_conf_cls=None, secure=None):
+    def _make_oidc_login(self, uuid_val=None, tool_conf_cls=None, secure=False):
         tool_conf = get_test_tool_conf(tool_conf_cls)
         if not uuid_val:
             uuid_val = 'test-uuid-1234'
@@ -101,13 +101,12 @@ class FlaskMixin(object):
 
         return tool_conf, request, response
 
-    def _get_flask_launch_obj(self, request, tool_conf):
+    def _get_launch_obj(self, request, tool_conf):
         from pylti1p3.contrib.flask import FlaskMessageLaunch
-        obj = FlaskMessageLaunch(request, tool_conf,
-                                 cookie_service=FlaskCookieService(request),
-                                 session_service=FlaskSessionService(request))
-        return obj
+        return FlaskMessageLaunch(request, tool_conf,
+                                  cookie_service=FlaskCookieService(request),
+                                  session_service=FlaskSessionService(request))
 
-    def _get_flask_launch_cls(self):
+    def _get_launch_cls(self):
         from pylti1p3.contrib.flask import FlaskMessageLaunch
         return FlaskMessageLaunch

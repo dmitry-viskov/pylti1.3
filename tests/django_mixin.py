@@ -13,16 +13,17 @@ from .tool_config import get_test_tool_conf, TOOL_CONFIG
 
 class DjangoMixin(object):
 
-    def _get_django_request(self, login_request, login_response, post_data=None,
-                            empty_session=False, empty_cookies=False):
+    def _get_request(self, login_request, login_response, request_is_secure=False, post_data=None,
+                     empty_session=False, empty_cookies=False):
         session = None if empty_session else login_request.session
         cookies = None if empty_cookies else login_response.get_cookies_dict()
         post_launch_data = post_data if post_data else self.post_launch_data
         return FakeRequest(post=post_launch_data,
                            cookies=cookies,
-                           session=session)
+                           session=session,
+                           secure=request_is_secure)
 
-    def _make_django_oidc_login(self, uuid_val=None, tool_conf_cls=None):
+    def _make_oidc_login(self, uuid_val=None, tool_conf_cls=None, secure=False):
         tool_conf = get_test_tool_conf(tool_conf_cls)
         request = None
         login_data = {}
@@ -30,10 +31,10 @@ class DjangoMixin(object):
             uuid_val = 'test-uuid-1234'
 
         if self.get_login_data:
-            request = FakeRequest(get=self.get_login_data)
+            request = FakeRequest(get=self.get_login_data, secure=secure)
             login_data = self.get_login_data.copy()
         elif self.post_login_data:
-            request = FakeRequest(post=self.post_login_data)
+            request = FakeRequest(post=self.post_login_data, secure=secure)
             login_data = self.post_login_data.copy()
 
         with patch('django.shortcuts.redirect') as mock_redirect:
@@ -69,14 +70,22 @@ class DjangoMixin(object):
                 self.assertTrue('scope=openid' in url_params)
                 self.assertTrue('response_mode=form_post' in url_params)
                 self.assertTrue(('redirect_uri=' + quote(launch_url, '')) in url_params)
+                self.assertTrue(len(response.cookies), 1)
+                cookie_key = list(response.cookies)[0]
+                cookie_dict = response.cookies[cookie_key]
+                if secure:
+                    self.assertTrue(cookie_dict['secure'])
+                    self.assertEqual(cookie_dict['samesite'], 'None')
+                else:
+                    self.assertFalse(cookie_dict['secure'])
+                    self.assertTrue('samesite' not in cookie_dict)
 
         return tool_conf, request, response
 
-    def _get_django_launch_obj(self, request, tool_conf):
+    def _get_launch_obj(self, request, tool_conf):
         from pylti1p3.contrib.django import DjangoMessageLaunch
-        obj = DjangoMessageLaunch(request, tool_conf)
-        return obj
+        return DjangoMessageLaunch(request, tool_conf)
 
-    def _get_django_launch_cls(self):
+    def _get_launch_cls(self):
         from pylti1p3.contrib.django import DjangoMessageLaunch
         return DjangoMessageLaunch
