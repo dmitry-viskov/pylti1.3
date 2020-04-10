@@ -1,3 +1,4 @@
+import warnings
 import werkzeug
 
 from pylti1p3.cookie import CookieService
@@ -18,25 +19,31 @@ class FlaskCookieService(CookieService):
         return self._request.get_cookie(self._get_key(name))
 
     def set_cookie(self, name, value, exp=3600):
-        self._cookie_data_to_set = {
-            'key': self._get_key(name),
+        self._cookie_data_to_set[self._get_key(name)] = {
             'value': value,
             'exp': exp
         }
 
     def update_response(self, response):
-        if self._cookie_data_to_set:
+        warning_raised = False
+        werkzeug_version = int(werkzeug.__version__.split('.')[0])
+
+        for key, cookie_data in self._cookie_data_to_set.items():
             cookie_kwargs = dict(
-                key=self._cookie_data_to_set['key'],
-                value=self._cookie_data_to_set['value'],
-                max_age=self._cookie_data_to_set['exp'],
+                key=key,
+                value=cookie_data['value'],
+                max_age=cookie_data['exp'],
                 secure=self._request.is_secure(),
                 path='/',
                 httponly=True,
             )
 
-            werkzeug_version = int(werkzeug.__version__.split('.')[0])
-            if self._request.is_secure() and werkzeug_version >= 1:
+            if werkzeug_version >= 1 and self._request.is_secure():
                 cookie_kwargs['samesite'] = 'None'
+            elif werkzeug_version < 1 and not warning_raised:
+                warnings.warn("The samesite argument is not allowed for werkzeug less than 1.0. "
+                              "So there is no guarantee that PyLTI1p3 cookies will be set inside the iframes. "
+                              "Please update werkzeug", Warning)
+                warning_raised = True
 
             response.set_cookie(**cookie_kwargs)

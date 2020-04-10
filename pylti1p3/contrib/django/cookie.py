@@ -27,18 +27,16 @@ class DjangoCookieService(CookieService):
         return self._request.get_cookie(self._get_key(name))
 
     def set_cookie(self, name, value, exp=3600):
-        self._cookie_data_to_set = {
-            'key': self._get_key(name),
+        self._cookie_data_to_set[self._get_key(name)] = {
             'value': value,
             'exp': exp,
         }
 
     def update_response(self, response):
-        if self._cookie_data_to_set:
-            key = self._cookie_data_to_set['key']
+        for key, cookie_data in self._cookie_data_to_set.items():
             kwargs = {
-                'value': self._cookie_data_to_set['value'],
-                'max_age': self._cookie_data_to_set['exp'],
+                'value': cookie_data['value'],
+                'max_age': cookie_data['exp'],
                 'secure': self._request.is_secure(),
                 'httponly': True,
                 'path': '/'

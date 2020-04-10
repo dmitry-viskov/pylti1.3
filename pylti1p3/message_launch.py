@@ -1,6 +1,8 @@
 import base64
+import hashlib
 import json
 import string  # pylint: disable=deprecated-module
+import sys
 import uuid
 from abc import ABCMeta, abstractmethod
 import jwt
@@ -24,13 +26,14 @@ class MessageLaunch(object):
     _cookie_service = None
     _jwt = None
     _jwt_verify_options = None
+    _id_token_hash = None
     _registration = None
     _launch_id = None
     _validated = False
     _auto_validation = True
     _restored = False
 
-    def __init__(self, request, tool_config, session_service, cookie_service):
+    def __init__(self, request, tool_config, session_service, cookie_service, launch_data_storage=None):
         self._request = request
         self._tool_config = tool_config
         self._session_service = session_service
@@ -38,9 +41,13 @@ class MessageLaunch(object):
         self._launch_id = "lti1p3-launch-" + str(uuid.uuid4())
         self._jwt = {}
         self._jwt_verify_options = {'verify_aud': False}
+        self._id_token_hash = None
         self._validated = False
         self._auto_validation = True
         self._restored = False
+
+        if launch_data_storage:
+            self.set_launch_data_storage(launch_data_storage)
 
     @abstractmethod
     def _get_request_param(self, key):
@@ -70,9 +77,13 @@ class MessageLaunch(object):
         return self._session_service
 
     @classmethod
-    def from_cache(cls, launch_id, request, tool_config, session_service=None, cookie_service=None):
-        obj = cls(request, tool_config, session_service=session_service, cookie_service=cookie_service)
+    def from_cache(cls, launch_id, request, tool_config, session_service=None, cookie_service=None,
+                   launch_data_storage=None):
+        obj = cls(request, tool_config, session_service=session_service, cookie_service=cookie_service,
+                  launch_data_storage=launch_data_storage)
         launch_data = obj.get_session_service().get_launch_data(launch_id)
+        if not launch_data:
+            raise LtiException("Launch data not found")
         return obj.set_launch_id(launch_id)\
             .set_auto_validation(enable=False)\
             .set_jwt({'body': launch_data})\
@@ -115,6 +126,13 @@ class MessageLaunch(object):
         if not id_token:
             raise LtiException("Missing id_token")
         return id_token
+
+    def _get_id_token_hash(self):
+        if not self._id_token_hash:
+            id_token = self._get_id_token()
+            id_token_param = id_token.encode('utf-8') if sys.version_info[0] > 2 else id_token
+            self._id_token_hash = hashlib.md5(id_token_param).hexdigest()
+        return self._id_token_hash
 
     def _get_deployment_id(self):
         deployment_id = self._get_jwt_body().get('https://purl.imsglobal.org/spec/lti/claim/deployment_id')
@@ -274,10 +292,13 @@ class MessageLaunch(object):
         state_from_request = self._get_request_param('state')
         if not state_from_request:
             raise LtiException("Missing state param")
-        state_from_cookie = self._cookie_service.get_cookie(state_from_request)
-        if state_from_request != state_from_cookie:
-            # Error if state doesn't match.
-            raise LtiException("State not found")
+
+        id_token_hash = self._get_id_token_hash()
+        if not self._session_service.check_state_is_valid(state_from_request, id_token_hash):
+            state_from_cookie = self._cookie_service.get_cookie(state_from_request)
+            if state_from_request != state_from_cookie:
+                # Error if state doesn't match.
+                raise LtiException("State not found")
 
         return self
 
@@ -377,8 +398,28 @@ class MessageLaunch(object):
 
         return self
 
+    def set_launch_data_storage(self, data_storage):
+        data_storage.set_request(self._request)
+        session_cookie_name = data_storage.get_session_cookie_name()
+        if session_cookie_name:
+            session_id = self._cookie_service.get_cookie(session_cookie_name)
+            if session_id:
+                data_storage.set_session_id(session_id)
+            else:
+                raise LtiException("Missing %s cookie" % session_cookie_name)
+        self._session_service.set_data_storage(data_storage)
+        return self
+
+    def set_launch_data_lifetime(self, time_sec):
+        self._session_service.set_launch_data_lifetime(time_sec)
+        return self
+
     def save_launch_data(self):
+        state_from_request = self._get_request_param('state')
+        id_token_hash = self._get_id_token_hash()
+
         self._session_service.save_launch_data(self._launch_id, self._jwt['body'])
+        self._session_service.set_state_valid(state_from_request, id_token_hash)
         return self
 
     def get_params_from_login(self):
