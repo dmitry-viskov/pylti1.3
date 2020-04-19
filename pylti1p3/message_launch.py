@@ -16,6 +16,7 @@ from .exception import LtiException
 from .message_validators import get_validators
 from .names_roles import NamesRolesProvisioningService
 from .service_connector import ServiceConnector
+from .tool_config.mode import ToolConfMode
 
 
 class MessageLaunch(object):
@@ -75,6 +76,11 @@ class MessageLaunch(object):
 
     def get_session_service(self):
         return self._session_service
+
+    def get_client_id(self):
+        jwt_body = self._get_jwt_body()
+        aud = jwt_body.get('aud')
+        return aud[0] if isinstance(aud, list) else aud
 
     @classmethod
     def from_cache(cls, launch_id, request, tool_config, session_service=None, cookie_service=None,
@@ -337,16 +343,21 @@ class MessageLaunch(object):
     def validate_registration(self):
         iss = self._get_iss()
         jwt_body = self._get_jwt_body()
+        client_id = self.get_client_id()
 
         # Find registration
-        self._registration = self._tool_config.find_registration(
-            iss, action=Action.MESSAGE_LAUNCH, request=self._request, jwt_body=jwt_body)
+        tool_conf_mode = self._tool_config.get_mode()
+        if tool_conf_mode == ToolConfMode.ONE_ISSUER_ONE_CLIENT_ID:
+            self._registration = self._tool_config.find_registration(
+                iss, action=Action.MESSAGE_LAUNCH, request=self._request, jwt_body=jwt_body)
+        else:
+            self._registration = self._tool_config.find_registration_by_params(
+                iss, client_id, action=Action.MESSAGE_LAUNCH, request=self._request, jwt_body=jwt_body)
+
         if not self._registration:
             raise LtiException('Registration not found.')
 
         # Check client id
-        aud = jwt_body.get('aud')
-        client_id = aud[0] if isinstance(aud, list) else aud
         if client_id != self._registration.get_client_id():
             raise LtiException("Client id not registered for this issuer")
 
@@ -367,10 +378,15 @@ class MessageLaunch(object):
 
     def validate_deployment(self):
         iss = self._get_iss()
+        client_id = self.get_client_id()
         deployment_id = self._get_deployment_id()
 
         # Find deployment.
-        deployment = self._tool_config.find_deployment(iss, deployment_id)
+        tool_conf_mode = self._tool_config.get_mode()
+        if tool_conf_mode == ToolConfMode.ONE_ISSUER_ONE_CLIENT_ID:
+            deployment = self._tool_config.find_deployment(iss, deployment_id)
+        else:
+            deployment = self._tool_config.find_deployment_by_params(iss, deployment_id, client_id)
         if not deployment:
             raise LtiException("Unable to find deployment")
 

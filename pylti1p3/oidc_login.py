@@ -8,6 +8,7 @@ except ImportError:
 from .actions import Action
 from .cookies_allowed_check import CookiesAllowedCheckPage
 from .exception import OIDCException
+from .tool_config.mode import ToolConfMode
 
 
 class OIDCLogin(object):
@@ -130,8 +131,15 @@ class OIDCLogin(object):
         if not login_hint:
             raise OIDCException('Could not find login hint')
 
+        client_id = self._get_request_param('client_id')
+
         # fetch registration details
-        registration = self._tool_config.find_registration(iss, action=Action.OIDC_LOGIN, request=self._request)
+        tool_conf_mode = self._tool_config.get_mode()
+        if tool_conf_mode == ToolConfMode.ONE_ISSUER_ONE_CLIENT_ID:
+            registration = self._tool_config.find_registration(iss, action=Action.OIDC_LOGIN, request=self._request)
+        else:
+            registration = self._tool_config.find_registration_by_params(iss, client_id, action=Action.OIDC_LOGIN,
+                                                                         request=self._request)
 
         # check we got something
         if not registration:
