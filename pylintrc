@@ -63,13 +63,11 @@ disable=
 
     duplicate-code,
     import-outside-toplevel,
+    no-else-return,
+    too-many-boolean-expressions,
 
 # We can decide if names are invalid on our own
     invalid-name,
-    cyclic-import,
-    no-else-return,
-    consider-using-dict-comprehension,
-    consider-using-set-comprehension,
 
 # python2-compatible
     useless-object-inheritance,

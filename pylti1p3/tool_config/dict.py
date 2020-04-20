@@ -71,7 +71,7 @@ class ToolConfDict(ToolConfAbstract):
                 raise Exception("Invalid tool conf format. Allowed types of elements: list or dict")
 
         item_types = list(set(item_types))
-        if len(item_types) == 0:
+        if not item_types:
             raise Exception("Invalid tool conf format. Config is empty")
         if len(item_types) > 1:
             raise Exception("Invalid tool conf format. All elements in config must have the same type")
