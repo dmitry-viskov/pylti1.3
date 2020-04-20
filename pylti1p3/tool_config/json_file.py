@@ -8,15 +8,15 @@ class ToolConfJsonFile(ToolConfDict):
 
     def __init__(self, config_file):
         """
-        config_file could contain JSON in two formats:
+        config_file contains JSON with issuers settings.
+        Each key is issuer and value is issuer's configuration.
+        Configuration could be set in two formats:
 
-        1. { "iss1": { ... "client_id: "client1" ... }, "iss2": { ... "client_id: "client2" ... } }
+        1. { ... "iss": { ... "client_id: "client" ... }, ... }
         In this case the library will work in the concept: one issuer ~ one client-id
 
-        2. { "iss1": [ { ... "client_id: "client1" ... }, { ... "client_id: "client2" ... } ], ... }
+        2. { ... "iss": [ { ... "client_id: "client1" ... }, { ... "client_id: "client2" ... } ], ... }
         In this case the library will work in concept: one issuer ~ many client-ids
-
-        The second type is preferred because it is more flexible.
 
         Example:
             {

@@ -1,5 +1,4 @@
 from .abstract import ToolConfAbstract
-from .mode import ToolConfMode
 from ..registration import Registration
 from ..deployment import Deployment
 
@@ -11,15 +10,14 @@ class ToolConfDict(ToolConfAbstract):
 
     def __init__(self, json_data):
         """
-        json_data could be set in two formats:
+        json_data is a dict where each key is issuer and value is issuer's configuration.
+        Configuration could be set in two formats:
 
-        1. { "iss1": { ... "client_id: "client1" ... }, "iss2": { ... "client_id: "client2" ... } }
+        1. { ... "iss": { ... "client_id: "client" ... }, ... }
         In this case the library will work in the concept: one issuer ~ one client-id
 
-        2. { "iss1": [ { ... "client_id: "client1" ... }, { ... "client_id: "client2" ... } ], ... }
+        2. { ... "iss": [ { ... "client_id: "client1" ... }, { ... "client_id: "client2" ... } ], ... }
         In this case the library will work in concept: one issuer ~ many client-ids
-
-        The second type is preferred because it is more flexible.
 
         Example:
             {
@@ -61,23 +59,18 @@ class ToolConfDict(ToolConfAbstract):
         if not isinstance(json_data, dict):
             raise Exception("Invalid tool conf format. Must be dict")
 
-        item_types = []
-        for v in json_data.values():
-            if isinstance(v, dict):
-                item_types.append('dict')
-            elif isinstance(v, list):
-                item_types.append('list')
+        for iss, iss_conf in json_data.items():
+            if isinstance(iss_conf, dict):
+                self.set_iss_has_one_client(iss)
+            elif isinstance(iss_conf, list):
+                self.set_iss_has_many_clients(iss)
+                default_elements = [v for v in iss_conf if v.get('default')]
+                if not default_elements:
+                    raise Exception("There is no default configuration for the %s issuer" % iss)
+                if len(default_elements) > 1:
+                    raise Exception("More than 1 default configuration for the %s issuer" % iss)
             else:
                 raise Exception("Invalid tool conf format. Allowed types of elements: list or dict")
-
-        item_types = list(set(item_types))
-        if not item_types:
-            raise Exception("Invalid tool conf format. Config is empty")
-        if len(item_types) > 1:
-            raise Exception("Invalid tool conf format. All elements in config must have the same type")
-
-        if item_types[0] == 'list':
-            self.set_mode(ToolConfMode.ONE_ISSUER_MANY_CLIENT_IDS)
         self._config = json_data
 
     def _get_registration(self, iss, iss_conf):
@@ -101,23 +94,25 @@ class ToolConfDict(ToolConfAbstract):
         return d.set_deployment_id(deployment_id)
 
     def find_registration_by_issuer(self, iss, *args, **kwargs):
-        iss_conf = self._get_iss_conf(iss)
+        iss_conf = self.get_iss_config(iss)
         return self._get_registration(iss, iss_conf)
 
     def find_registration_by_params(self, iss, client_id, *args, **kwargs):
-        iss_conf = self._get_iss_conf(iss, client_id)
+        iss_conf = self.get_iss_config(iss, client_id)
         return self._get_registration(iss, iss_conf)
 
     def find_deployment(self, iss, deployment_id):
-        iss_conf = self._get_iss_conf(iss)
+        iss_conf = self.get_iss_config(iss)
         return self._get_deployment(iss_conf, deployment_id)
 
     def find_deployment_by_params(self, iss, deployment_id, client_id, *args, **kwargs):
-        iss_conf = self._get_iss_conf(iss, client_id)
+        iss_conf = self.get_iss_config(iss, client_id)
         return self._get_deployment(iss_conf, deployment_id)
 
     def set_public_key(self, iss, key_content, client_id=None):
-        if client_id:
+        if self.check_iss_has_many_clients(iss):
+            if not client_id:
+                raise Exception("Can't set public key: missing client_id")
             if iss not in self._public_key:
                 self._public_key[iss] = {}
             self._public_key[iss][client_id] = key_content
@@ -125,14 +120,17 @@ class ToolConfDict(ToolConfAbstract):
             self._public_key[iss] = key_content
 
     def get_public_key(self, iss, client_id=None):
-        if iss in self._public_key:
-            if isinstance(self._public_key[iss], dict):
-                return self._public_key[iss].get(client_id)
-            return self._public_key[iss]
-        return None
+        if self.check_iss_has_many_clients(iss):
+            if not client_id:
+                raise Exception("Can't get public key: missing client_id")
+            return self._public_key.get(iss, {}).get(client_id)
+        else:
+            return self._public_key.get(iss)
 
     def set_private_key(self, iss, key_content, client_id=None):
-        if client_id:
+        if self.check_iss_has_many_clients(iss):
+            if not client_id:
+                raise Exception("Can't set private key: missing client_id")
             if iss not in self._private_key:
                 self._private_key[iss] = {}
             self._private_key[iss][client_id] = key_content
@@ -140,11 +138,14 @@ class ToolConfDict(ToolConfAbstract):
             self._private_key[iss] = key_content
 
     def get_private_key(self, iss, client_id=None):
-        if isinstance(self._private_key[iss], dict):
-            return self._private_key[iss].get(client_id)
-        return self._private_key[iss]
+        if self.check_iss_has_many_clients(iss):
+            if not client_id:
+                raise Exception("Can't get private key: missing client_id")
+            return self._private_key.get(iss, {}).get(client_id)
+        else:
+            return self._private_key.get(iss)
 
-    def _get_iss_conf(self, iss, client_id=None):
+    def get_iss_config(self, iss, client_id=None):
         if iss not in self._config:
             raise Exception('iss %s not found in settings' % iss)
 

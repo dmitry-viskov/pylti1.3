@@ -8,7 +8,6 @@ except ImportError:
 from .actions import Action
 from .cookies_allowed_check import CookiesAllowedCheckPage
 from .exception import OIDCException
-from .tool_config.mode import ToolConfMode
 
 
 class OIDCLogin(object):
@@ -134,8 +133,7 @@ class OIDCLogin(object):
         client_id = self._get_request_param('client_id')
 
         # fetch registration details
-        tool_conf_mode = self._tool_config.get_mode()
-        if tool_conf_mode == ToolConfMode.ONE_ISSUER_ONE_CLIENT_ID:
+        if self._tool_config.check_iss_has_one_client(iss):
             registration = self._tool_config.find_registration(iss, action=Action.OIDC_LOGIN, request=self._request)
         else:
             registration = self._tool_config.find_registration_by_params(iss, client_id, action=Action.OIDC_LOGIN,

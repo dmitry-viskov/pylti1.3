@@ -16,7 +16,6 @@ from .exception import LtiException
 from .message_validators import get_validators
 from .names_roles import NamesRolesProvisioningService
 from .service_connector import ServiceConnector
-from .tool_config.mode import ToolConfMode
 
 
 class MessageLaunch(object):
@@ -346,8 +345,7 @@ class MessageLaunch(object):
         client_id = self.get_client_id()
 
         # Find registration
-        tool_conf_mode = self._tool_config.get_mode()
-        if tool_conf_mode == ToolConfMode.ONE_ISSUER_ONE_CLIENT_ID:
+        if self._tool_config.check_iss_has_one_client(iss):
             self._registration = self._tool_config.find_registration(
                 iss, action=Action.MESSAGE_LAUNCH, request=self._request, jwt_body=jwt_body)
         else:
@@ -382,8 +380,7 @@ class MessageLaunch(object):
         deployment_id = self._get_deployment_id()
 
         # Find deployment.
-        tool_conf_mode = self._tool_config.get_mode()
-        if tool_conf_mode == ToolConfMode.ONE_ISSUER_ONE_CLIENT_ID:
+        if self._tool_config.check_iss_has_one_client(iss):
             deployment = self._tool_config.find_deployment(iss, deployment_id)
         else:
             deployment = self._tool_config.find_deployment_by_params(iss, deployment_id, client_id)
