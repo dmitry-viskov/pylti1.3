@@ -79,7 +79,7 @@ class ToolConfAbstract(object):
 
     def get_jwks(self, iss, client_id=None, **kwargs):
         if self.check_iss_has_one_client(iss):
-            reg = self.find_registration(iss, client_id=client_id)
+            reg = self.find_registration(iss)
         elif self.check_iss_has_many_clients(iss):
             reg = self.find_registration_by_params(iss, client_id, **kwargs)
         else:

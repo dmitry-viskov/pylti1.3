@@ -1,6 +1,7 @@
 from parameterized import parameterized
 from pylti1p3.exception import LtiException
 from .base import TestLinkBase
+from .cache import FakeCacheDataStorage
 from .django_mixin import DjangoMixin
 from .flask_mixin import FlaskMixin
 from .tool_config import ToolConfDeprecated
@@ -157,15 +158,30 @@ class ResourceLinkBase(TestLinkBase):
         'sub': 'a445ca99-1a64-4697-9bfa-508a118245ea'
     }
 
-    @parameterized.expand([['base_non_secure', False, None],
-                           ['base_secure', True, None],
-                           ['tool_conf_deprecated_non_secure', False, ToolConfDeprecated],
-                           ['tool_conf_deprecated_secure', True, ToolConfDeprecated]])
-    def test_res_link_launch_success(self, name, secure, tool_conf_cls):  # pylint: disable=unused-argument
-        tool_conf, login_request, login_response = self._make_oidc_login(tool_conf_cls=tool_conf_cls, secure=secure)
+    def _launch_success(self, tool_conf_cls=None, secure=False, tool_conf_extended=False, enable_check_cookies=False,
+                        use_cache=False):
+        cache = FakeCacheDataStorage() if use_cache else False
+        tool_conf, login_request, login_response = self._make_oidc_login(
+            tool_conf_cls=tool_conf_cls, secure=secure, tool_conf_extended=tool_conf_extended,
+            enable_check_cookies=enable_check_cookies, cache=cache)
         launch_request = self._get_request(login_request, login_response, request_is_secure=secure)
-        message_launch_data = self._launch(launch_request, tool_conf)
+        message_launch_data = self._launch(launch_request, tool_conf, cache=cache)
         self.assertDictEqual(message_launch_data, self.expected_message_launch_data)
+
+    @parameterized.expand([['base_non_secure', False, None, False],
+                           ['base_secure', True, None, False],
+                           ['tool_conf_deprecated_non_secure', False, ToolConfDeprecated, False],
+                           ['tool_conf_deprecated_secure', True, ToolConfDeprecated, False],
+                           ['tool_conf_one_iss_many_clients', False, None, True]])
+    def test_res_link_launch_success(self, name, secure, tool_conf_cls,  # pylint: disable=unused-argument
+                                     tool_conf_extended):
+        self._launch_success(tool_conf_cls, secure, tool_conf_extended)
+
+    def test_res_link_check_cookies_page(self):
+        self._launch_success(enable_check_cookies=True)
+
+    def test_res_link_check_launch_data_storage(self):
+        self._launch_success(use_cache=True)
 
     def test_res_link_launch_invalid_public_key(self):
         tool_conf, login_request, login_response = self._make_oidc_login()

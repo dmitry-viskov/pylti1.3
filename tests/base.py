@@ -14,14 +14,14 @@ class TestLinkBase(unittest.TestCase):
     get_login_data = {}
     post_login_data = {}
 
-    def _get_launch_obj(self, request, tool_conf):
+    def _get_launch_obj(self, request, tool_conf, cache):
         raise NotImplementedError
 
     def _get_launch_cls(self):
         raise NotImplementedError
 
-    def _launch(self, request, tool_conf, key_set_url_response=None, force_validation=False):
-        obj = self._get_launch_obj(request, tool_conf)
+    def _launch(self, request, tool_conf, key_set_url_response=None, force_validation=False, cache=False):
+        obj = self._get_launch_obj(request, tool_conf, cache=cache)
         obj.set_jwt_verify_options({
             'verify_aud': False,
             'verify_exp': False

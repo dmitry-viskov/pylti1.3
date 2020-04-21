@@ -30,8 +30,10 @@ class FlaskMixin(object):
                             session=session,
                             request_is_secure=request_is_secure)
 
-    def _make_oidc_login(self, uuid_val=None, tool_conf_cls=None, secure=False):
-        tool_conf = get_test_tool_conf(tool_conf_cls)
+    def _make_oidc_login(self, uuid_val=None, tool_conf_cls=None, secure=False, tool_conf_extended=False,
+                         enable_check_cookies=False, cache=False):
+        # pylint: disable=too-many-statements
+        tool_conf = get_test_tool_conf(tool_conf_cls, tool_conf_extended)
         if not uuid_val:
             uuid_val = 'test-uuid-1234'
 
@@ -59,53 +61,87 @@ class FlaskMixin(object):
             from pylti1p3.contrib.flask import FlaskOIDCLogin
             with patch.object(FlaskOIDCLogin, "_get_uuid", autospec=True) as get_uuid:
                 get_uuid.side_effect = lambda x: uuid_val  # pylint: disable=unnecessary-lambda
-                oidc_login = FlaskOIDCLogin(request, tool_conf,
-                                            cookie_service=FlaskCookieService(request),
-                                            session_service=FlaskSessionService(request))
-                mock_redirect.side_effect = lambda x: FakeResponse(x)  # pylint: disable=unnecessary-lambda
-                launch_url = 'http://lti.django.test/launch/'
-                response = oidc_login.redirect(launch_url)
+                with patch.object(FlaskOIDCLogin, 'get_response', autospec=True) as get_response:
+                    get_response.side_effect = lambda y, html: html
+                    oidc_login = FlaskOIDCLogin(request, tool_conf,
+                                                cookie_service=FlaskCookieService(request),
+                                                session_service=FlaskSessionService(request))
 
-                # check cookie data
-                self.assertTrue('Set-Cookie' in response.headers)
-                set_cookie_header = response.headers['Set-Cookie']
-                expected_cookie = 'lti1p3-state-' + uuid_val + '=state-' + uuid_val
-                self.assertTrue(expected_cookie in set_cookie_header)
+                    if cache:
+                        oidc_login.set_launch_data_storage(cache)
 
-                if secure:
-                    self.assertTrue('Secure' in set_cookie_header)
-                    self.assertTrue('SameSite=None' in set_cookie_header)
-                else:
-                    self.assertFalse('Secure' in set_cookie_header)
-                    self.assertFalse('SameSite' in set_cookie_header)
+                    mock_redirect.side_effect = lambda x: FakeResponse(x)  # pylint: disable=unnecessary-lambda
+                    launch_url = 'http://lti.django.test/launch/'
 
-                # check session data
-                self.assertEqual(len(request.session), 1)
-                self.assertEqual(request.session['lti1p3-nonce-' + uuid_val], True)
+                    if enable_check_cookies:
+                        response_html = oidc_login.enable_check_cookies().redirect(launch_url)
+                        self.assertTrue('<script type="text/javascript">' in response_html)
+                        self.assertTrue('<body>' in response_html)
+                        self.assertTrue('document.addEventListener("DOMContentLoaded", checkCookiesAllowed);'
+                                        in response_html)
 
-                # check redirect_url
-                redirect_url = response.location
-                self.assertTrue(redirect_url.startswith(TOOL_CONFIG[login_data['iss']]['auth_login_url']))
-                url_params = redirect_url.split('?')[1].split('&')
-                self.assertTrue(('nonce=' + uuid_val) in url_params)
-                self.assertTrue(('state=state-' + uuid_val) in url_params)
-                self.assertTrue(('state=state-' + uuid_val) in url_params)
-                self.assertTrue('prompt=none' in url_params)
-                self.assertTrue('response_type=id_token' in url_params)
-                self.assertTrue(('client_id=' + TOOL_CONFIG[login_data['iss']]['client_id']) in url_params)
-                self.assertTrue(('login_hint=' + login_data['login_hint']) in url_params)
-                self.assertTrue(('lti_message_hint=' + login_data['lti_message_hint']) in url_params)
-                self.assertTrue('scope=openid' in url_params)
-                self.assertTrue('response_mode=form_post' in url_params)
-                self.assertTrue(('redirect_uri=' + quote(launch_url, '')) in url_params)
+                        login_data['lti1p3_new_window'] = '1'
+                        request = FlaskRequest(
+                            request_data=login_data,
+                            cookies={},
+                            session={},
+                            request_is_secure=secure
+                        )
+
+                        oidc_login = FlaskOIDCLogin(request, tool_conf,
+                                                    cookie_service=FlaskCookieService(request),
+                                                    session_service=FlaskSessionService(request))
+                        oidc_login.enable_check_cookies()
+
+                    response = oidc_login.redirect(launch_url)
+
+                    # check cookie data
+                    self.assertTrue('Set-Cookie' in response.headers)
+                    set_cookie_header = response.headers['Set-Cookie']
+                    expected_cookie = 'lti1p3-state-' + uuid_val + '=state-' + uuid_val
+                    self.assertTrue(expected_cookie in set_cookie_header)
+
+                    if secure:
+                        self.assertTrue('Secure' in set_cookie_header)
+                        self.assertTrue('SameSite=None' in set_cookie_header)
+                    else:
+                        self.assertFalse('Secure' in set_cookie_header)
+                        self.assertFalse('SameSite' in set_cookie_header)
+
+                    # check session data
+                    if cache:
+                        # pylint: disable=protected-access
+                        self.assertEqual(len(oidc_login._session_service.data_storage._cache._data), 1)
+                    else:
+                        self.assertEqual(len(request.session), 1)
+                        self.assertEqual(request.session['lti1p3-nonce-' + uuid_val], True)
+
+                    # check redirect_url
+                    redirect_url = response.location
+                    self.assertTrue(redirect_url.startswith(TOOL_CONFIG[login_data['iss']]['auth_login_url']))
+                    url_params = redirect_url.split('?')[1].split('&')
+                    self.assertTrue(('nonce=' + uuid_val) in url_params)
+                    self.assertTrue(('state=state-' + uuid_val) in url_params)
+                    self.assertTrue(('state=state-' + uuid_val) in url_params)
+                    self.assertTrue('prompt=none' in url_params)
+                    self.assertTrue('response_type=id_token' in url_params)
+                    self.assertTrue(('client_id=' + TOOL_CONFIG[login_data['iss']]['client_id']) in url_params)
+                    self.assertTrue(('login_hint=' + login_data['login_hint']) in url_params)
+                    self.assertTrue(('lti_message_hint=' + login_data['lti_message_hint']) in url_params)
+                    self.assertTrue('scope=openid' in url_params)
+                    self.assertTrue('response_mode=form_post' in url_params)
+                    self.assertTrue(('redirect_uri=' + quote(launch_url, '')) in url_params)
 
         return tool_conf, request, response
 
-    def _get_launch_obj(self, request, tool_conf):
+    def _get_launch_obj(self, request, tool_conf, cache=False):
         from pylti1p3.contrib.flask import FlaskMessageLaunch
-        return FlaskMessageLaunch(request, tool_conf,
-                                  cookie_service=FlaskCookieService(request),
-                                  session_service=FlaskSessionService(request))
+        message_launch = FlaskMessageLaunch(request, tool_conf,
+                                            cookie_service=FlaskCookieService(request),
+                                            session_service=FlaskSessionService(request))
+        if cache:
+            message_launch.set_launch_data_storage(cache)
+        return message_launch
 
     def _get_launch_cls(self):
         from pylti1p3.contrib.flask import FlaskMessageLaunch

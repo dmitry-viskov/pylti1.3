@@ -7,7 +7,7 @@ except ImportError:
     import http.cookies as Cookie
 
 # Add support for the SameSite attribute (obsolete when PY37 is unsupported).
-# # pylint: disable=protected-access
+# pylint: disable=protected-access
 if 'samesite' not in Cookie.Morsel._reserved:
     Cookie.Morsel._reserved.setdefault('samesite', 'SameSite')
 

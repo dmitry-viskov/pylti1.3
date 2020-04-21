@@ -18,7 +18,7 @@ class OIDCLogin(object):
     _cookie_service = None
     _launch_data_storage = None
 
-    _browser_allows_cookies_check_enabled = False
+    _cookies_check = False
     _cookies_check_loading_text = 'Loading...'
     _cookies_unavailable_msg_main_text = 'Your browser prohibits to save cookies in the iframes.'
     _cookies_unavailable_msg_click_text = 'Click here to open content in the new tab.'
@@ -106,7 +106,7 @@ class OIDCLogin(object):
         :param js_redirect: Redirect through JS
         :return: Returns a redirect object containing the fully formed OIDC login URL.
         """
-        if self._browser_allows_cookies_check_enabled:
+        if self._cookies_check:
             if not self._is_new_window_request():
                 html = self.get_cookies_allowed_js_check()
                 return self.get_response(html)
@@ -154,7 +154,7 @@ class OIDCLogin(object):
 
     def enable_check_cookies(self, main_msg=None, click_msg=None, loading_msg=None, **kwargs):
         # pylint: disable=unused-argument
-        self._browser_allows_cookies_check_enabled = True
+        self._cookies_check = True
         if main_msg:
             self._cookies_unavailable_msg_main_text = main_msg
         if click_msg:
@@ -164,7 +164,7 @@ class OIDCLogin(object):
         return self
 
     def disable_check_cookies(self):
-        self._browser_allows_cookies_check_enabled = False
+        self._cookies_check = False
         return self
 
     def get_additional_login_params(self):

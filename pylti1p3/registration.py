@@ -88,8 +88,9 @@ class Registration(object):
 
     def get_jwks(self):
         keys = []
-        if self._tool_public_keys:
-            for key in self._tool_public_keys:
+        tool_public_keys = self.get_all_tool_public_keys()
+        if tool_public_keys:
+            for key in tool_public_keys:
                 jwk_obj = JWK.from_pem(key.encode('utf-8'))
                 public_jwk = json.loads(jwk_obj.export_public())
                 public_jwk['alg'] = 'RS256'
