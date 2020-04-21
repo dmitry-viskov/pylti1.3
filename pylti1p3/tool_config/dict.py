@@ -5,8 +5,8 @@ from ..deployment import Deployment
 
 class ToolConfDict(ToolConfAbstract):
     _config = None
-    _private_key = {}
-    _public_key = {}
+    _private_key = None
+    _public_key = None
 
     def __init__(self, json_data):
         """
@@ -62,24 +62,45 @@ class ToolConfDict(ToolConfAbstract):
         for iss, iss_conf in json_data.items():
             if isinstance(iss_conf, dict):
                 self.set_iss_has_one_client(iss)
+                self._validate_iss_config_item(iss, iss_conf)
             elif isinstance(iss_conf, list):
                 self.set_iss_has_many_clients(iss)
-                default_elements = [v for v in iss_conf if v.get('default')]
-                if not default_elements:
-                    raise Exception("There is no default configuration for the %s issuer" % iss)
+                default_elements = []
+                for v in iss_conf:
+                    self._validate_iss_config_item(iss, v)
+                    if v.get('default'):
+                        default_elements.append(v)
+                if not default_elements and len(iss_conf) > 1:
+                    raise Exception("There is no default configuration for the %s issuer. "
+                                    "Please add 'default: True' in some config in the configs list" % iss)
                 if len(default_elements) > 1:
                     raise Exception("More than 1 default configuration for the %s issuer" % iss)
             else:
                 raise Exception("Invalid tool conf format. Allowed types of elements: list or dict")
+
         self._config = json_data
+        self._private_key = {}
+        self._public_key = {}
+
+    def _validate_iss_config_item(self, iss, iss_config_item):
+        if not isinstance(iss_config_item, dict):
+            raise Exception("Invalid configuration %s for the %s issuer. Must be dict" % (iss, str(iss_config_item)))
+        required_keys = ['auth_login_url', 'auth_token_url', 'client_id', 'deployment_ids']
+        for key in required_keys:
+            if key not in iss_config_item:
+                raise Exception("Key '%s' is missing in the %s config for the %s issuer"
+                                % (key, str(iss_config_item), iss))
+        if not isinstance(iss_config_item['deployment_ids'], list):
+            raise Exception("Invalid deployment_ids value in the %s config for the %s issuer. Must be a list"
+                            % (str(iss_config_item), iss))
 
     def _get_registration(self, iss, iss_conf):
         reg = Registration()
         reg.set_auth_login_url(iss_conf['auth_login_url'])\
             .set_auth_token_url(iss_conf['auth_token_url'])\
             .set_client_id(iss_conf['client_id'])\
-            .set_key_set(iss_conf['key_set'])\
-            .set_key_set_url(iss_conf['key_set_url'])\
+            .set_key_set(iss_conf.get('key_set'))\
+            .set_key_set_url(iss_conf.get('key_set_url'))\
             .set_issuer(iss)\
             .set_tool_private_key(self.get_private_key(iss, iss_conf['client_id']))
         public_key = self.get_public_key(iss, iss_conf['client_id'])
