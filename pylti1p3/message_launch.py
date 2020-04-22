@@ -33,9 +33,8 @@ class MessageLaunch(object):
     _validated = False
     _auto_validation = True
     _restored = False
-    _public_key_cache = False
-    _public_key_cache_lifetime = None
     _public_key_cache_data_storage = None
+    _public_key_cache_lifetime = None
 
     def __init__(self, request, tool_config, session_service, cookie_service, launch_data_storage=None):
         self._request = request
@@ -49,9 +48,8 @@ class MessageLaunch(object):
         self._validated = False
         self._auto_validation = True
         self._restored = False
-        self._public_key_cache = False
-        self._public_key_cache_lifetime = None
         self._public_key_cache_data_storage = None
+        self._public_key_cache_lifetime = None
 
         if launch_data_storage:
             self.set_launch_data_storage(launch_data_storage)
@@ -255,17 +253,16 @@ class MessageLaunch(object):
             tmp = str(val).translate(string.maketrans('-_', '+/'))
             return base64.b64decode(tmp)
 
-    def enable_public_key_caching(self, data_storage, cache_lifetime=7200):
-        self._public_key_cache = True
-        self._public_key_cache_lifetime = cache_lifetime
+    def set_public_key_caching(self, data_storage, cache_lifetime=7200):
         self._public_key_cache_data_storage = data_storage
+        self._public_key_cache_lifetime = cache_lifetime
 
     def fetch_public_key(self, key_set_url):
         cache_key = key_set_url.encode('utf-8') if sys.version_info[0] > 2 else key_set_url
         cache_key = 'key-set-url-' + hashlib.md5(cache_key).hexdigest()
 
         with DisableSessionId(self._public_key_cache_data_storage):
-            if self._public_key_cache:
+            if self._public_key_cache_data_storage:
                 public_key = self._public_key_cache_data_storage.get_value(cache_key)
                 if public_key:
                     return public_key
@@ -276,9 +273,9 @@ class MessageLaunch(object):
                 raise LtiException("Error during fetch URL " + key_set_url + ": " + str(e))
             try:
                 public_key = resp.json()
-                if self._public_key_cache:
-                    self._public_key_cache_data_storage.set_value(cache_key, public_key,
-                                                                  self._public_key_cache_lifetime)
+                if self._public_key_cache_data_storage:
+                    self._public_key_cache_data_storage.set_value(
+                        cache_key, public_key, self._public_key_cache_lifetime)
                 return public_key
             except ValueError:
                 raise LtiException("Invalid response from " + key_set_url + ". Must be JSON: " + resp.text)
