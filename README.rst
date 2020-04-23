@@ -64,7 +64,7 @@ where platform doesn't change ``iss`` for each customer.
 
 Example of JSON config:
 
-.. code-block:: json
+.. code-block:: javascript
 
     {
         "iss1": [{
