@@ -28,8 +28,6 @@ class ToolConfDict(ToolConfAbstract):
                         "auth_token_url": "auth_token_url1",
                         "key_set_url": "key_set_url1",
                         "key_set": None,
-                        "private_key_file": "private.key",
-                        "public_key_file": "public.key",
                         "deployment_ids": ["deployment_id1", "deployment_id2"]
                     }, {
                         "default": False,
@@ -38,8 +36,6 @@ class ToolConfDict(ToolConfAbstract):
                         "auth_token_url": "auth_token_url2",
                         "key_set_url": "key_set_url2",
                         "key_set": None,
-                        "private_key_file": "private.key",
-                        "public_key_file": "public.key",
                         "deployment_ids": ["deployment_id3", "deployment_id4"]
                     }],
                 "iss2": [ .... ]
@@ -51,8 +47,6 @@ class ToolConfDict(ToolConfAbstract):
         auth_token_url - the platform's service authorization endpoint
         key_set_url - the platform's JWKS endpoint
         key_set - in case if platform's JWKS endpoint somehow unavailable you may paste JWKS here
-        private_key_file - relative path to the tool's private key
-        public_key_file - relative path to the tool's public key
         deployment_ids (list) - The deployment_id passed by the platform during launch
         """
         super(ToolConfDict, self).__init__()

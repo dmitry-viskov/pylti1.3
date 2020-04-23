@@ -46,14 +46,59 @@ To configure your own tool you may use built-in adapters:
 
     from pylti1p3.tool_config import ToolConfDict
     settings = {
-        "<issuer_1>": { },
-        "<issuer_2>": { }
+        "<issuer_1>": { },  # one issuer ~ one client-id
+        "<issuer_2>": [{ }, { }]  # one issuer ~ many client-ids
     }
     private_key = '...'
+    public_key = '...'
     tool_conf = ToolConfDict(settings)
-    tool_conf.set_private_key(iss, private_key)
+    tool_conf.set_private_key(iss, private_key, client_id=client_id)
+    tool_conf.set_public_key(iss, public_key, client_id=client_id)
 
 or create your own implementation. The ``pylti1p3.tool_config.ToolConfAbstract`` interface must be fully implemented for this to work.
+Concept of ``one issuer ~ many client-ids`` may be useful for example in case of integration with Canvas (https://canvas.instructure.com)
+where platform doesn't change ``iss`` for each customer.
+
+Example of JSON config:
+
+.. code-block:: json
+
+    {
+        "iss1": [{
+            "default": true,
+            "client_id": "client_id1",
+            "auth_login_url": "auth_login_url1",
+            "auth_token_url": "auth_token_url1",
+            "key_set_url": "key_set_url1",
+            "key_set": null,
+            "private_key_file": "private.key",
+            "public_key_file": "public.key",
+            "deployment_ids": ["deployment_id1", "deployment_id2"]
+        }, {
+            "default": false,
+            "client_id": "client_id2",
+            "auth_login_url": "auth_login_url2",
+            "auth_token_url": "auth_token_url2",
+            "key_set_url": "key_set_url2",
+            "key_set": null,
+            "private_key_file": "private.key",
+            "public_key_file": "public.key",
+            "deployment_ids": ["deployment_id3", "deployment_id4"]
+        }],
+        "iss2": [ ],
+        "iss3": { }
+    }
+
+
+| ``default (bool)`` - this iss config will be used in case if client-id was not passed
+| ``client_id`` - this is the id received in the 'aud' during a launch
+| ``auth_login_url`` - the platform's OIDC login endpoint
+| ``auth_token_url`` - the platform's service authorization endpoint
+| ``key_set_url`` - the platform's JWKS endpoint
+| ``key_set`` - in case if platform's JWKS endpoint somehow unavailable you may paste JWKS here
+| ``private_key_file`` - relative path to the tool's private key
+| ``public_key_file`` - relative path to the tool's public key
+| ``deployment_ids (list)`` - The deployment_id passed by the platform during launch
 
 Usage with Django
 =================
@@ -366,3 +411,114 @@ Create ``FlaskRequest`` adapter. Then create instance of ``FlaskMessageLaunch``.
 
         # Place your user creation/update/login logic
         # and redirect to tool content here
+
+Cookies issue in the iframes
+============================
+
+Some browsers may deny to save cookies in the iframes. For example Google `Chrome from ver.80 deny`_ to save all cookies in
+the iframes except cookies with flags ``Secure`` (i.e HTTPS usage) and ``SameSite=None``. `Safari deny`_ to save
+all third-party cookies by default. ``pylti1p3`` library contains workaround for such behaviour:
+
+.. _Chrome from ver.80 deny: https://blog.heroku.com/chrome-changes-samesite-cookie
+.. _Safari deny: https://webkit.org/blog/10218/full-third-party-cookie-blocking-and-more/
+
+.. code-block:: python
+
+    def login(request):
+        ...
+        return oidc_login\
+            .enable_check_cookies()\
+            .redirect(target_link_uri)
+
+The special JS code will try to write and then read test cookie with using ``enable_check_cookies``. User will see
+special page with asking to open current URL in the new window in case if cookies are unavailable. All texts are
+configurable with passing method arguments:
+
+.. code-block:: python
+
+    oidc_login.enable_check_cookies(main_msg, click_msg, loading_msg)
+
+Also you may have troubles with default framework sessions (because ``pylti1p3`` library can't control your framework
+settings connected with the session ID cookie). So without necessary settings user's session could be unavailable in
+case of iframe usage. To avoid this troubles it is recommended to change default session adapter to the new cache
+adapter (with memcache/redis backend) and as a consequence allow library to set it's own LTI1.3 session id cookie
+(that will be set with all necessary params).
+
+Django cache data storage
+-------------------------
+
+.. code-block:: python
+
+    from pylti1p3.contrib.django import DjangoCacheDataStorage
+
+    def login(request):
+        ...
+        launch_data_storage = DjangoCacheDataStorage(cache_name='default')
+        oidc_login = DjangoOIDCLogin(request, tool_conf, launch_data_storage=launch_data_storage)
+
+    def launch(request):
+        ...
+        launch_data_storage = DjangoCacheDataStorage(cache_name='default')
+        message_launch = DjangoMessageLaunch(request, tool_conf, launch_data_storage=launch_data_storage)
+
+    def restore_launch(request):
+        ...
+        launch_data_storage = get_launch_data_storage(cache_name='default')
+        message_launch = DjangoMessageLaunch.from_cache(launch_id, request, tool_conf,
+                                                        launch_data_storage=launch_data_storage)
+
+Flask cache data storage
+-------------------------
+
+.. code-block:: python
+
+    from flask_caching import Cache
+    from pylti1p3.contrib.flask import FlaskCacheDataStorage
+
+    cache = Cache(app)
+
+    def login():
+        ...
+        launch_data_storage = FlaskCacheDataStorage(cache)
+        oidc_login = DjangoOIDCLogin(request, tool_conf, launch_data_storage=launch_data_storage)
+
+    def launch():
+        ...
+        launch_data_storage = FlaskCacheDataStorage(cache)
+        message_launch = DjangoMessageLaunch(request, tool_conf, launch_data_storage=launch_data_storage)
+
+    def restore_launch():
+        ...
+        launch_data_storage = FlaskCacheDataStorage(cache)
+        message_launch = DjangoMessageLaunch.from_cache(launch_id, request, tool_conf,
+                                                        launch_data_storage=launch_data_storage)
+
+Cache for Public Key
+====================
+
+Library try to fetch platform's public key everytime on the message launch step. This public key may be stored in cache
+(memcache/redis) to speed-up launch process:
+
+.. code-block:: python
+
+    # for Django:
+    launch_data_storage = DjangoCacheDataStorage()
+    # for Flask:
+    launch_data_storage = FlaskCacheDataStorage(cache)
+
+    message_launch.set_public_key_caching(launch_data_storage, cache_lifetime=7200)
+
+
+API to get JWKS
+===============
+
+You may generate JWKS from Tool Config object:
+
+.. code-block:: python
+
+    # in case of one client per iss
+    jwks_dict = tool_conf.get_jwks(iss)
+
+    # in case of many clients per iss
+    jwks_dict = tool_conf.get_jwks(iss, client_id)
+
