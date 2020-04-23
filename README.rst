@@ -521,8 +521,11 @@ You may generate JWKS from Tool Config object:
 .. code-block:: python
 
     # in case of one client per iss
+    tool_conf.set_public_key(iss, public_key)
     jwks_dict = tool_conf.get_jwks(iss)
 
     # in case of many clients per iss
+    tool_conf.set_public_key(iss, public_key, client_id=client_id)
     jwks_dict = tool_conf.get_jwks(iss, client_id)
 
+Don't forget to set public key because without it JWKS can't be generated.
