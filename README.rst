@@ -52,6 +52,9 @@ To configure your own tool you may use built-in adapters:
     private_key = '...'
     public_key = '...'
     tool_conf = ToolConfDict(settings)
+
+    client_id = '...' # must be set in case of "one issuer ~ many client-ids" concept
+
     tool_conf.set_private_key(iss, private_key, client_id=client_id)
     tool_conf.set_public_key(iss, public_key, client_id=client_id)
 
@@ -210,8 +213,6 @@ It is likely that you will want to refer back to a launch later during subsequen
     launch_id = message_launch.get_launch_id()
 
 Once you have the launch id, you can link it to your session and pass it along as a query parameter.
-
-**Make sure you check the launch id against the user session to prevent someone from making actions on another person's launch.**
 
 Retrieving a launch using the launch id can be done using:
 
@@ -415,24 +416,26 @@ Create ``FlaskRequest`` adapter. Then create instance of ``FlaskMessageLaunch``.
 Cookies issue in the iframes
 ============================
 
-Some browsers may deny to save cookies in the iframes. For example Google `Chrome from ver.80 deny`_ to save all cookies in
-the iframes except cookies with flags ``Secure`` (i.e HTTPS usage) and ``SameSite=None``. `Safari deny`_ to save
+Some browsers may deny to save cookies in the iframes. For example `Google Chrome from ver.80 deny to save`_ all cookies in
+the iframes except cookies with flags ``Secure`` (i.e HTTPS usage) and ``SameSite=None``. `Safari deny to save`_
 all third-party cookies by default. ``pylti1p3`` library contains workaround for such behaviour:
 
-.. _Chrome from ver.80 deny: https://blog.heroku.com/chrome-changes-samesite-cookie
-.. _Safari deny: https://webkit.org/blog/10218/full-third-party-cookie-blocking-and-more/
+.. _Google Chrome from ver.80 deny to save: https://blog.heroku.com/chrome-changes-samesite-cookie
+.. _Safari deny to save: https://webkit.org/blog/10218/full-third-party-cookie-blocking-and-more/
 
 .. code-block:: python
 
-    def login(request):
+    def login():
         ...
         return oidc_login\
             .enable_check_cookies()\
             .redirect(target_link_uri)
 
-The special JS code will try to write and then read test cookie with using ``enable_check_cookies``. User will see
-special page with asking to open current URL in the new window in case if cookies are unavailable. All texts are
-configurable with passing method arguments:
+After this the special JS code will try to write and then read test cookie instead of redirect. User will see
+`special page`_ with asking to open current URL in the new window in case if cookies are unavailable. In case if
+cookies are allowed user will be transparently redirected to the next page. All texts are configurable with passing arguments:
+
+.. _special page: https://raw.githubusercontent.com/dmitry-viskov/pylti1.3/master/examples/cookies_check/001.png
 
 .. code-block:: python
 
@@ -442,7 +445,7 @@ Also you may have troubles with default framework sessions (because ``pylti1p3``
 settings connected with the session ID cookie). So without necessary settings user's session could be unavailable in
 case of iframe usage. To avoid this troubles it is recommended to change default session adapter to the new cache
 adapter (with memcache/redis backend) and as a consequence allow library to set it's own LTI1.3 session id cookie
-(that will be set with all necessary params).
+(that will be set with all necessary params like `Secure` and `SameSite=None`).
 
 Django cache data storage
 -------------------------
@@ -501,9 +504,10 @@ Library try to fetch platform's public key everytime on the message launch step.
 
 .. code-block:: python
 
-    # for Django:
+    # Django cache storage:
     launch_data_storage = DjangoCacheDataStorage()
-    # for Flask:
+
+    # Flask cache storage:
     launch_data_storage = FlaskCacheDataStorage(cache)
 
     message_launch.set_public_key_caching(launch_data_storage, cache_lifetime=7200)
