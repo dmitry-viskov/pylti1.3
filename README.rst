@@ -27,8 +27,8 @@ Library contains adapters for usage from Django and Flask web frameworks but the
 
 .. _PHP tool: https://github.com/IMSGlobal/lti-1-3-php-library
 
-Usage examples
-==============
+Examples of usage
+=================
 
 Django: https://github.com/dmitry-viskov/pylti1.3-django-example
 
@@ -435,7 +435,7 @@ After this the special JS code will try to write and then read test cookie inste
 `special page`_ with asking to open current URL in the new window in case if cookies are unavailable. In case if
 cookies are allowed user will be transparently redirected to the next page. All texts are configurable with passing arguments:
 
-.. _special page: https://raw.githubusercontent.com/dmitry-viskov/pylti1.3/master/examples/cookies_check/001.png
+.. _special page: https://raw.githubusercontent.com/dmitry-viskov/repos-assets/master/pylti1p3/examples/cookies-check/001.png
 
 .. code-block:: python
 
