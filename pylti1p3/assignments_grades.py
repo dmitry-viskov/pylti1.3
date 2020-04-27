@@ -27,7 +27,7 @@ class AssignmentsGradesService(object):
                 line_item = self.find_or_create_lineitem(line_item)
             score_url = line_item.get_id()
 
-        score_url += '/scores'
+        score_url = self._add_url_path_ending(score_url, 'scores')
         return self._service_connector.make_service_request(
             self._service_data['scope'],
             score_url,
@@ -97,9 +97,20 @@ class AssignmentsGradesService(object):
             find_by = 'tag'
 
         line_item = self.find_or_create_lineitem(line_item, find_by=find_by)
+        results_url = self._add_url_path_ending(line_item.get_id(), 'results')
         scores = self._service_connector.make_service_request(
             self._service_data['scope'],
-            line_item.get_id() + '/results',
+            results_url,
             accept='application/vnd.ims.lis.v2.resultcontainer+json'
         )
         return scores['body']
+
+    def _add_url_path_ending(self, url, url_path_ending):
+        if '?' in url:
+            url_parts = url.split('?')
+            new_url = url_parts[0]
+            new_url += '' if new_url.endswith('/') else '/'
+            return new_url + url_path_ending + '?' + url_parts[1]
+        else:
+            url += '' if url.endswith('/') else '/'
+            return url + url_path_ending
