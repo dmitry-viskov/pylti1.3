@@ -1,4 +1,6 @@
+import hashlib
 import json
+import sys
 from jwcrypto.jwk import JWK
 
 
@@ -9,12 +11,9 @@ class Registration(object):
     _key_set = None
     _auth_token_url = None
     _auth_login_url = None
-    _tool_private_keys = None
-    _tool_public_keys = None
-
-    def __init__(self):
-        self._tool_public_keys = []
-        self._tool_private_keys = []
+    _auth_audience = None
+    _tool_private_key = None
+    _tool_public_key = None
 
     def get_issuer(self):
         return self._issuer
@@ -58,42 +57,53 @@ class Registration(object):
         self._auth_login_url = auth_login_url
         return self
 
-    def get_tool_private_key(self, num=0):
-        if self._tool_private_keys:
-            return self._tool_private_keys[num] if num < len(self._tool_private_keys) else None
-        return None
+    def get_auth_audience(self):
+        return self._auth_audience
 
-    def get_all_tool_private_keys(self):
-        return self._tool_private_keys
+    def set_auth_audience(self, auth_audience):
+        self._auth_audience = auth_audience
+        return self
+
+    def get_tool_private_key(self):
+        return self._tool_private_key
 
     def set_tool_private_key(self, tool_private_key):
-        if not tool_private_key:
-            raise Exception("Tool Private Key is not set")
-        self._tool_private_keys.append(tool_private_key)
+        self._tool_private_key = tool_private_key
         return self
 
-    def get_tool_public_key(self, num=0):
-        if self._tool_public_keys:
-            return self._tool_public_keys[num] if num < len(self._tool_public_keys) else None
-        return None
-
-    def get_all_tool_public_keys(self):
-        return self._tool_public_keys
+    def get_tool_public_key(self):
+        return self._tool_public_key
 
     def set_tool_public_key(self, tool_public_key):
-        if not tool_public_key:
-            raise Exception("Tool Public Key is not set")
-        self._tool_public_keys.append(tool_public_key)
+        self._tool_public_key = tool_public_key
         return self
+
+    @classmethod
+    def get_jwk(cls, public_key):
+        jwk_obj = JWK.from_pem(public_key.encode('utf-8'))
+        public_jwk = json.loads(jwk_obj.export_public())
+        public_jwk['alg'] = 'RS256'
+        public_jwk['use'] = 'sig'
+        return public_jwk
 
     def get_jwks(self):
         keys = []
-        tool_public_keys = self.get_all_tool_public_keys()
-        if tool_public_keys:
-            for key in tool_public_keys:
-                jwk_obj = JWK.from_pem(key.encode('utf-8'))
-                public_jwk = json.loads(jwk_obj.export_public())
-                public_jwk['alg'] = 'RS256'
-                public_jwk['use'] = 'sig'
-                keys.append(public_jwk)
+        public_key = self.get_tool_public_key()
+        if public_key:
+            keys.append(Registration.get_jwk(public_key))
         return keys
+
+    def get_kid(self):
+        key = self.get_tool_public_key()
+        if key:
+            jwk = Registration.get_jwk(key)
+            kid = jwk.get('kid') if jwk else None
+            if kid:
+                return kid
+        return self._generate_kid()
+
+    def _generate_kid(self):
+        hash_str = self._issuer + self._client_id
+        hash_str = hash_str.strip()
+        hash_str = hash_str.encode('utf-8') if sys.version_info[0] > 2 else hash_str
+        return hashlib.sha256(hash_str).hexdigest()

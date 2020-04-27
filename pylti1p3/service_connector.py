@@ -29,21 +29,24 @@ class ServiceConnector(object):
             return self._access_tokens[scope_key]
 
         # Build up JWT to exchange for an auth token
-        iss = self._registration.get_issuer()
         client_id = self._registration.get_client_id()
         auth_url = self._registration.get_auth_token_url()
+        auth_audience = self._registration.get_auth_audience()
+        aud = auth_audience if auth_audience else auth_url
 
         jwt_claim = {
-            "iss": iss,
+            "iss": client_id,
             "sub": client_id,
-            "aud": auth_url,
+            "aud": aud,
             "iat": int(time.time()) - 5,
             "exp": int(time.time()) + 60,
             "jti": 'lti-service-token-' + str(uuid.uuid4())
         }
+        headers = {'kid': self._registration.get_kid()}
 
         # Sign the JWT with our private key (given by the platform on registration)
-        jwt_val = jwt.encode(jwt_claim, self._registration.get_tool_private_key(), algorithm='RS256')
+        jwt_val = jwt.encode(jwt_claim, self._registration.get_tool_private_key(), algorithm='RS256',
+                             headers=headers)
 
         auth_request = {
             'grant_type': 'client_credentials',

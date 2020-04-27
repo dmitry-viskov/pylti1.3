@@ -97,6 +97,9 @@ class ToolConfDict(ToolConfAbstract):
             .set_key_set_url(iss_conf.get('key_set_url'))\
             .set_issuer(iss)\
             .set_tool_private_key(self.get_private_key(iss, iss_conf['client_id']))
+        auth_audience = iss_conf.get('auth_audience')
+        if auth_audience:
+            reg.set_auth_audience(auth_audience)
         public_key = self.get_public_key(iss, iss_conf['client_id'])
         if public_key:
             reg.set_tool_public_key(public_key)
