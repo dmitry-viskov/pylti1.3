@@ -44,6 +44,9 @@ class OIDCLogin(object):
     def _get_uuid(self):
         return str(uuid.uuid4())
 
+    def _generate_nonce(self):
+        return uuid.uuid4().hex + uuid.uuid1().hex
+
     def _is_new_window_request(self):
         lti_new_window = self._get_request_param('lti1p3_new_window')
         return bool(lti_new_window)
@@ -66,7 +69,7 @@ class OIDCLogin(object):
         self._cookie_service.set_cookie(state, state, 5 * 60)  # 5 min
 
         # generate nonce
-        nonce = self._get_uuid()
+        nonce = self._generate_nonce()
         self._session_service.save_nonce(nonce)
         if self._state_params:
             self._session_service.save_state_params(state, self._state_params)
