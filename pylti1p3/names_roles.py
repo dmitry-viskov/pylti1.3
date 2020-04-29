@@ -25,7 +25,7 @@ class NamesRolesProvisioningService(object):
             next_page = False
             link_header = page.get('headers', {}).get('link', '')
             if link_header:
-                match = re.search(r'<(.*)>; ?rel="next"', link_header.lower().strip())
+                match = re.search(r'<([^>]*)>;\s*rel="next"', link_header.replace('\n', ' ').lower().strip())
                 if match:
                     next_page = match.group(1)
 
