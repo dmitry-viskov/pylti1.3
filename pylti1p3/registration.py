@@ -1,6 +1,4 @@
-import hashlib
 import json
-import sys
 from jwcrypto.jwk import JWK
 
 
@@ -97,13 +95,5 @@ class Registration(object):
         key = self.get_tool_public_key()
         if key:
             jwk = Registration.get_jwk(key)
-            kid = jwk.get('kid') if jwk else None
-            if kid:
-                return kid
-        return self._generate_kid()
-
-    def _generate_kid(self):
-        hash_str = self._issuer + self._client_id
-        hash_str = hash_str.strip()
-        hash_str = hash_str.encode('utf-8') if sys.version_info[0] > 2 else hash_str
-        return hashlib.sha256(hash_str).hexdigest()
+            return jwk.get('kid') if jwk else None
+        return None

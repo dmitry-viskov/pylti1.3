@@ -42,7 +42,10 @@ class ServiceConnector(object):
             "exp": int(time.time()) + 60,
             "jti": 'lti-service-token-' + str(uuid.uuid4())
         }
-        headers = {'kid': self._registration.get_kid()}
+        headers = None
+        kid = self._registration.get_kid()
+        if kid:
+            headers = {'kid': kid}
 
         # Sign the JWT with our private key (given by the platform on registration)
         jwt_val = jwt.encode(jwt_claim, self._registration.get_tool_private_key(), algorithm='RS256',
