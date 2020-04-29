@@ -48,6 +48,8 @@ class ToolConfJsonFile(ToolConfDict):
         client_id - this is the id received in the 'aud' during a launch
         auth_login_url - the platform's OIDC login endpoint
         auth_token_url - the platform's service authorization endpoint
+        auth_audience - the platform's OAuth2 Audience (aud). Is used to get platform's access token,
+                        Usually the same as "auth_token_url" but in the common case could be a different url
         key_set_url - the platform's JWKS endpoint
         key_set - in case if platform's JWKS endpoint somehow unavailable you may paste JWKS here
         private_key_file - relative path to the tool's private key

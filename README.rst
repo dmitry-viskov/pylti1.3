@@ -97,6 +97,7 @@ Example of JSON config:
 | ``client_id`` - this is the id received in the 'aud' during a launch
 | ``auth_login_url`` - the platform's OIDC login endpoint
 | ``auth_token_url`` - the platform's service authorization endpoint
+| ``auth_audience`` - the platform's OAuth2 Audience (aud). Is used to get platform's access token. Usually the same as "auth_token_url" and could be skipped but in the common case could be a different url
 | ``key_set_url`` - the platform's JWKS endpoint
 | ``key_set`` - in case if platform's JWKS endpoint somehow unavailable you may paste JWKS here
 | ``private_key_file`` - relative path to the tool's private key
@@ -522,10 +523,18 @@ You may generate JWKS from Tool Config object:
 
     # in case of one client per iss
     tool_conf.set_public_key(iss, public_key)
-    jwks_dict = tool_conf.get_jwks(iss)
+    jwks_dict = tool_conf.get_jwks(iss)  # {"keys": [{ ... }]}
 
     # in case of many clients per iss
     tool_conf.set_public_key(iss, public_key, client_id=client_id)
-    jwks_dict = tool_conf.get_jwks(iss, client_id)
+    jwks_dict = tool_conf.get_jwks(iss, client_id)  # {"keys": [{ ... }]}
 
 Don't forget to set public key because without it JWKS can't be generated.
+Also you may generate JWK for any public key using construction below:
+
+.. code-block:: python
+
+    from pylti1p3.registration import Registration
+
+    jwk_dict = Registration.get_jwk(public_key)
+    # {"e": ..., "kid": ..., "kty": ..., "n": ..., "alg": ..., "use": ...}
