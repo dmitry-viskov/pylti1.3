@@ -26,6 +26,7 @@ class ToolConfDict(ToolConfAbstract):
                         "client_id": "client_id1",
                         "auth_login_url": "auth_login_url1",
                         "auth_token_url": "auth_token_url1",
+                        "auth_audience": None,
                         "key_set_url": "key_set_url1",
                         "key_set": None,
                         "deployment_ids": ["deployment_id1", "deployment_id2"]
@@ -34,6 +35,7 @@ class ToolConfDict(ToolConfAbstract):
                         "client_id": "client_id2",
                         "auth_login_url": "auth_login_url2",
                         "auth_token_url": "auth_token_url2",
+                        "auth_audience": None,
                         "key_set_url": "key_set_url2",
                         "key_set": None,
                         "deployment_ids": ["deployment_id3", "deployment_id4"]
