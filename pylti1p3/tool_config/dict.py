@@ -43,7 +43,7 @@ class ToolConfDict(ToolConfAbstract):
                 "iss2": [ .... ]
             }
 
-        default (bool) - this iss config will be used in case if client-id is not passed
+        default (bool) - this iss config will be used in case if client-id was not passed on the login step
         client_id - this is the id received in the 'aud' during a launch
         auth_login_url - the platform's OIDC login endpoint
         auth_token_url - the platform's service authorization endpoint
@@ -63,16 +63,8 @@ class ToolConfDict(ToolConfAbstract):
                 self._validate_iss_config_item(iss, iss_conf)
             elif isinstance(iss_conf, list):
                 self.set_iss_has_many_clients(iss)
-                default_elements = []
                 for v in iss_conf:
                     self._validate_iss_config_item(iss, v)
-                    if v.get('default'):
-                        default_elements.append(v)
-                if not default_elements and len(iss_conf) > 1:
-                    raise Exception("There is no default configuration for the %s issuer. "
-                                    "Please add 'default: True' in some config in the configs list" % iss)
-                if len(default_elements) > 1:
-                    raise Exception("More than 1 default configuration for the %s issuer" % iss)
             else:
                 raise Exception("Invalid tool conf format. Allowed types of elements: list or dict")
 

@@ -95,7 +95,7 @@ Example of JSON config:
     }
 
 
-| ``default (bool)`` - this iss config will be used in case if client-id was not passed
+| ``default (bool)`` - this iss config will be used in case if client-id was not passed on the login step
 | ``client_id`` - this is the id received in the 'aud' during a launch
 | ``auth_login_url`` - the platform's OIDC login endpoint
 | ``auth_token_url`` - the platform's service authorization endpoint
