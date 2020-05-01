@@ -241,6 +241,9 @@ class MessageLaunch(object):
         """
         return self._launch_id
 
+    def get_tool_conf(self):
+        return self._tool_config
+
     def urlsafe_b64decode(self, val):
         remainder = len(val) % 4
         if remainder > 0:
@@ -460,3 +463,7 @@ class MessageLaunch(object):
     def get_params_from_login(self):
         state = self._get_request_param('state')
         return self._session_service.get_state_params(state)
+
+    def check_jwt_body_is_empty(self):
+        jwt_body = self._get_jwt_body()
+        return not jwt_body
