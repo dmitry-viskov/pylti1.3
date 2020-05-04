@@ -81,6 +81,12 @@ class MessageLaunch(object):
     def get_session_service(self):
         return self._session_service
 
+    def get_iss(self):
+        iss = self._get_jwt_body().get('iss')
+        if not iss:
+            raise LtiException('"iss" is empty')
+        return iss
+
     def get_client_id(self):
         jwt_body = self._get_jwt_body()
         aud = jwt_body.get('aud')
@@ -124,12 +130,6 @@ class MessageLaunch(object):
         if not self._validated and self._auto_validation:
             self.validate()
         return self._jwt.get('body', {})
-
-    def _get_iss(self):
-        iss = self._get_jwt_body().get('iss')
-        if not iss:
-            raise LtiException('"iss" is empty')
-        return iss
 
     def _get_id_token(self):
         id_token = self._get_request_param('id_token')
@@ -365,7 +365,7 @@ class MessageLaunch(object):
         return self
 
     def validate_registration(self):
-        iss = self._get_iss()
+        iss = self.get_iss()
         jwt_body = self._get_jwt_body()
         client_id = self.get_client_id()
 
@@ -400,7 +400,7 @@ class MessageLaunch(object):
         return self
 
     def validate_deployment(self):
-        iss = self._get_iss()
+        iss = self.get_iss()
         client_id = self.get_client_id()
         deployment_id = self._get_deployment_id()
 

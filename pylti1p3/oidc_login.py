@@ -17,6 +17,7 @@ class OIDCLogin(object):
     _session_service = None
     _cookie_service = None
     _launch_data_storage = None
+    _registration = None
 
     _cookies_check = False
     _cookies_check_loading_text = 'Loading...'
@@ -37,6 +38,16 @@ class OIDCLogin(object):
 
     def get_response(self, html):  # pylint: disable=unused-argument
         return ''
+
+    def get_iss(self):
+        if self._registration:
+            return self._registration.get_issuer()
+        return None
+
+    def get_client_id(self):
+        if self._registration:
+            return self._registration.get_client_id()
+        return None
 
     def _get_request_param(self, key):
         return self._request.get_param(key)
@@ -59,7 +70,7 @@ class OIDCLogin(object):
             self.set_launch_data_storage(self._launch_data_storage)
 
         # validate request
-        registration = self.validate_oidc_login()
+        self._registration = self.validate_oidc_login()
 
         # build OIDC Auth Response
 
@@ -80,7 +91,7 @@ class OIDCLogin(object):
             'response_type': 'id_token',  # OIDC response is always an id token
             'response_mode': 'form_post',  # OIDC response is always a form post
             'prompt': 'none',  # Don't prompt user on redirect
-            'client_id': registration.get_client_id(),  # Registered client id
+            'client_id': self._registration.get_client_id(),  # Registered client id
             'redirect_uri': launch_url,  # URL to return to after login
             'state': state,  # State to identify browser session
             'nonce': nonce,  # Prevent replay attacks
@@ -93,7 +104,7 @@ class OIDCLogin(object):
             # LTI message hint to identify LTI context within the platform
             auth_params['lti_message_hint'] = lti_message_hint
 
-        auth_login_return_url = registration.get_auth_login_url() + "?" + urlencode(auth_params)
+        auth_login_return_url = self._registration.get_auth_login_url() + "?" + urlencode(auth_params)
         return auth_login_return_url
 
     def _prepare_redirect(self, launch_url):
