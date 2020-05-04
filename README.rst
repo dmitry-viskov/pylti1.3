@@ -41,7 +41,7 @@ To configure your own tool you may use built-in adapters:
 
 .. code-block:: python
 
-    from pylti1p3.tool_config import
+    from pylti1p3.tool_config import ToolConfJsonFile
     tool_conf = ToolConfJsonFile('path/to/json')
 
     from pylti1p3.tool_config import ToolConfDict
@@ -59,8 +59,11 @@ To configure your own tool you may use built-in adapters:
     tool_conf.set_public_key(iss, public_key, client_id=client_id)
 
 or create your own implementation. The ``pylti1p3.tool_config.ToolConfAbstract`` interface must be fully implemented for this to work.
-Concept of ``one issuer ~ many client-ids`` may be useful for example in case of integration with Canvas (https://canvas.instructure.com)
-where platform doesn't change ``iss`` for each customer.
+Concept of ``one issuer ~ many client-ids`` is a preferable way to organize configs and may be useful in case of integration with Canvas (https://canvas.instructure.com)
+or other Cloud LMS-es where platform doesn't change ``iss`` for each customer.
+
+In case of Django Framework you may use ``DjangoDbToolConf`` (see `Configuration using Django Admin UI`_ section below)
+
 
 Example of JSON config:
 
@@ -108,6 +111,36 @@ Example of JSON config:
 
 Usage with Django
 =================
+
+.. _Configuration:
+
+Configuration using Django Admin UI
+-----------------------------------
+
+.. code-block:: python
+
+    # settings.py
+
+    INSTALLED_APPS = [
+        'django.contrib.admin',
+        ...
+        'pylti1p3.contrib.django.lti1p3_tool_config'
+    ]
+
+    # urls.py
+
+    urlpatterns = [
+    ...
+    path('admin/', admin.site.urls),
+    ....
+    ]
+
+    # views.py
+
+    from pylti1p3.contrib.django import DjangoDbToolConf
+
+    tool_conf = DjangoDbToolConf()
+
 
 Open Id Connect Login Request
 -----------------------------
@@ -523,12 +556,10 @@ You may generate JWKS from Tool Config object:
 
 .. code-block:: python
 
-    # in case of one client per iss
-    tool_conf.set_public_key(iss, public_key)
-    jwks_dict = tool_conf.get_jwks(iss)  # {"keys": [{ ... }]}
-
-    # in case of many clients per iss
     tool_conf.set_public_key(iss, public_key, client_id=client_id)
+    jwks_dict = tool_conf.get_jwks()  # {"keys": [{ ... }]}
+
+    # or you may specify iss and client_id:
     jwks_dict = tool_conf.get_jwks(iss, client_id)  # {"keys": [{ ... }]}
 
 Don't forget to set public key because without it JWKS can't be generated.
