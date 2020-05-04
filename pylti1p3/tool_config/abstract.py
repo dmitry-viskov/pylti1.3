@@ -95,13 +95,16 @@ class ToolConfAbstract(object):
         """
         raise NotImplementedError
 
-    def get_jwks(self, iss, client_id=None, **kwargs):
-        if self.check_iss_has_one_client(iss):
-            reg = self.find_registration(iss)
-        elif self.check_iss_has_many_clients(iss):
-            reg = self.find_registration_by_params(iss, client_id, **kwargs)
-        else:
-            raise Exception('Invalid issuer relation type')
+    def get_jwks(self, iss=None, client_id=None, **kwargs):
+        keys = []
+        if iss:
+            if self.check_iss_has_one_client(iss):
+                reg = self.find_registration(iss)
+            elif self.check_iss_has_many_clients(iss):
+                reg = self.find_registration_by_params(iss, client_id, **kwargs)
+            else:
+                raise Exception('Invalid issuer relation type')
+            keys = reg.get_jwks()
         return {
-            'keys': reg.get_jwks()
+            'keys': keys
         }

@@ -172,3 +172,20 @@ class ToolConfDict(ToolConfAbstract):
                     return subitem
             raise Exception('iss %s [client_id=%s] not found in settings' % (iss, client_id))
         return self._config[iss]
+
+    def get_jwks(self, iss=None, client_id=None, **kwargs):
+        if iss or client_id:
+            return super(ToolConfDict, self).get_jwks(iss, client_id)
+
+        public_keys = []
+        for iss_item in self._public_key.values():
+            if isinstance(iss_item, dict):
+                for pub_key in iss_item.values():
+                    if pub_key not in public_keys:
+                        public_keys.append(pub_key)
+            else:
+                if iss_item not in public_keys:
+                    public_keys.append(iss_item)
+        return {
+            'keys': [Registration.get_jwk(k) for k in public_keys]
+        }
