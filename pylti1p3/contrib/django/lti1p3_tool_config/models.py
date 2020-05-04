@@ -15,7 +15,7 @@ class LtiToolKey(models.Model):
     public_jwk = models.TextField(null=True, blank=True, help_text=_("Tool's generated Public key (from the field"
                                                                      " above) presented as JWK."))
 
-    def save(self, *args, **kwargs):  # pylint: disable=arguments-differ
+    def save(self, *args, **kwargs):  # pylint: disable=arguments-differ,signature-differs
         if self.public_key:
             public_jwk_dict = Registration.get_jwk(self.public_key)
             self.public_jwk = json.dumps(public_jwk_dict)
