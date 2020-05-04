@@ -46,8 +46,8 @@ To configure your own tool you may use built-in adapters:
 
     from pylti1p3.tool_config import ToolConfDict
     settings = {
-        "<issuer_1>": { },  # one issuer ~ one client-id
-        "<issuer_2>": [{ }, { }]  # one issuer ~ many client-ids
+        "<issuer_1>": { },  # one issuer ~ one client-id (outdated and not recommended way)
+        "<issuer_2>": [{ }, { }]  # one issuer ~ many client-ids (preferable way)
     }
     private_key = '...'
     public_key = '...'
