@@ -22,6 +22,28 @@ class ToolConfAbstract(object):
             argspec = inspect.getargspec(self.find_registration_by_issuer)  # pylint: disable=deprecated-method
             self.reg_extended_search = None not in (argspec.varargs, argspec.keywords)
 
+    def check_iss_has_one_client(self, iss):
+        """
+        Two methods check_iss_has_one_client / check_iss_has_many_clients are needed for the the backward compatibility
+        with the previous versions of the library (1.4.0 and early) where ToolConfDict supported only client_id per iss.
+        Should return False for all new ToolConf-s
+        """
+        iss_type = self.issuers_relation_types.get(iss, IssuerToClientRelation.ONE_CLIENT_ID_PER_ISSUER)
+        return iss_type == IssuerToClientRelation.ONE_CLIENT_ID_PER_ISSUER
+
+    def check_iss_has_many_clients(self, iss):
+        """
+        Should return True for all new ToolConf-s
+        """
+        iss_type = self.issuers_relation_types.get(iss, IssuerToClientRelation.ONE_CLIENT_ID_PER_ISSUER)
+        return iss_type == IssuerToClientRelation.MANY_CLIENTS_IDS_PER_ISSUER
+
+    def set_iss_has_one_client(self, iss):
+        self.issuers_relation_types[iss] = IssuerToClientRelation.ONE_CLIENT_ID_PER_ISSUER
+
+    def set_iss_has_many_clients(self, iss):
+        self.issuers_relation_types[iss] = IssuerToClientRelation.MANY_CLIENTS_IDS_PER_ISSUER
+
     def find_registration(self, iss, *args, **kwargs):
         if self.reg_extended_search:
             return self.find_registration_by_issuer(iss, *args, **kwargs)
@@ -35,7 +57,9 @@ class ToolConfAbstract(object):
     def find_registration_by_issuer(self, iss, *args, **kwargs):
         """
         Find registration in case if iss has only one client id, i.e
-        in case of { ... "iss": { ... "client_id: "client" ... }, ... } config
+        in case of { ... "iss": { ... "client_id: "client" ... }, ... } config.
+
+        You may skip implementation of this method in case if all iss in your config could have more than one client id.
         """
         raise NotImplementedError
 
@@ -43,7 +67,10 @@ class ToolConfAbstract(object):
     def find_registration_by_params(self, iss, client_id, *args, **kwargs):
         """
         Find registration in case if iss has many client ids, i.e
-        in case of { ... "iss": [ { ... "client_id: "client1" ... }, { ... "client_id: "client2" ... } ], ... } config
+        in case of { ... "iss": [ { ... "client_id: "client1" ... }, { ... "client_id: "client2" ... } ], ... } config.
+
+        You may skip implementation of this method in case if all iss in your config couldn't have more than one
+        client id, but it is outdated and not recommended way of storing configuration.
         """
         raise NotImplementedError
 
@@ -51,7 +78,9 @@ class ToolConfAbstract(object):
     def find_deployment(self, iss, deployment_id):
         """
         Find deployment in case if iss has only one client id, i.e
-        in case of { ... "iss": { ... "client_id: "client" ... }, ... } config
+        in case of { ... "iss": { ... "client_id: "client" ... }, ... } config.
+
+        You may skip implementation of this method in case if all iss in your config could have more than one client id.
         """
         raise NotImplementedError
 
@@ -59,23 +88,12 @@ class ToolConfAbstract(object):
     def find_deployment_by_params(self, iss, deployment_id, client_id, *args, **kwargs):
         """
         Find deployment in case if iss has many client ids, i.e
-        in case of { ... "iss": [ { ... "client_id: "client1" ... }, { ... "client_id: "client2" ... } ], ... } config
+        in case of { ... "iss": [ { ... "client_id: "client1" ... }, { ... "client_id: "client2" ... } ], ... } config.
+
+        You may skip implementation of this method in case if all iss in your config couldn't have more than one
+        client id, but it is outdated and not recommended way of storing configuration.
         """
         raise NotImplementedError
-
-    def set_iss_has_one_client(self, iss):
-        self.issuers_relation_types[iss] = IssuerToClientRelation.ONE_CLIENT_ID_PER_ISSUER
-
-    def set_iss_has_many_clients(self, iss):
-        self.issuers_relation_types[iss] = IssuerToClientRelation.MANY_CLIENTS_IDS_PER_ISSUER
-
-    def check_iss_has_one_client(self, iss):
-        iss_type = self.issuers_relation_types.get(iss, IssuerToClientRelation.ONE_CLIENT_ID_PER_ISSUER)
-        return iss_type == IssuerToClientRelation.ONE_CLIENT_ID_PER_ISSUER
-
-    def check_iss_has_many_clients(self, iss):
-        iss_type = self.issuers_relation_types.get(iss, IssuerToClientRelation.ONE_CLIENT_ID_PER_ISSUER)
-        return iss_type == IssuerToClientRelation.MANY_CLIENTS_IDS_PER_ISSUER
 
     def get_jwks(self, iss, client_id=None, **kwargs):
         if self.check_iss_has_one_client(iss):
