@@ -23,6 +23,55 @@ TOOL_CONFIG = {
     }
 }
 
+TOOL_CONFIG_ONE_ISSUES_MANY_CLIENTS = {
+    "http://imsglobal.org": {
+        "default": True,
+        "client_id": "pytest12345",
+        "auth_login_url": "https://lti-ri.imsglobal.org/platforms/370/authorizations/new",
+        "auth_token_url": "https://lti-ri.imsglobal.org/platforms/370/access_tokens",
+        "key_set_url": "https://lti-ri.imsglobal.org/platforms/370/platform_keys/361.json",
+        "key_set": None,
+        "private_key_file": "private.key",
+        "deployment_ids": ["py1234"]
+    },
+    "https://canvas.instructure.com": [{
+        "default": False,
+        "client_id": "10000000000000",
+        "auth_login_url": "http://canvas.docker/api/lti/authorize_redirect",
+        "auth_token_url": "http://canvas.docker/login/oauth2/token",
+        "key_set_url": "http://canvas.docker/api/lti/security/jwks",
+        "key_set": None,
+        "private_key_file": "private.key",
+        "deployment_ids": ["6:xxxx"]
+    }, {
+        "default": True,
+        "client_id": "10000000000004",
+        "auth_login_url": "http://canvas.docker/api/lti/authorize_redirect",
+        "auth_token_url": "http://canvas.docker/login/oauth2/token",
+        "key_set_url": "http://canvas.docker/api/lti/security/jwks",
+        "key_set": None,
+        "private_key_file": "private.key",
+        "deployment_ids": ["6:8865aa05b4b79b64a91a86042e43af5ea8ae79eb"]
+    }]
+}
+
+
+PUBLIC_KEY = """-----BEGIN PUBLIC KEY-----
+MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAuvEnCaUOy1l9gk3wjW3P
+ib1dBc5g92+6rhvZZOsN1a77fdOqKsrjWG1lDu8kq2nL+wbAzR3DdEPVw/1WUwtr
+/Q1d5m+7S4ciXT63pENs1EPwWmeN33O0zkGx8I7vdiOTSVoywEyUZe6UyS+ujLfs
+Rc2ImeLP5OHxpE1yULEDSiMLtSvgzEaMvf2AkVq5EL5nLYDWXZWXUnpiT/f7iK47
+Mp2iQd4KYYG7YZ7lMMPCMBuhej7SOtZQ2FwaBjvZiXDZ172sQYBCiBAmOR3ofTL6
+aD2+HUxYztVIPCkhyO84mQ7W4BFsOnKW4WRfEySHXd2hZkFMgcFNXY3dA6de519q
+lcrL0YYx8ZHpzNt0foEzUsgJd8uJMUVvzPZgExwcyIbv5jWYBg0ILgULo7ve7VXG
+5lMwasW/ch2zKp7tTILnDJwITMjF71h4fn4dMTun/7MWEtSl/iFiALnIL/4/YY71
+7cr4rmcG1424LyxJGRD9L9WjO8etAbPkiRFJUd5fmfqjHkO6fPxyWsMUAu8bfYdV
+RH7qN/erfGHmykmVGgH8AfK9GLT/cjN4GHA29bK9jMed6SWdrkygbQmlnsCAHrw0
+RA+QE0t617h3uTrSEr5vkbLz+KThVEBfH84qsweqcac/unKIZ0e2iRuyVnG4cbq8
+HUdio8gJ62D3wZ0UvVgr4a0CAwEAAQ==
+-----END PUBLIC KEY-----
+"""
+
 
 PRIVATE_KEY = """-----BEGIN RSA PRIVATE KEY-----
 MIIJKwIBAAKCAgEAuvEnCaUOy1l9gk3wjW3Pib1dBc5g92+6rhvZZOsN1a77fdOq
@@ -78,10 +127,17 @@ PXczMbwczExTwi+tQXgrR/6YRg6qV/T6bm9pDF3h9y9q3/+eTa7zcJXU1SaRuTI=
 """
 
 
-def get_test_tool_conf(tool_conf_cls=None):
-    tool_conf = tool_conf_cls(TOOL_CONFIG) if tool_conf_cls else ToolConfDict(TOOL_CONFIG)
-    for iss in TOOL_CONFIG:
-        tool_conf.set_private_key(iss, PRIVATE_KEY)
+def get_test_tool_conf(tool_conf_cls=None, tool_conf_extended=False):
+    tc = TOOL_CONFIG_ONE_ISSUES_MANY_CLIENTS if tool_conf_extended else TOOL_CONFIG
+    tool_conf = tool_conf_cls(tc) if tool_conf_cls else ToolConfDict(tc)
+    for iss, iss_conf in tc.items():
+        if isinstance(iss_conf, list):
+            for iss_conf_item in iss_conf:
+                tool_conf.set_private_key(iss, PRIVATE_KEY, client_id=iss_conf_item['client_id'])
+                tool_conf.set_public_key(iss, PUBLIC_KEY, client_id=iss_conf_item['client_id'])
+        else:
+            tool_conf.set_private_key(iss, PRIVATE_KEY)
+            tool_conf.set_public_key(iss, PUBLIC_KEY)
     return tool_conf
 
 

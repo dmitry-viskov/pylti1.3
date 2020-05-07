@@ -1,6 +1,8 @@
 import base64
+import hashlib
 import json
 import string  # pylint: disable=deprecated-module
+import sys
 import typing as t
 import uuid
 from abc import ABCMeta, abstractmethod
@@ -13,6 +15,7 @@ from .actions import Action
 from .assignments_grades import AssignmentsGradesService
 from .deep_link import DeepLink
 from .exception import LtiException
+from .launch_data_storage.base import DisableSessionId
 from .message_validators import get_validators
 from .names_roles import NamesRolesProvisioningService
 from .service_connector import ServiceConnector
@@ -138,8 +141,11 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
     _validated = False  # type: bool
     _auto_validation = True  # type: bool
     _restored = False  # type: bool
+    _id_token_hash = None
+    _public_key_cache_data_storage = None
+    _public_key_cache_lifetime = None
 
-    def __init__(self, request, tool_config, session_service, cookie_service):
+    def __init__(self, request, tool_config, session_service, cookie_service, launch_data_storage=None):
         # type: (REQ, TCONF, SES, COOK) -> None
         self._request = request
         self._tool_config = tool_config
@@ -148,9 +154,15 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
         self._launch_id = "lti1p3-launch-" + str(uuid.uuid4())
         self._jwt = {}
         self._jwt_verify_options = {'verify_aud': False}
+        self._id_token_hash = None
         self._validated = False
         self._auto_validation = True
         self._restored = False
+        self._public_key_cache_data_storage = None
+        self._public_key_cache_lifetime = None
+
+        if launch_data_storage:
+            self.set_launch_data_storage(launch_data_storage)
 
     @abstractmethod
     def _get_request_param(self, key):
@@ -186,11 +198,26 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
         # type: () -> SES
         return self._session_service
 
+    def get_iss(self):
+        iss = self._get_jwt_body().get('iss')
+        if not iss:
+            raise LtiException('"iss" is empty')
+        return iss
+
+    def get_client_id(self):
+        jwt_body = self._get_jwt_body()
+        aud = jwt_body.get('aud')
+        return aud[0] if isinstance(aud, list) else aud
+
     @classmethod
-    def from_cache(cls, launch_id, request, tool_config, session_service=None, cookie_service=None):
+    def from_cache(cls, launch_id, request, tool_config, session_service=None, cookie_service=None,
+                   launch_data_storage=None):
         # type: (t.Type[T_SELF], str, REQ, TCONF, SES, COOK) -> T_SELF
-        obj = cls(request, tool_config, session_service=session_service, cookie_service=cookie_service)
+        obj = cls(request, tool_config, session_service=session_service, cookie_service=cookie_service,
+                  launch_data_storage=launch_data_storage)
         launch_data = obj.get_session_service().get_launch_data(launch_id)
+        if not launch_data:
+            raise LtiException("Launch data not found")
         return obj.set_launch_id(launch_id)\
             .set_auto_validation(enable=False)\
             .set_jwt({'body': launch_data})\
@@ -237,6 +264,13 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
         if not id_token:
             raise LtiException("Missing id_token")
         return id_token
+
+    def _get_id_token_hash(self):
+        if not self._id_token_hash:
+            id_token = self._get_id_token()
+            id_token_param = id_token.encode('utf-8') if sys.version_info[0] > 2 else id_token
+            self._id_token_hash = hashlib.md5(id_token_param).hexdigest()
+        return self._id_token_hash
 
     def _get_deployment_id(self):
         # type: () -> str
@@ -349,6 +383,9 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
         """
         return self._launch_id
 
+    def get_tool_conf(self):
+        return self._tool_config
+
     def urlsafe_b64decode(self, val):
         # type: (str) -> str
         remainder = len(val) % 4
@@ -362,16 +399,33 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
             tmp = str(val).translate(string.maketrans('-_', '+/'))  # type: ignore
             return base64.b64decode(tmp)  # type: ignore
 
+    def set_public_key_caching(self, data_storage, cache_lifetime=7200):
+        self._public_key_cache_data_storage = data_storage
+        self._public_key_cache_lifetime = cache_lifetime
+
     def fetch_public_key(self, key_set_url):
         # type: (str) -> _KeySet
-        try:
-            resp = requests.get(key_set_url)
-        except requests.exceptions.RequestException as e:
-            raise LtiException("Error during fetch URL " + key_set_url + ": " + str(e))
-        try:
-            return resp.json()
-        except ValueError:
-            raise LtiException("Invalid response from " + key_set_url + ". Must be JSON: " + resp.text)
+        cache_key = key_set_url.encode('utf-8') if sys.version_info[0] > 2 else key_set_url
+        cache_key = 'key-set-url-' + hashlib.md5(cache_key).hexdigest()
+
+        with DisableSessionId(self._public_key_cache_data_storage):
+            if self._public_key_cache_data_storage:
+                public_key = self._public_key_cache_data_storage.get_value(cache_key)
+                if public_key:
+                    return public_key
+
+            try:
+                resp = requests.get(key_set_url)
+            except requests.exceptions.RequestException as e:
+                raise LtiException("Error during fetch URL " + key_set_url + ": " + str(e))
+            try:
+                public_key = resp.json()
+                if self._public_key_cache_data_storage:
+                    self._public_key_cache_data_storage.set_value(
+                        cache_key, public_key, self._public_key_cache_lifetime)
+                return public_key
+            except ValueError:
+                raise LtiException("Invalid response from " + key_set_url + ". Must be JSON: " + resp.text)
 
     def get_public_key(self):
         # type: () -> str
@@ -416,10 +470,13 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
         state_from_request = self._get_request_param('state')
         if not state_from_request:
             raise LtiException("Missing state param")
-        state_from_cookie = self._cookie_service.get_cookie(state_from_request)
-        if state_from_request != state_from_cookie:
-            # Error if state doesn't match.
-            raise LtiException("State not found")
+
+        id_token_hash = self._get_id_token_hash()
+        if not self._session_service.check_state_is_valid(state_from_request, id_token_hash):
+            state_from_cookie = self._cookie_service.get_cookie(state_from_request)
+            if state_from_request != state_from_cookie:
+                # Error if state doesn't match.
+                raise LtiException("State not found")
 
         return self
 
@@ -459,8 +516,9 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
 
     def validate_registration(self):
         # type: (T_SELF) -> T_SELF
-        iss = self._get_iss()
+        iss = self.get_iss()
         jwt_body = self._get_jwt_body()
+        client_id = self.get_client_id()
 
         # Check client id
         aud = self._get_jwt_body().get('aud')
@@ -473,14 +531,17 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
         req = self._request  # type: REQ
 
         # Find registration
-        self._registration = config.find_registration(
-            iss, action=Action.MESSAGE_LAUNCH, request=req, jwt_body=jwt_body)
+        if self._tool_config.check_iss_has_one_client(iss):
+            self._registration = self._tool_config.find_registration(
+                iss, action=Action.MESSAGE_LAUNCH, request=self._request, jwt_body=jwt_body)
+        else:
+            self._registration = self._tool_config.find_registration_by_params(
+                iss, client_id, action=Action.MESSAGE_LAUNCH, request=self._request, jwt_body=jwt_body)
+
         if not self._registration:
             raise LtiException('Registration not found.')
 
         # Check client id
-        aud = jwt_body.get('aud')
-        client_id = aud[0] if isinstance(aud, list) else aud
         if client_id != self._registration.get_client_id():
             raise LtiException("Client id not registered for this issuer")
 
@@ -502,16 +563,15 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
 
     def validate_deployment(self):
         # type: (T_SELF) -> T_SELF
-        iss = self._get_iss()
+        iss = self.get_iss()
+        client_id = self.get_client_id()
         deployment_id = self._get_deployment_id()
 
         # Find deployment.
-        try:
-            deployment = self._tool_config.find_deployment(iss, deployment_id, get_param=self._get_jwt_body().get)
-        except TypeError:
-            if self._tool_config.ACCEPTS_GET_PARAM_FOR_FIND:
-                raise
-            deployment = self._tool_config.find_deployment(iss, deployment_id)  # type: ignore
+        if self._tool_config.check_iss_has_one_client(iss):
+            deployment = self._tool_config.find_deployment(iss, deployment_id)
+        else:
+            deployment = self._tool_config.find_deployment_by_params(iss, deployment_id, client_id)
         if not deployment:
             raise LtiException("Unable to find deployment")
 
@@ -540,12 +600,36 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
 
         return self
 
+    def set_launch_data_storage(self, data_storage):
+        data_storage.set_request(self._request)
+        session_cookie_name = data_storage.get_session_cookie_name()
+        if session_cookie_name:
+            session_id = self._cookie_service.get_cookie(session_cookie_name)
+            if session_id:
+                data_storage.set_session_id(session_id)
+            else:
+                raise LtiException("Missing %s cookie" % session_cookie_name)
+        self._session_service.set_data_storage(data_storage)
+        return self
+
+    def set_launch_data_lifetime(self, time_sec):
+        self._session_service.set_launch_data_lifetime(time_sec)
+        return self
+
     def save_launch_data(self):
         # type: (T_SELF) -> T_SELF
+        state_from_request = self._get_request_param('state')
+        id_token_hash = self._get_id_token_hash()
+
         self._session_service.save_launch_data(self._launch_id, self._jwt['body'])
+        self._session_service.set_state_valid(state_from_request, id_token_hash)
         return self
 
     def get_params_from_login(self):
         # type: () -> object
         state = self._get_request_param('state')
         return self._session_service.get_state_params(state)
+
+    def check_jwt_body_is_empty(self):
+        jwt_body = self._get_jwt_body()
+        return not jwt_body

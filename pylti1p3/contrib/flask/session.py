@@ -1,5 +1,5 @@
 from pylti1p3.session import SessionService
 
 
-class DjangoSessionService(SessionService):
+class FlaskSessionService(SessionService):
     pass

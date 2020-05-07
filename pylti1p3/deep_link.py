@@ -43,6 +43,9 @@ class DeepLink(object):
         self._deployment_id = deployment_id
         self._deep_link_settings = deep_link_settings
 
+    def _generate_nonce(self):
+        return uuid.uuid4().hex + uuid.uuid1().hex
+
     def get_message_jwt(self, resources):
         # type: (t.Sequence[DeepLinkResource]) -> t.Dict[str, object]
         message_jwt = {
@@ -50,7 +53,7 @@ class DeepLink(object):
             'aud': [self._registration.get_issuer()],
             'exp': int(time.time()) + 600,
             'iat': int(time.time()),
-            'nonce': 'nonce-' + str(uuid.uuid4()),
+            'nonce': 'nonce-' + self._generate_nonce(),
             'https://purl.imsglobal.org/spec/lti/claim/deployment_id': self._deployment_id,
             'https://purl.imsglobal.org/spec/lti/claim/message_type': 'LtiDeepLinkingResponse',
             'https://purl.imsglobal.org/spec/lti/claim/version': '1.3.0',
@@ -60,13 +63,13 @@ class DeepLink(object):
         return message_jwt
 
     def encode_jwt(self, message):
-        # type: (t.Mapping[str, object]) -> str
-        private_key = self._registration.get_tool_private_key()
-        assert private_key is not None, 'Private key should be set in the registration'
-        encoded_jwt = jwt.encode(message, private_key, algorithm='RS256')
-        if sys.version_info > (2, ):
-            return encoded_jwt.decode('utf-8')
-        return encoded_jwt
+        headers = None
+        kid = self._registration.get_kid()
+        if kid:
+            headers = {'kid': kid}
+        encoded_jwt = jwt.encode(message, self._registration.get_tool_private_key(), algorithm='RS256',
+                                 headers=headers)
+        return encoded_jwt.decode('utf-8') if sys.version_info[0] > 2 else encoded_jwt
 
     def get_response_jwt(self, resources):
         # type: (t.Sequence[DeepLinkResource]) -> str
