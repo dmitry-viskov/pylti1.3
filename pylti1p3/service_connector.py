@@ -47,6 +47,7 @@ class ServiceConnector(object):
         # Build up JWT to exchange for an auth token
         client_id = self._registration.get_client_id()
         auth_url = self._registration.get_auth_token_url()
+        assert auth_url is not None, 'auth_url should be set at this point'
         auth_audience = self._registration.get_auth_audience()
         aud = auth_audience if auth_audience else auth_url
 
@@ -64,7 +65,9 @@ class ServiceConnector(object):
             headers = {'kid': kid}
 
         # Sign the JWT with our private key (given by the platform on registration)
-        jwt_val = jwt.encode(jwt_claim, self._registration.get_tool_private_key(), algorithm='RS256',
+        private_key = self._registration.get_tool_private_key()
+        assert private_key is not None, 'Private key should be set at this point'
+        jwt_val = jwt.encode(jwt_claim, private_key, algorithm='RS256',
                              headers=headers)
 
         auth_request = {

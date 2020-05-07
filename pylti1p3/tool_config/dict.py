@@ -11,10 +11,10 @@ if t.TYPE_CHECKING:
     from .abstract import FIND_REG_KWARGS
 
 
-class ToolConfDict(ToolConfAbstract[Request[object]]):
+class ToolConfDict(ToolConfAbstract[Request]):
     _config = None
-    _private_key = None
-    _public_key = None
+    _private_key = None  # type: t.Optional[t.Mapping[str, str]]
+    _public_key = None  # type: t.Optional[t.Mapping[str, str]]
 
     def __init__(self, json_data):
         # type: (dict) -> None
@@ -82,6 +82,7 @@ class ToolConfDict(ToolConfAbstract[Request[object]]):
         self._public_key = {}
 
     def _validate_iss_config_item(self, iss, iss_config_item):
+        # type: (str, t.Any) -> None
         if not isinstance(iss_config_item, dict):
             raise Exception("Invalid configuration %s for the %s issuer. Must be dict" % (iss, str(iss_config_item)))
         required_keys = ['auth_login_url', 'auth_token_url', 'client_id', 'deployment_ids']
@@ -94,6 +95,7 @@ class ToolConfDict(ToolConfAbstract[Request[object]]):
                             % (str(iss_config_item), iss))
 
     def _get_registration(self, iss, iss_conf):
+        # type: (str, t.Any) -> Registration
         reg = Registration()
         reg.set_auth_login_url(iss_conf['auth_login_url'])\
             .set_auth_token_url(iss_conf['auth_token_url'])\

@@ -1,7 +1,7 @@
 import json
 import typing as t
 
-from jwcrypto.jwk import JWK
+from jwcrypto.jwk import JWK  # type: ignore
 
 T_SELF = t.TypeVar('T_SELF', bound='Registration')
 
@@ -106,6 +106,7 @@ class Registration(object):
 
     @classmethod
     def get_jwk(cls, public_key):
+        # type: (str) -> t.Mapping[str, t.Any]
         jwk_obj = JWK.from_pem(public_key.encode('utf-8'))
         public_jwk = json.loads(jwk_obj.export_public())
         public_jwk['alg'] = 'RS256'
@@ -113,6 +114,7 @@ class Registration(object):
         return public_jwk
 
     def get_jwks(self):
+        # type: () -> t.List[t.Mapping[str, t.Any]]
         keys = []
         public_key = self.get_tool_public_key()
         if public_key:
@@ -120,6 +122,7 @@ class Registration(object):
         return keys
 
     def get_kid(self):
+        # type: () -> t.Optional[str]
         key = self.get_tool_public_key()
         if key:
             jwk = Registration.get_jwk(key)

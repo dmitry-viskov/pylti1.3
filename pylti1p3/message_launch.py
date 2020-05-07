@@ -2,7 +2,6 @@ import base64
 import hashlib
 import json
 import string  # pylint: disable=deprecated-module
-import sys
 import typing as t
 import uuid
 from abc import ABCMeta, abstractmethod
@@ -19,8 +18,10 @@ from .launch_data_storage.base import DisableSessionId
 from .message_validators import get_validators
 from .names_roles import NamesRolesProvisioningService
 from .service_connector import ServiceConnector
+from .utils import encode_on_py3
 
 if t.TYPE_CHECKING:
+    from .launch_data_storage.base import LaunchDataStorage
     from .registration import Registration, _KeySet
     from .request import Request
     from .tool_config import ToolConfAbstract
@@ -141,12 +142,12 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
     _validated = False  # type: bool
     _auto_validation = True  # type: bool
     _restored = False  # type: bool
-    _id_token_hash = None
-    _public_key_cache_data_storage = None
-    _public_key_cache_lifetime = None
+    _id_token_hash = None  # type: t.Optional[str]
+    _public_key_cache_data_storage = None  # type: t.Optional[LaunchDataStorage[_KeySet]]
+    _public_key_cache_lifetime = None  # type: t.Optional[int]
 
     def __init__(self, request, tool_config, session_service, cookie_service, launch_data_storage=None):
-        # type: (REQ, TCONF, SES, COOK) -> None
+        # type: (REQ, TCONF, SES, COOK, t.Optional[LaunchDataStorage[_KeySet]]) -> None
         self._request = request
         self._tool_config = tool_config
         self._session_service = session_service
@@ -199,20 +200,22 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
         return self._session_service
 
     def get_iss(self):
+        # type: () -> str
         iss = self._get_jwt_body().get('iss')
         if not iss:
             raise LtiException('"iss" is empty')
         return iss
 
     def get_client_id(self):
+        # type: () -> str
         jwt_body = self._get_jwt_body()
         aud = jwt_body.get('aud')
-        return aud[0] if isinstance(aud, list) else aud
+        return aud[0] if isinstance(aud, list) else aud  # type: ignore
 
     @classmethod
     def from_cache(cls, launch_id, request, tool_config, session_service=None, cookie_service=None,
                    launch_data_storage=None):
-        # type: (t.Type[T_SELF], str, REQ, TCONF, SES, COOK) -> T_SELF
+        # type: (t.Type[T_SELF], str, REQ, TCONF, SES, COOK, t.Optional[LaunchDataStorage[_KeySet]]) -> T_SELF
         obj = cls(request, tool_config, session_service=session_service, cookie_service=cookie_service,
                   launch_data_storage=launch_data_storage)
         launch_data = obj.get_session_service().get_launch_data(launch_id)
@@ -259,16 +262,17 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
         return iss
 
     def _get_id_token(self):
-        # # type: () -> str
+        # type: () -> str
         id_token = self._get_request_param('id_token')
         if not id_token:
             raise LtiException("Missing id_token")
         return id_token
 
     def _get_id_token_hash(self):
+        # type: () -> str
         if not self._id_token_hash:
             id_token = self._get_id_token()
-            id_token_param = id_token.encode('utf-8') if sys.version_info[0] > 2 else id_token
+            id_token_param = encode_on_py3(id_token, 'utf8')
             self._id_token_hash = hashlib.md5(id_token_param).hexdigest()
         return self._id_token_hash
 
@@ -384,6 +388,7 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
         return self._launch_id
 
     def get_tool_conf(self):
+        # type: () -> TCONF
         return self._tool_config
 
     def urlsafe_b64decode(self, val):
@@ -400,13 +405,13 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
             return base64.b64decode(tmp)  # type: ignore
 
     def set_public_key_caching(self, data_storage, cache_lifetime=7200):
+        # type: (LaunchDataStorage[_KeySet], int) -> None
         self._public_key_cache_data_storage = data_storage
         self._public_key_cache_lifetime = cache_lifetime
 
     def fetch_public_key(self, key_set_url):
         # type: (str) -> _KeySet
-        cache_key = key_set_url.encode('utf-8') if sys.version_info[0] > 2 else key_set_url
-        cache_key = 'key-set-url-' + hashlib.md5(cache_key).hexdigest()
+        cache_key = 'key-set-url-' + hashlib.md5(encode_on_py3(key_set_url, 'utf-8')).hexdigest()
 
         with DisableSessionId(self._public_key_cache_data_storage):
             if self._public_key_cache_data_storage:
@@ -520,10 +525,6 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
         jwt_body = self._get_jwt_body()
         client_id = self.get_client_id()
 
-        # Check client id
-        aud = self._get_jwt_body().get('aud')
-        client_id = aud[0] if isinstance(aud, list) else aud
-
         # Mypy doesn't support higher kinded types yet so it thinks that all
         # generic attrs have type `Any`. See issue:
         # https://github.com/python/mypy/issues/8228
@@ -532,10 +533,10 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
 
         # Find registration
         if self._tool_config.check_iss_has_one_client(iss):
-            self._registration = self._tool_config.find_registration(
+            self._registration = config.find_registration(
                 iss, action=Action.MESSAGE_LAUNCH, request=self._request, jwt_body=jwt_body)
         else:
-            self._registration = self._tool_config.find_registration_by_params(
+            self._registration = config.find_registration_by_params(
                 iss, client_id, action=Action.MESSAGE_LAUNCH, request=self._request, jwt_body=jwt_body)
 
         if not self._registration:
@@ -566,12 +567,13 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
         iss = self.get_iss()
         client_id = self.get_client_id()
         deployment_id = self._get_deployment_id()
+        tool_config = self._tool_config  # type: ToolConfAbstract
 
         # Find deployment.
-        if self._tool_config.check_iss_has_one_client(iss):
-            deployment = self._tool_config.find_deployment(iss, deployment_id)
+        if tool_config.check_iss_has_one_client(iss):
+            deployment = tool_config.find_deployment(iss, deployment_id)
         else:
-            deployment = self._tool_config.find_deployment_by_params(iss, deployment_id, client_id)
+            deployment = tool_config.find_deployment_by_params(iss, deployment_id, client_id)
         if not deployment:
             raise LtiException("Unable to find deployment")
 
@@ -613,6 +615,7 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
         return self
 
     def set_launch_data_lifetime(self, time_sec):
+        # type: (T_SELF, int) -> T_SELF
         self._session_service.set_launch_data_lifetime(time_sec)
         return self
 
@@ -631,5 +634,6 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
         return self._session_service.get_state_params(state)
 
     def check_jwt_body_is_empty(self):
+        # type: () -> bool
         jwt_body = self._get_jwt_body()
         return not jwt_body

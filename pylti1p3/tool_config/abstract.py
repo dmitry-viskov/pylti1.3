@@ -13,20 +13,20 @@ if t.TYPE_CHECKING:
     from ..registration import Registration
     from ..deployment import Deployment
     from ..message_launch import _LaunchData
-    from typing_extensions import Literal
+    from typing_extensions import Literal, Final
     FIND_REG_KWARGS = t.Union[Literal['oidc_login', 'message_launch'], REQ,
                               _LaunchData]
 
 
 class IssuerToClientRelation(object):
-    ONE_CLIENT_ID_PER_ISSUER = 'one-issuer-one-client-id'
-    MANY_CLIENTS_IDS_PER_ISSUER = 'one-issuer-many-client-ids'
+    ONE_CLIENT_ID_PER_ISSUER = 'one-issuer-one-client-id'  # type: Final
+    MANY_CLIENTS_IDS_PER_ISSUER = 'one-issuer-many-client-ids'  # type: Final
 
 
 class ToolConfAbstract(t.Generic[REQ]):
     __metaclass__ = ABCMeta
-    reg_extended_search = False
-    issuers_relation_types = {}
+    reg_extended_search = False  # type: bool
+    issuers_relation_types = {}  # type: t.MutableMapping[str, Literal['one-issuer-one-client-id', 'one-issuer-many-client-ids']]
 
     def __init__(self):
         # type: () -> None
@@ -38,6 +38,7 @@ class ToolConfAbstract(t.Generic[REQ]):
             self.reg_extended_search = None not in (argspec.varargs, argspec.keywords)
 
     def check_iss_has_one_client(self, iss):
+        # type: (str) -> bool
         """
         Two methods check_iss_has_one_client / check_iss_has_many_clients are needed for the the backward compatibility
         with the previous versions of the library (1.4.0 and early) where ToolConfDict supported only client_id per iss.
@@ -47,6 +48,7 @@ class ToolConfAbstract(t.Generic[REQ]):
         return iss_type == IssuerToClientRelation.ONE_CLIENT_ID_PER_ISSUER
 
     def check_iss_has_many_clients(self, iss):
+        # type: (str) -> bool
         """
         Should return True for all new ToolConf-s
         """
@@ -54,9 +56,11 @@ class ToolConfAbstract(t.Generic[REQ]):
         return iss_type == IssuerToClientRelation.MANY_CLIENTS_IDS_PER_ISSUER
 
     def set_iss_has_one_client(self, iss):
+        # type: (str) -> None
         self.issuers_relation_types[iss] = IssuerToClientRelation.ONE_CLIENT_ID_PER_ISSUER
 
     def set_iss_has_many_clients(self, iss):
+        # type: (str) -> None
         self.issuers_relation_types[iss] = IssuerToClientRelation.MANY_CLIENTS_IDS_PER_ISSUER
 
     def find_registration(self, iss, *args, **kwargs):
@@ -71,6 +75,7 @@ class ToolConfAbstract(t.Generic[REQ]):
 
     @abstractmethod
     def find_registration_by_issuer(self, iss, *args, **kwargs):
+        # type: (str, *None, **FIND_REG_KWARGS) -> t.Optional[Registration]
         """
         Find registration in case if iss has only one client id, i.e
         in case of { ... "iss": { ... "client_id: "client" ... }, ... } config.
@@ -81,6 +86,7 @@ class ToolConfAbstract(t.Generic[REQ]):
 
     @abstractmethod
     def find_registration_by_params(self, iss, client_id, *args, **kwargs):
+        # type: (str, str, *None, **FIND_REG_KWARGS) -> t.Optional[Registration]
         """
         Find registration in case if iss has many client ids, i.e
         in case of { ... "iss": [ { ... "client_id: "client1" ... }, { ... "client_id: "client2" ... } ], ... } config.
@@ -103,6 +109,7 @@ class ToolConfAbstract(t.Generic[REQ]):
 
     @abstractmethod
     def find_deployment_by_params(self, iss, deployment_id, client_id, *args, **kwargs):
+        # type: (str, str, str, *None, **None) -> t.Optional[Deployment]
         """
         Find deployment in case if iss has many client ids, i.e
         in case of { ... "iss": [ { ... "client_id: "client1" ... }, { ... "client_id: "client2" ... } ], ... } config.

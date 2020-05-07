@@ -4,7 +4,7 @@ from abc import ABCMeta, abstractmethod
 
 class CookieService(object):
     __metaclass__ = ABCMeta
-    _cookie_prefix = 'lti1p3'
+    _cookie_prefix = 'lti1p3'  # type: str
 
     @abstractmethod
     def get_cookie(self, name):

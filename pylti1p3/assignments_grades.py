@@ -45,6 +45,7 @@ class AssignmentsGradesService(object):
                 line_item = self.find_or_create_lineitem(line_item)
             score_url = line_item.get_id()
 
+        assert score_url is not None
         score_url = self._add_url_path_ending(score_url, 'scores')
         return self._service_connector.make_service_request(
             self._service_data['scope'],
@@ -126,7 +127,9 @@ class AssignmentsGradesService(object):
             raise LtiException('Received LineItem did not contain a tag or id')
 
         line_item = self.find_or_create_lineitem(line_item, find_by=find_by)
-        results_url = self._add_url_path_ending(line_item.get_id(), 'results')
+        line_item_id = line_item.get_id()
+        assert line_item_id is not None
+        results_url = self._add_url_path_ending(line_item_id, 'results')
         scores = self._service_connector.make_service_request(
             self._service_data['scope'],
             results_url,
@@ -137,6 +140,7 @@ class AssignmentsGradesService(object):
         return scores['body']
 
     def _add_url_path_ending(self, url, url_path_ending):
+        # type: (str, str) -> str
         if '?' in url:
             url_parts = url.split('?')
             new_url = url_parts[0]

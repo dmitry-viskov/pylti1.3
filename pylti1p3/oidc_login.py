@@ -13,6 +13,7 @@ if t.TYPE_CHECKING:
     from .redirect import Redirect
     from .tool_config import ToolConfAbstract
     from .registration import Registration
+    from .launch_data_storage.base import LaunchDataStorage
 
     def urlencode(url):
         # type: (t.Dict[str, str]) -> str
@@ -29,6 +30,7 @@ TCONF = t.TypeVar('TCONF', bound='ToolConfAbstract')
 SES = t.TypeVar('SES', bound='SessionService')
 COOK = t.TypeVar('COOK', bound='CookieService')
 
+T_SELF = t.TypeVar('T_SELF', bound='OIDCLogin')
 
 class OIDCLogin(t.Generic[REQ, TCONF, SES, COOK, RED]):
     __metaclass__ = ABCMeta
@@ -36,17 +38,17 @@ class OIDCLogin(t.Generic[REQ, TCONF, SES, COOK, RED]):
     _tool_config = None  # type: TCONF
     _session_service = None  # type: SES
     _cookie_service = None  # type: COOK
-    _launch_data_storage = None
-    _registration = None
+    _launch_data_storage = None  # type: t.Optional[LaunchDataStorage[int]]
+    _registration = None  # type: Registration
 
-    _cookies_check = False
-    _cookies_check_loading_text = 'Loading...'
-    _cookies_unavailable_msg_main_text = 'Your browser prohibits to save cookies in the iframes.'
-    _cookies_unavailable_msg_click_text = 'Click here to open content in the new tab.'
+    _cookies_check = False  # type: bool
+    _cookies_check_loading_text = 'Loading...'  # type: str
+    _cookies_unavailable_msg_main_text = 'Your browser prohibits to save cookies in the iframes.'  # type: str
+    _cookies_unavailable_msg_click_text = 'Click here to open content in the new tab.'  # type: str
     _state_params = {}  # type: t.Dict[str, object]
 
     def __init__(self, request, tool_config, session_service, cookie_service, launch_data_storage=None):
-        # type: (REQ, TCONF, SES, COOK) -> None
+        # type: (REQ, TCONF, SES, COOK, t.Optional[LaunchDataStorage[int]]) -> None
         self._request = request
         self._tool_config = tool_config
         self._session_service = session_service
@@ -59,9 +61,11 @@ class OIDCLogin(t.Generic[REQ, TCONF, SES, COOK, RED]):
         raise NotImplementedError
 
     def get_response(self, html):  # pylint: disable=unused-argument
-        return ''
+        # type: (str) -> RED
+        return ''  # type: ignore
 
     def get_iss(self):
+        # type: () -> t.Optional[str]
         if self._registration:
             return self._registration.get_issuer()
         return None
@@ -89,7 +93,7 @@ class OIDCLogin(t.Generic[REQ, TCONF, SES, COOK, RED]):
         return bool(lti_new_window)
 
     def _prepare_redirect_url(self, launch_url):
-        # type: (str) -> Redirect[RED]
+        # type: (str) -> str
         if not launch_url:
             raise OIDCException("No launch URL configured")
 
@@ -113,14 +117,17 @@ class OIDCLogin(t.Generic[REQ, TCONF, SES, COOK, RED]):
             self._session_service.save_state_params(state, self._state_params)
 
         # build Response
-        client_id = registration.get_client_id()  # Registered client id
+        client_id = self._registration.get_client_id()  # Registered client id
         assert client_id is not None, 'Client id should not be None'
+        auth_login_url = self._registration.get_auth_login_url()
+        assert auth_login_url is not None, 'Auth login url should not be None'
+
         auth_params = {
             'scope': 'openid',  # OIDC Scope
             'response_type': 'id_token',  # OIDC response is always an id token
             'response_mode': 'form_post',  # OIDC response is always a form post
             'prompt': 'none',  # Don't prompt user on redirect
-            'client_id': self._registration.get_client_id(),  # Registered client id
+            'client_id': client_id,  # Registered client id
             'redirect_uri': launch_url,  # URL to return to after login
             'state': state,  # State to identify browser session
             'nonce': nonce,  # Prevent replay attacks
@@ -133,10 +140,11 @@ class OIDCLogin(t.Generic[REQ, TCONF, SES, COOK, RED]):
             # LTI message hint to identify LTI context within the platform
             auth_params['lti_message_hint'] = lti_message_hint
 
-        auth_login_return_url = self._registration.get_auth_login_url() + "?" + urlencode(auth_params)
+        auth_login_return_url = auth_login_url + "?" + urlencode(auth_params)
         return auth_login_return_url
 
     def _prepare_redirect(self, launch_url):
+        # type: (str) -> Redirect[RED]
         auth_login_return_url = self._prepare_redirect_url(launch_url)
         return self.get_redirect(auth_login_return_url)
 
@@ -192,7 +200,7 @@ class OIDCLogin(t.Generic[REQ, TCONF, SES, COOK, RED]):
         return registration
 
     def pass_params_to_launch(self, params):
-        # type: (t.Dict[str, object]) -> None
+        # type: (T_SELF, t.Dict[str, object]) -> T_SELF
         """
         Ability to pass custom params from oidc login to launch.
         """
@@ -200,6 +208,7 @@ class OIDCLogin(t.Generic[REQ, TCONF, SES, COOK, RED]):
         return self
 
     def enable_check_cookies(self, main_msg=None, click_msg=None, loading_msg=None, **kwargs):
+        # type: (T_SELF, t.Optional[str], t.Optional[str], t.Optional[str], **None) -> T_SELF
         # pylint: disable=unused-argument
         self._cookies_check = True
         if main_msg:
@@ -211,10 +220,12 @@ class OIDCLogin(t.Generic[REQ, TCONF, SES, COOK, RED]):
         return self
 
     def disable_check_cookies(self):
+        # type: (T_SELF) -> T_SELF
         self._cookies_check = False
         return self
 
     def get_additional_login_params(self):
+        # type: () -> t.List[str]
         """
         You may add additional custom params in your own OIDCLogin class
         :return: list
@@ -222,6 +233,7 @@ class OIDCLogin(t.Generic[REQ, TCONF, SES, COOK, RED]):
         return []
 
     def get_cookies_allowed_js_check(self):
+        # type: () -> str
         protocol = 'https' if self._request.is_secure() else 'http'
         params_lst = ['iss', 'login_hint', 'target_link_uri', 'lti_message_hint',
                       'lti_deployment_id', 'client_id']
@@ -242,6 +254,7 @@ class OIDCLogin(t.Generic[REQ, TCONF, SES, COOK, RED]):
         return page.get_html()
 
     def set_launch_data_storage(self, data_storage):
+        # type: (T_SELF, LaunchDataStorage[int]) -> T_SELF
         data_storage.set_request(self._request)
         session_cookie_name = data_storage.get_session_cookie_name()
         if session_cookie_name:
@@ -254,5 +267,6 @@ class OIDCLogin(t.Generic[REQ, TCONF, SES, COOK, RED]):
         return self
 
     def set_launch_data_lifetime(self, time_sec):
+        # type: (T_SELF, int) -> T_SELF
         self._session_service.set_launch_data_lifetime(time_sec)
         return self

@@ -1,4 +1,6 @@
+# mypy: ignore-errors
 from django.contrib import admin
+
 from .models import LtiTool, LtiToolKey
 
 
