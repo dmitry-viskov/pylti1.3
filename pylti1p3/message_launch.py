@@ -532,7 +532,7 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
         req = self._request  # type: REQ
 
         # Find registration
-        if self._tool_config.check_iss_has_one_client(iss):
+        if config.check_iss_has_one_client(iss):
             self._registration = config.find_registration(
                 iss, action=Action.MESSAGE_LAUNCH, request=req, jwt_body=jwt_body)
         else:
