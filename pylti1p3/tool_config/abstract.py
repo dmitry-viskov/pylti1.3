@@ -16,6 +16,7 @@ if t.TYPE_CHECKING:
     from typing_extensions import Literal, Final
     FIND_REG_KWARGS = t.Union[Literal['oidc_login', 'message_launch'], REQ,
                               _LaunchData]
+    PossibleRelationTypes = Literal['one-issuer-one-client-id', 'one-issuer-many-client-ids']
 
 
 class IssuerToClientRelation(object):
@@ -26,7 +27,7 @@ class IssuerToClientRelation(object):
 class ToolConfAbstract(t.Generic[REQ]):
     __metaclass__ = ABCMeta
     reg_extended_search = False  # type: bool
-    issuers_relation_types = {}  # type: t.MutableMapping[str, Literal['one-issuer-one-client-id', 'one-issuer-many-client-ids']]
+    issuers_relation_types = {}  # type: t.MutableMapping[str, PossibleRelationTypes]
 
     def __init__(self):
         # type: () -> None

@@ -119,10 +119,12 @@ class ToolConfDict(ToolConfAbstract[Request]):
         return d.set_deployment_id(deployment_id)
 
     def find_registration_by_issuer(self, iss, *args, **kwargs):
+        # pylint: disable=unused-argument
         iss_conf = self.get_iss_config(iss)
         return self._get_registration(iss, iss_conf)
 
     def find_registration_by_params(self, iss, client_id, *args, **kwargs):
+        # pylint: disable=unused-argument
         iss_conf = self.get_iss_config(iss, client_id)
         return self._get_registration(iss, iss_conf)
 
@@ -131,6 +133,7 @@ class ToolConfDict(ToolConfAbstract[Request]):
         return self._get_deployment(iss_conf, deployment_id)
 
     def find_deployment_by_params(self, iss, deployment_id, client_id, *args, **kwargs):
+        # pylint: disable=unused-argument
         iss_conf = self.get_iss_config(iss, client_id)
         return self._get_deployment(iss_conf, deployment_id)
 
@@ -185,6 +188,7 @@ class ToolConfDict(ToolConfAbstract[Request]):
         return self._config[iss]
 
     def get_jwks(self, iss=None, client_id=None, **kwargs):
+        # pylint: disable=unused-argument
         if iss or client_id:
             return super(ToolConfDict, self).get_jwks(iss, client_id)
 

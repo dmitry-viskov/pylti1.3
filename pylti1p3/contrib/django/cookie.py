@@ -1,19 +1,13 @@
 import sys
 import typing as t
 
+import django  # type: ignore
 from pylti1p3.cookie import CookieService
 
-import django  # type: ignore
-
-if t.TYPE_CHECKING and sys.version_info[0] > 2:
-    import http.cookies as Cookie  # pylint: disable=ungrouped-imports
-elif t.TYPE_CHECKING:
-    import Cookie
-
-try:
-    import Cookie  # type: ignore
-except ImportError:
+if sys.version_info[0] > 2:
     import http.cookies as Cookie  # type: ignore
+else:
+    import Cookie  # type: ignore
 
 # Add support for the SameSite attribute (obsolete when PY37 is unsupported).
 # pylint: disable=protected-access

@@ -21,6 +21,7 @@ class SessionDataStorage(LaunchDataStorage[T], t.Generic[T]):
 
     def set_value(self, key, value, exp=None):
         # type: (str, T, t.Optional[int]) -> None
+        # pylint: disable=unused-argument
         assert self._request is not None, 'Request should be set at this point'
         self._request.session[key] = value
 

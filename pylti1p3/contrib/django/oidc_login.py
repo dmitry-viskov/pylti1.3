@@ -1,7 +1,6 @@
+from django.http import HttpResponse  # type: ignore
 from pylti1p3.oidc_login import OIDCLogin
 from pylti1p3.request import Request
-
-from django.http import HttpResponse  # type: ignore
 
 from .cookie import DjangoCookieService
 from .redirect import DjangoRedirect

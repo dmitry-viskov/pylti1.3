@@ -4,8 +4,9 @@ from abc import ABCMeta, abstractmethod
 if t.TYPE_CHECKING:
     from ..request import Request
 
-
+_T_DISABLED_SESSION_ID = t.TypeVar('_T_DISABLED_SESSION_ID', bound='DisableSessionId')
 T = t.TypeVar('T')
+
 
 class LaunchDataStorage(t.Generic[T]):
     __metaclass__ = ABCMeta
@@ -69,7 +70,6 @@ class LaunchDataStorage(t.Generic[T]):
         # type: (str) -> bool
         raise NotImplementedError
 
-_T_DISABLED_SESSION_ID = t.TypeVar('_T_DISABLED_SESSION_ID', bound='DisableSessionId')
 
 class DisableSessionId(object):
     _session_id = None  # type: t.Optional[str]

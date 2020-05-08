@@ -1,6 +1,5 @@
-from pylti1p3.launch_data_storage.cache import CacheDataStorage
-
 from django.core.cache import caches  # type: ignore
+from pylti1p3.launch_data_storage.cache import CacheDataStorage
 
 
 class DjangoCacheDataStorage(CacheDataStorage):

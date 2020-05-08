@@ -7,7 +7,7 @@ T = t.TypeVar('T')
 
 class CacheDataStorage(LaunchDataStorage[T], t.Generic[T]):
     # This seems a bit strange, I have no idea when this is ever set.
-    _cache = None  #  type: t.Any
+    _cache = None  # type: t.Any
 
     def get_session_cookie_name(self):
         # type: () -> t.Optional[str]

@@ -1,12 +1,11 @@
 # mypy: ignore-errors
 import json
 
-from pylti1p3.registration import Registration
-
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
+from pylti1p3.registration import Registration
 
 
 class LtiToolKey(models.Model):

@@ -3,8 +3,9 @@ from abc import ABCMeta, abstractmethod
 
 if t.TYPE_CHECKING:
     from typing_extensions import Protocol
+
     class SessionLike(Protocol):
-        def get(self, key, exp = None):
+        def get(self, key, exp=None):
             # type: (str, t.Optional[int]) -> t.Any
             pass
 

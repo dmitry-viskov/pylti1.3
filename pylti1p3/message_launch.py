@@ -24,7 +24,7 @@ if t.TYPE_CHECKING:
     from .launch_data_storage.base import LaunchDataStorage
     from .registration import Registration, _KeySet
     from .request import Request
-    from .tool_config import ToolConfAbstract
+    from .tool_config import ToolConfAbstract  # pylint: disable=cyclic-import
     from .session import SessionService
     from .cookie import CookieService
     from .deep_link import _DeepLinkData
@@ -534,10 +534,10 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
         # Find registration
         if self._tool_config.check_iss_has_one_client(iss):
             self._registration = config.find_registration(
-                iss, action=Action.MESSAGE_LAUNCH, request=self._request, jwt_body=jwt_body)
+                iss, action=Action.MESSAGE_LAUNCH, request=req, jwt_body=jwt_body)
         else:
             self._registration = config.find_registration_by_params(
-                iss, client_id, action=Action.MESSAGE_LAUNCH, request=self._request, jwt_body=jwt_body)
+                iss, client_id, action=Action.MESSAGE_LAUNCH, request=req, jwt_body=jwt_body)
 
         if not self._registration:
             raise LtiException('Registration not found.')

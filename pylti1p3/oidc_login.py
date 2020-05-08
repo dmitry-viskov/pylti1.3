@@ -32,6 +32,7 @@ COOK = t.TypeVar('COOK', bound='CookieService')
 
 T_SELF = t.TypeVar('T_SELF', bound='OIDCLogin')
 
+
 class OIDCLogin(t.Generic[REQ, TCONF, SES, COOK, RED]):
     __metaclass__ = ABCMeta
     _request = None  # type: REQ
