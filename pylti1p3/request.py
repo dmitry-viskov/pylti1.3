@@ -5,8 +5,18 @@ if t.TYPE_CHECKING:
     from typing_extensions import Protocol
 
     class SessionLike(Protocol):
+        @t.overload
+        def get(self, key):
+            # type: (str) -> t.Any
+            pass
+
+        @t.overload
+        def get(self, key, default):
+            # type: (str, t.Any) -> t.Any
+            pass
+
         def get(self, key, default=None):
-            # type: (str, t.Optional[t.Any]) -> t.Any
+            # type: (str, t.Any) -> t.Any
             pass
 
         def __setitem__(self, key, value):
@@ -14,7 +24,7 @@ if t.TYPE_CHECKING:
             pass
 
         def __contains__(self, key):
-            # type: (str) -> bool
+            # type: (object) -> bool
             pass
 
 
