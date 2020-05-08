@@ -8,6 +8,7 @@ class FlaskRedirect(Redirect):
     _cookie_service = None
 
     def __init__(self, location, cookie_service=None):
+        super(FlaskRedirect, self).__init__()
         self._location = location
         self._cookie_service = cookie_service
 
