@@ -15,6 +15,7 @@ class FlaskRequest(Request):
     _request_is_secure = None
 
     def __init__(self, cookies=None, session=None, request_data=None, request_is_secure=None):
+        super(FlaskRequest, self).__init__()
         self._cookies = request.cookies if cookies is None else cookies
         self.session = flask_session if session is None else session
         self._request_is_secure = request.is_secure if request_is_secure is None else request_is_secure
