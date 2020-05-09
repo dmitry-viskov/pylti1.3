@@ -39,7 +39,7 @@ class OIDCLogin(t.Generic[REQ, TCONF, SES, COOK, RED]):
     _tool_config = None  # type: TCONF
     _session_service = None  # type: SES
     _cookie_service = None  # type: COOK
-    _launch_data_storage = None  # type: t.Optional[LaunchDataStorage[int]]
+    _launch_data_storage = None  # type: t.Optional[LaunchDataStorage[t.Any]]
     _registration = None  # type: Registration
 
     _cookies_check = False  # type: bool
@@ -49,7 +49,7 @@ class OIDCLogin(t.Generic[REQ, TCONF, SES, COOK, RED]):
     _state_params = {}  # type: t.Dict[str, object]
 
     def __init__(self, request, tool_config, session_service, cookie_service, launch_data_storage=None):
-        # type: (REQ, TCONF, SES, COOK, t.Optional[LaunchDataStorage[int]]) -> None
+        # type: (REQ, TCONF, SES, COOK, t.Optional[LaunchDataStorage[t.Any]]) -> None
         self._request = request
         self._tool_config = tool_config
         self._session_service = session_service
@@ -255,7 +255,7 @@ class OIDCLogin(t.Generic[REQ, TCONF, SES, COOK, RED]):
         return page.get_html()
 
     def set_launch_data_storage(self, data_storage):
-        # type: (T_SELF, LaunchDataStorage[int]) -> T_SELF
+        # type: (T_SELF, LaunchDataStorage[t.Any]) -> T_SELF
         data_storage.set_request(self._request)
         session_cookie_name = data_storage.get_session_cookie_name()
         if session_cookie_name:

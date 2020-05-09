@@ -143,11 +143,11 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
     _auto_validation = True  # type: bool
     _restored = False  # type: bool
     _id_token_hash = None  # type: t.Optional[str]
-    _public_key_cache_data_storage = None  # type: t.Optional[LaunchDataStorage[_KeySet]]
+    _public_key_cache_data_storage = None  # type: t.Optional[LaunchDataStorage[t.Any]]
     _public_key_cache_lifetime = None  # type: t.Optional[int]
 
     def __init__(self, request, tool_config, session_service, cookie_service, launch_data_storage=None):
-        # type: (REQ, TCONF, SES, COOK, t.Optional[LaunchDataStorage[_KeySet]]) -> None
+        # type: (REQ, TCONF, SES, COOK, t.Optional[LaunchDataStorage[t.Any]]) -> None
         self._request = request
         self._tool_config = tool_config
         self._session_service = session_service
@@ -215,7 +215,7 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
     @classmethod
     def from_cache(cls, launch_id, request, tool_config, session_service=None, cookie_service=None,
                    launch_data_storage=None):
-        # type: (t.Type[T_SELF], str, REQ, TCONF, SES, COOK, t.Optional[LaunchDataStorage[_KeySet]]) -> T_SELF
+        # type: (t.Type[T_SELF], str, REQ, TCONF, SES, COOK, t.Optional[LaunchDataStorage[t.Any]]) -> T_SELF
         obj = cls(request, tool_config, session_service=session_service, cookie_service=cookie_service,
                   launch_data_storage=launch_data_storage)
         launch_data = obj.get_session_service().get_launch_data(launch_id)
@@ -405,7 +405,7 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
             return base64.b64decode(tmp)  # type: ignore
 
     def set_public_key_caching(self, data_storage, cache_lifetime=7200):
-        # type: (LaunchDataStorage[_KeySet], int) -> None
+        # type: (LaunchDataStorage[t.Any], int) -> None
         self._public_key_cache_data_storage = data_storage
         self._public_key_cache_lifetime = cache_lifetime
 
