@@ -11,11 +11,11 @@ if t.TYPE_CHECKING:
             pass
 
         @t.overload
-        def get(self, key, default):
+        def get(self, key, default):  # pylint: disable=function-redefined
             # type: (str, t.Any) -> t.Any
             pass
 
-        def get(self, key, default=None):
+        def get(self, key, default=None):  # pylint: disable=function-redefined
             # type: (str, t.Any) -> t.Any
             pass
 
