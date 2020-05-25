@@ -20,7 +20,7 @@ if t.TYPE_CHECKING:
         'user_id': str,
         'lis_person_sourcedid': str,
         'roles': t.List[str],
-        'message': t.List[t.Dict[str, object]],
+        'message': t.Union[t.List[t.Dict[str, object]], t.Dict[str, object]],
     }, total=False)
 
 
