@@ -50,7 +50,7 @@ class Registration(object):
         return self._key_set
 
     def set_key_set(self, key_set):
-        # type: (T_SELF, _KeySet) -> T_SELF
+        # type: (T_SELF, t.Optional[_KeySet]) -> T_SELF
         self._key_set = key_set
         return self
 
