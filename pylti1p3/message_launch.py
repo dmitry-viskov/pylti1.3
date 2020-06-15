@@ -101,6 +101,7 @@ if t.TYPE_CHECKING:
             'https://purl.imsglobal.org/spec/lti-ags/claim/endpoint': _AssignmentsGradersData,
             'https://purl.imsglobal.org/spec/lti/claim/tool_platform': _ToolPlatformClaim,
             'https://purl.imsglobal.org/spec/lti/claim/role_scope_mentor': t.List[str],
+            'user_id': t.Optional[str],
         },
         total=False
     )

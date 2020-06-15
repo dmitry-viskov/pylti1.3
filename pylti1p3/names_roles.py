@@ -21,6 +21,7 @@ if t.TYPE_CHECKING:
         'lis_person_sourcedid': str,
         'roles': t.List[str],
         'message': t.Union[t.List[t.Dict[str, object]], t.Dict[str, object]],
+        'lti11_legacy_user_id': t.Optional[str],
     }, total=False)
 
 
