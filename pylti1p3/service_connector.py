@@ -79,7 +79,7 @@ class ServiceConnector(object):
 
         # Make request to get auth token
         r = requests.post(auth_url, data=auth_request)
-        if r.status_code not in (200, 201):
+        if not r.ok:
             raise LtiException('HTTP response [%s]: %s - %s' % (auth_url, str(r.status_code), r.text))
         response = r.json()
 
