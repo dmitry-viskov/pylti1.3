@@ -364,9 +364,21 @@ If you want to send multiple types of grade back, that can be done by specifying
         .set_score_maximum(100)\
         .set_label('Grade')
 
-    ags.put_grade(gr, line_item);
+    ags.put_grade(gr, line_item)
 
 If a lineitem with the same ``tag`` exists, that lineitem will be used, otherwise a new lineitem will be created.
+
+Check user's role after LTI launch
+----------------------------------
+
+.. code-block:: python
+
+    user_is_staff = message_launch.check_staff_access()
+    user_is_student = message_launch.check_student_access())
+    user_is_teacher = message_launch.check_teacher_access()
+    user_is_teaching_assistant = message_launch.check_teaching_assistant_access()
+    user_is_designer = message_launch.check_designer_access()
+    user_is_observer = message_launch.check_observer_access()
 
 Usage with Flask
 ================
