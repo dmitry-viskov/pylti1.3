@@ -1,5 +1,4 @@
 import sys
-import typing as t
 
 import django  # type: ignore
 from pylti1p3.cookie import CookieService

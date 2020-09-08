@@ -4,8 +4,6 @@ import typing as t
 import warnings
 from abc import ABCMeta, abstractmethod
 
-from ..actions import Action
-
 REQ = t.TypeVar('REQ', bound='Request')
 
 if t.TYPE_CHECKING:

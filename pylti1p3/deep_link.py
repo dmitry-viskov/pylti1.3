@@ -8,7 +8,6 @@ import jwt  # type: ignore
 if t.TYPE_CHECKING:
     from .deep_link_resource import DeepLinkResource
     from .registration import Registration
-    from .deployment import Deployment
     from typing_extensions import Literal
     from mypy_extensions import TypedDict
 
