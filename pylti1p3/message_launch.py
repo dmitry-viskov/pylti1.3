@@ -17,6 +17,7 @@ from .exception import LtiException
 from .launch_data_storage.base import DisableSessionId
 from .message_validators import get_validators
 from .names_roles import NamesRolesProvisioningService
+from .roles import StaffRole, StudentRole, TeacherRole, TeachingAssistantRole, DesignerRole, ObserverRole
 from .service_connector import ServiceConnector
 from .utils import encode_on_py3
 
@@ -653,3 +654,33 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
         # type: () -> bool
         jwt_body = self._get_jwt_body()
         return not jwt_body
+
+    def check_staff_access(self):
+        # type: () -> bool
+        jwt_body = self._get_jwt_body()
+        return StaffRole(jwt_body).check()
+
+    def check_student_access(self):
+        # type: () -> bool
+        jwt_body = self._get_jwt_body()
+        return StudentRole(jwt_body).check()
+
+    def check_teacher_access(self):
+        # type: () -> bool
+        jwt_body = self._get_jwt_body()
+        return TeacherRole(jwt_body).check()
+
+    def check_teaching_assistant_access(self):
+        # type: () -> bool
+        jwt_body = self._get_jwt_body()
+        return TeachingAssistantRole(jwt_body).check()
+
+    def check_designer_access(self):
+        # type: () -> bool
+        jwt_body = self._get_jwt_body()
+        return DesignerRole(jwt_body).check()
+
+    def check_observer_access(self):
+        # type: () -> bool
+        jwt_body = self._get_jwt_body()
+        return ObserverRole(jwt_body).check()
