@@ -76,6 +76,10 @@ disable=
     unused-import,
     import-error,
 
+# Compatibility with Python 2
+    super-with-arguments,
+    raise-missing-from,
+
 [REPORTS]
 
 # Set the output format. Available formats are text, parseable, colorized, msvs
