@@ -2,7 +2,8 @@ from __future__ import print_function
 
 import sys
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
+
 from pylti1p3 import __version__
 
 if sys.version_info < (2, 7):
@@ -10,8 +11,22 @@ if sys.version_info < (2, 7):
     print(error, file=sys.stderr)
     sys.exit(1)
 
+
+install_requires = [
+    'pyjwt>=1.5',
+    'jwcrypto',
+    'requests'
+]
+
+if sys.version_info < (3, 5):
+    extra_pkgs = ['typing']
+else:
+    extra_pkgs = []
+
 with open("README.rst", "rt") as readme:
     long_description = readme.read().strip()
+
+packages = find_packages(exclude=["examples", "tests"])
 
 setup(
     name='PyLTI1p3',
@@ -22,14 +37,10 @@ setup(
     author_email='dmitry.viskov@webenterprise.ru',
     maintainer="Dmitry Viskov",
     long_description=long_description,
-    install_requires=[
-        'pyjwt>=1.5',
-        'jwcrypto',
-        'requests'
-    ],
+    install_requires=install_requires + extra_pkgs,
     license='MIT',
     url='https://github.com/dmitry-viskov/pylti1.3',
-    packages=find_packages(exclude=["tests"]),
+    packages=packages,
     zip_safe=False,
     include_package_data=True,
     classifiers=[
@@ -53,5 +64,10 @@ setup(
         "Topic :: Software Development :: Libraries :: Application Frameworks",
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
         'Topic :: Software Development :: Libraries :: Python Modules'
-    ]
+    ],
+    package_data={
+        'pylti1p3': ['py.typed'],
+        'pylti1p3.tool_config': ['py.typed'],
+        'pylti1p3.contrib': ['py.typed'],
+    },
 )

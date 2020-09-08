@@ -1,4 +1,4 @@
-from django.apps import AppConfig
+from django.apps import AppConfig  # type: ignore
 
 
 class PyLTI1p3ToolConfig(AppConfig):

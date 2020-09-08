@@ -1,15 +1,21 @@
-from flask import request, session as flask_session
+import typing as t
 
+from flask import request
+from flask import session as flask_session
 from pylti1p3.request import Request
+
+if t.TYPE_CHECKING:
+    from pylti1p3.request import SessionLike
 
 
 class FlaskRequest(Request):
-    session = None
+    session = None  # type: SessionLike
     _cookies = None
     _request_data = None
     _request_is_secure = None
 
     def __init__(self, cookies=None, session=None, request_data=None, request_is_secure=None):
+        super(FlaskRequest, self).__init__()
         self._cookies = request.cookies if cookies is None else cookies
         self.session = flask_session if session is None else session
         self._request_is_secure = request.is_secure if request_is_secure is None else request_is_secure

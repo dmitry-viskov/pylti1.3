@@ -1,15 +1,18 @@
-import django
+import sys
+import typing as t
 
+import django  # type: ignore
 from pylti1p3.cookie import CookieService
-try:
-    import Cookie
-except ImportError:
-    import http.cookies as Cookie
+
+if sys.version_info[0] > 2:
+    import http.cookies as Cookie  # type: ignore
+else:
+    import Cookie  # type: ignore
 
 # Add support for the SameSite attribute (obsolete when PY37 is unsupported).
 # pylint: disable=protected-access
-if 'samesite' not in Cookie.Morsel._reserved:
-    Cookie.Morsel._reserved.setdefault('samesite', 'SameSite')
+if 'samesite' not in Cookie.Morsel._reserved:  # type: ignore
+    Cookie.Morsel._reserved.setdefault('samesite', 'SameSite')  # type: ignore
 
 
 class DjangoCookieService(CookieService):

@@ -1,15 +1,44 @@
 import sys
 import time
+import typing as t
 import uuid
-import jwt
+
+import jwt  # type: ignore
+
+if t.TYPE_CHECKING:
+    from .deep_link_resource import DeepLinkResource
+    from .registration import Registration
+    from .deployment import Deployment
+    from typing_extensions import Literal
+    from mypy_extensions import TypedDict
+
+    _DeepLinkData = TypedDict(
+        '_DeepLinkData',
+        {
+            # Required data:
+            'deep_link_return_url': str,
+            'accept_types': t.List[Literal['link', 'ltiResourceLink']],
+            'accept_presentation_document_targets': t.List[
+                Literal['iframe', 'window', 'embed']],
+
+            # Optional data
+            'accept_multiple': t.Union[bool, Literal['true', 'false']],
+            'auto_create': t.Union[bool, Literal['true', 'false']],
+            'title': str,
+            'text': str,
+            'data': object,
+        },
+        total=False,
+    )
 
 
 class DeepLink(object):
-    _registration = None
-    _deployment_id = None
-    _deep_link_settings = None
+    _registration = None  # type: Registration
+    _deployment_id = None  # type: str
+    _deep_link_settings = None  # type: _DeepLinkData
 
     def __init__(self, registration, deployment_id, deep_link_settings):
+        # type: (Registration, str, _DeepLinkData) -> None
         self._registration = registration
         self._deployment_id = deployment_id
         self._deep_link_settings = deep_link_settings
@@ -18,6 +47,7 @@ class DeepLink(object):
         return uuid.uuid4().hex + uuid.uuid1().hex
 
     def get_message_jwt(self, resources):
+        # type: (t.Sequence[DeepLinkResource]) -> t.Dict[str, object]
         message_jwt = {
             'iss': self._registration.get_client_id(),
             'aud': [self._registration.get_issuer()],
@@ -42,10 +72,12 @@ class DeepLink(object):
         return encoded_jwt.decode('utf-8') if sys.version_info[0] > 2 else encoded_jwt
 
     def get_response_jwt(self, resources):
+        # type: (t.Sequence[DeepLinkResource]) -> str
         message_jwt = self.get_message_jwt(resources)
         return self.encode_jwt(message_jwt)
 
     def get_response_form_html(self, jwt_val):
+        # type: (str) -> str
         html = '<form id="lti13_deep_link_auto_submit" action="%s" method="POST">' \
                '<input type="hidden" name="JWT" value="%s" /></form>' \
                '<script type="text/javascript">document.getElementById(\'lti13_deep_link_auto_submit\').submit();' \
@@ -53,5 +85,6 @@ class DeepLink(object):
         return html
 
     def output_response_form(self, resources):
+        # type: (t.List[DeepLinkResource]) -> str
         jwt_val = self.get_response_jwt(resources)
         return self.get_response_form_html(jwt_val)

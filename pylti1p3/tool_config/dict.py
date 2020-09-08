@@ -1,14 +1,23 @@
-from .abstract import ToolConfAbstract
-from ..registration import Registration
+import typing as t
+
 from ..deployment import Deployment
+from ..registration import Registration
+from ..request import Request
+from .abstract import ToolConfAbstract
+
+if t.TYPE_CHECKING:
+    from ..message_launch import _LaunchData
+    from typing_extensions import Literal
+    from .abstract import FIND_REG_KWARGS
 
 
-class ToolConfDict(ToolConfAbstract):
+class ToolConfDict(ToolConfAbstract[Request]):
     _config = None
-    _private_key = None
-    _public_key = None
+    _private_key = None  # type: t.Optional[t.Mapping[str, str]]
+    _public_key = None  # type: t.Optional[t.Mapping[str, str]]
 
     def __init__(self, json_data):
+        # type: (dict) -> None
         """
         json_data is a dict where each key is issuer and value is issuer's configuration.
         Configuration could be set in two formats:
@@ -73,6 +82,7 @@ class ToolConfDict(ToolConfAbstract):
         self._public_key = {}
 
     def _validate_iss_config_item(self, iss, iss_config_item):
+        # type: (str, t.Any) -> None
         if not isinstance(iss_config_item, dict):
             raise Exception("Invalid configuration %s for the %s issuer. Must be dict" % (iss, str(iss_config_item)))
         required_keys = ['auth_login_url', 'auth_token_url', 'client_id', 'deployment_ids']
@@ -85,6 +95,7 @@ class ToolConfDict(ToolConfAbstract):
                             % (str(iss_config_item), iss))
 
     def _get_registration(self, iss, iss_conf):
+        # type: (str, t.Any) -> Registration
         reg = Registration()
         reg.set_auth_login_url(iss_conf['auth_login_url'])\
             .set_auth_token_url(iss_conf['auth_token_url'])\
@@ -108,10 +119,12 @@ class ToolConfDict(ToolConfAbstract):
         return d.set_deployment_id(deployment_id)
 
     def find_registration_by_issuer(self, iss, *args, **kwargs):
+        # pylint: disable=unused-argument
         iss_conf = self.get_iss_config(iss)
         return self._get_registration(iss, iss_conf)
 
     def find_registration_by_params(self, iss, client_id, *args, **kwargs):
+        # pylint: disable=unused-argument
         iss_conf = self.get_iss_config(iss, client_id)
         return self._get_registration(iss, iss_conf)
 
@@ -120,6 +133,7 @@ class ToolConfDict(ToolConfAbstract):
         return self._get_deployment(iss_conf, deployment_id)
 
     def find_deployment_by_params(self, iss, deployment_id, client_id, *args, **kwargs):
+        # pylint: disable=unused-argument
         iss_conf = self.get_iss_config(iss, client_id)
         return self._get_deployment(iss_conf, deployment_id)
 
@@ -174,6 +188,7 @@ class ToolConfDict(ToolConfAbstract):
         return self._config[iss]
 
     def get_jwks(self, iss=None, client_id=None, **kwargs):
+        # pylint: disable=unused-argument
         if iss or client_id:
             return super(ToolConfDict, self).get_jwks(iss, client_id)
 

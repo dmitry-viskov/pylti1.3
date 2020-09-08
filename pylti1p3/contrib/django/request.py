@@ -6,6 +6,10 @@ class DjangoRequest(Request):
     _post_only = False
     _default_params = None
 
+    @property
+    def session(self):
+        return self._request.session
+
     def __init__(self, request, post_only=False, default_params=None):
         self.set_request(request)
         self._post_only = post_only

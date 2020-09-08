@@ -1,5 +1,6 @@
 import json
 import os
+
 from .dict import ToolConfDict
 
 
@@ -7,6 +8,7 @@ class ToolConfJsonFile(ToolConfDict):
     _configs_dir = None
 
     def __init__(self, config_file):
+        # type: (str) -> None
         """
         config_file contains JSON with issuers settings.
         Each key is issuer and value is issuer's configuration.

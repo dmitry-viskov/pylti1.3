@@ -1,5 +1,5 @@
-from django.http import HttpResponse
-from django.shortcuts import redirect
+from django.http import HttpResponse  # type: ignore
+from django.shortcuts import redirect  # type: ignore
 from pylti1p3.redirect import Redirect
 
 
@@ -8,6 +8,7 @@ class DjangoRedirect(Redirect):
     _cookie_service = None
 
     def __init__(self, location, cookie_service=None):
+        super(DjangoRedirect, self).__init__()
         self._location = location
         self._cookie_service = cookie_service
 

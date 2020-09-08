@@ -1,14 +1,16 @@
 import json
+import typing as t
 
 
 class CookiesAllowedCheckPage(object):
-    _params = {}
-    _protocol = 'http'
-    _main_text = ''
-    _click_text = ''
-    _loading_text = ''
+    _params = {}  # type: t.Mapping[str, str]
+    _protocol = 'http'  # type: str
+    _main_text = ''  # type: str
+    _click_text = ''  # type: str
+    _loading_text = ''  # type: str
 
     def __init__(self, params, protocol, main_text, click_text, loading_text, *args, **kwargs):
+        # type: (t.Mapping[str, str], str, str, str, str, *None, **None) -> None
         # pylint: disable=unused-argument
         self._params = params
         self._protocol = protocol
@@ -17,6 +19,7 @@ class CookiesAllowedCheckPage(object):
         self._loading_text = loading_text
 
     def get_css_block(self):
+        # type: () -> str
         css_block = """\
         body {
         font-family: Geneva, Arial, Helvetica, sans-serif;
@@ -25,6 +28,7 @@ class CookiesAllowedCheckPage(object):
         return css_block
 
     def get_js_block(self):
+        # type: () -> str
         js_block = """\
         var siteProtocol = '%s';
         var urlParams = %s;
@@ -84,9 +88,11 @@ class CookiesAllowedCheckPage(object):
         return js_block
 
     def get_header_block(self):
+        # type: () -> str
         return ''
 
     def get_html(self):
+        # type: () -> str
         html = """\
         <!DOCTYPE html>
         <html lang="en">
