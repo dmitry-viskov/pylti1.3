@@ -26,19 +26,14 @@ class AbstractRole(object):
 
     def check(self):
         # type: () -> bool
-        roles = []
-
         for role_str in self._jwt_roles:
-            roles.append(self.parse(role_str))
-
-        for val in roles:
-            role_name, role_type = val
-            res = self.check_role(role_name, role_type)
+            role_name, role_type = self.parse_role_str(role_str)
+            res = self._check_access(role_name, role_type)
             if res:
                 return True
         return False
 
-    def check_role(self, role_name, role_type=None):
+    def _check_access(self, role_name, role_type=None):
         # type: (str, t.Optional[str]) -> bool
         return bool((self._system_roles and role_type == RoleType.SYSTEM and role_name in self._system_roles)
                     or (self._institution_roles and role_type == RoleType.INSTITUTION
@@ -46,7 +41,7 @@ class AbstractRole(object):
                     or (self._context_roles and role_type == RoleType.CONTEXT and role_name in self._context_roles)
                     or (self._common_roles and role_type is None and role_name in self._common_roles))
 
-    def parse(self, role_str):
+    def parse_role_str(self, role_str):
         # type: (str) -> t.Tuple[str, t.Optional[str]]
         if role_str.startswith(self._base_prefix):
             role = role_str[len(self._base_prefix):]
