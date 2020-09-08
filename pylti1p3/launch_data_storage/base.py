@@ -89,6 +89,5 @@ class DisableSessionId(object):
 
     def __exit__(self, *args):
         # type: (*t.Any) -> None
-        if self._launch_data_storage:
-            assert self._session_id is not None
+        if self._launch_data_storage and self._session_id:
             self._launch_data_storage.set_session_id(self._session_id)
