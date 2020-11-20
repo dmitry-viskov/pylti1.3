@@ -379,6 +379,7 @@ Check user's role after LTI launch
     user_is_teaching_assistant = message_launch.check_teaching_assistant_access()
     user_is_designer = message_launch.check_designer_access()
     user_is_observer = message_launch.check_observer_access()
+    user_is_transient = message_launch.check_transient()
 
 Usage with Flask
 ================

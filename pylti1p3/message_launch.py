@@ -17,7 +17,8 @@ from .exception import LtiException
 from .launch_data_storage.base import DisableSessionId
 from .message_validators import get_validators
 from .names_roles import NamesRolesProvisioningService
-from .roles import StaffRole, StudentRole, TeacherRole, TeachingAssistantRole, DesignerRole, ObserverRole
+from .roles import StaffRole, StudentRole, TeacherRole, TeachingAssistantRole, DesignerRole, ObserverRole, \
+    TransientRole
 from .service_connector import ServiceConnector
 from .utils import encode_on_py3
 
@@ -684,3 +685,8 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
         # type: () -> bool
         jwt_body = self._get_jwt_body()
         return ObserverRole(jwt_body).check()
+
+    def check_transient(self):
+        # type: () -> bool
+        jwt_body = self._get_jwt_body()
+        return TransientRole(jwt_body).check()

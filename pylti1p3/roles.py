@@ -86,3 +86,10 @@ class DesignerRole(AbstractRole):
 class ObserverRole(AbstractRole):
     _common_roles = ('Mentor',)  # type: tuple
     _context_roles = ('Mentor',)  # type: tuple
+
+
+class TransientRole(AbstractRole):
+    _common_roles = ('Transient',)  # type: tuple
+    _system_roles = ('Transient',)  # type: tuple
+    _institution_roles = ('Transient',)  # type: tuple
+    _context_roles = ('Transient',)  # type: tuple
