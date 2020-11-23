@@ -15,13 +15,9 @@ if sys.version_info < (2, 7):
 install_requires = [
     'pyjwt>=1.5',
     'jwcrypto',
-    'requests'
+    'requests',
+    'typing;python_version<"3.5"'
 ]
-
-if sys.version_info < (3, 5):
-    extra_pkgs = ['typing']
-else:
-    extra_pkgs = []
 
 with open("README.rst", "rt") as readme:
     long_description = readme.read().strip()
@@ -37,7 +33,7 @@ setup(
     author_email='dmitry.viskov@webenterprise.ru',
     maintainer="Dmitry Viskov",
     long_description=long_description,
-    install_requires=install_requires + extra_pkgs,
+    install_requires=install_requires,
     license='MIT',
     url='https://github.com/dmitry-viskov/pylti1.3',
     packages=packages,
