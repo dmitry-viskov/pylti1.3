@@ -68,7 +68,9 @@ class DeepLink(object):
             headers = {'kid': kid}
         encoded_jwt = jwt.encode(message, self._registration.get_tool_private_key(), algorithm='RS256',
                                  headers=headers)
-        return encoded_jwt.decode('utf-8') if sys.version_info[0] > 2 else encoded_jwt
+        if sys.version_info[0] > 2 and isinstance(encoded_jwt, bytes):
+            return encoded_jwt.decode('utf-8')
+        return encoded_jwt
 
     def get_response_jwt(self, resources):
         # type: (t.Sequence[DeepLinkResource]) -> str

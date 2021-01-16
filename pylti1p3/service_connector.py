@@ -67,8 +67,7 @@ class ServiceConnector(object):
         # Sign the JWT with our private key (given by the platform on registration)
         private_key = self._registration.get_tool_private_key()
         assert private_key is not None, 'Private key should be set at this point'
-        jwt_val = jwt.encode(jwt_claim, private_key, algorithm='RS256',
-                             headers=headers)
+        jwt_val = self.encode_jwt(jwt_claim, private_key, headers)
 
         auth_request = {
             'grant_type': 'client_credentials',
@@ -85,6 +84,12 @@ class ServiceConnector(object):
 
         self._access_tokens[scope_key] = response['access_token']
         return self._access_tokens[scope_key]
+
+    def encode_jwt(self, message, private_key, headers):
+        jwt_val = jwt.encode(message, private_key, algorithm='RS256', headers=headers)
+        if sys.version_info[0] > 2 and isinstance(jwt_val, bytes):
+            return jwt_val.decode('utf-8')
+        return jwt_val
 
     def make_service_request(
             self,
