@@ -11,9 +11,9 @@ LTI 1.3 Advantage Tool implementation in Python
     :target: https://www.python.org/
     :alt: Python
 
-.. image:: https://travis-ci.org/dmitry-viskov/pylti1.3.svg?branch=master
+.. image:: https://travis-ci.com/dmitry-viskov/pylti1.3.svg?branch=master
     :scale: 100%
-    :target: https://travis-ci.org/dmitry-viskov/pylti1.3
+    :target: https://travis-ci.com/dmitry-viskov/pylti1.3
     :alt: Build Status
 
 .. image:: https://img.shields.io/github/license/dmitry-viskov/pylti1.3
