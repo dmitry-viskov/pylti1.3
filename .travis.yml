@@ -1,23 +1,27 @@
 language: python
 cache: pip
 os: linux
-dist: xenial
 
 jobs:
   include:
     - python: 2.7
+      dist: bionic
       env:
         - TOX_ENV=py27
     - python: 3.5
+      dist: bionic
       env:
         - TOX_ENV=py35
     - python: 3.6
+      dist: bionic
       env:
         - TOX_ENV=py36
     - python: 3.7
+      dist: focal
       env:
         - TOX_ENV=py37
     - python: 3.8
+      dist: focal
       env:
         - TOX_ENV=py38
 
