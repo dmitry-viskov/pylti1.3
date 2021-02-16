@@ -7,10 +7,11 @@ import uuid
 import jwt  # type: ignore
 import requests
 
-from .exception import LtiException
+from .exception import LtiServiceException
 
 if t.TYPE_CHECKING:
     from mypy_extensions import TypedDict
+
     from .registration import Registration
 
     _ServiceConnectorResponse = TypedDict('_ServiceConnectorResponse', {
@@ -79,7 +80,7 @@ class ServiceConnector(object):
         # Make request to get auth token
         r = requests.post(auth_url, data=auth_request)
         if not r.ok:
-            raise LtiException('HTTP response [%s]: %s - %s' % (auth_url, str(r.status_code), r.text))
+            raise LtiServiceException(r)
         response = r.json()
 
         self._access_tokens[scope_key] = response['access_token']
@@ -114,8 +115,8 @@ class ServiceConnector(object):
         else:
             r = requests.get(url, headers=headers)
 
-        if r.status_code not in (200, 201):
-            raise LtiException('HTTP response [%s]: %s - %s' % (url, str(r.status_code), r.text))
+        if not r.ok:
+            raise LtiServiceException(r)
 
         return {
             'headers': dict(r.headers),
