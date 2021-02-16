@@ -14,12 +14,10 @@ if t.TYPE_CHECKING:
 
     from .registration import Registration
 
-    _ServiceConnectorResponse = TypedDict(
-        '_ServiceConnectorResponse', {
-            'headers': t.Dict[str, str],
-            'body': t.Union[None, int, float, t.List[object], t.
-                            Dict[str, object], str],
-        })
+    _ServiceConnectorResponse = TypedDict('_ServiceConnectorResponse', {
+        'headers': t.Dict[str, str],
+        'body': t.Union[None, int, float, t.List[object], t.Dict[str, object], str],
+    })
 
 
 class ServiceConnector(object):
