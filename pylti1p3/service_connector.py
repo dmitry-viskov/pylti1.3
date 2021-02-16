@@ -16,11 +16,9 @@ if t.TYPE_CHECKING:
 
     _ServiceConnectorResponse = TypedDict(
         '_ServiceConnectorResponse', {
-            'headers':
-            t.Dict[str, str],
-            'body':
-            t.Union[None, int, float, t.List[object], t.
-                    Dict[str, object], str],
+            'headers': t.Dict[str, str],
+            'body': t.Union[None, int, float, t.List[object], t.
+                            Dict[str, object], str],
         })
 
 
@@ -76,23 +74,22 @@ class ServiceConnector(object):
 
         auth_request = {
             'grant_type': 'client_credentials',
-            'client_assertion_type':
-            'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+            'client_assertion_type': 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
             'client_assertion': jwt_val,
             'scope': ' '.join(scopes)
         }
 
         # Make request to get auth token
         r = requests.post(auth_url, data=auth_request)
-        LtiServiceException.maybe_raise(r)
+        if not r.ok:
+            raise LtiServiceException(r)
         response = r.json()
 
         self._access_tokens[scope_key] = response['access_token']
         return self._access_tokens[scope_key]
 
     def encode_jwt(self, message, private_key, headers):
-        jwt_val = jwt.encode(
-            message, private_key, algorithm='RS256', headers=headers)
+        jwt_val = jwt.encode(message, private_key, algorithm='RS256', headers=headers)
         if sys.version_info[0] > 2 and isinstance(jwt_val, bytes):
             return jwt_val.decode('utf-8')
         return jwt_val
@@ -108,7 +105,10 @@ class ServiceConnector(object):
     ):
         # type: (...) -> _ServiceConnectorResponse
         access_token = self.get_access_token(scopes)
-        headers = {'Authorization': 'Bearer ' + access_token, 'Accept': accept}
+        headers = {
+            'Authorization': 'Bearer ' + access_token,
+            'Accept': accept
+        }
 
         if is_post:
             headers['Content-Type'] = content_type
@@ -117,7 +117,8 @@ class ServiceConnector(object):
         else:
             r = requests.get(url, headers=headers)
 
-        LtiServiceException.maybe_raise(r)
+        if not r.ok:
+            raise LtiServiceException(r)
 
         return {
             'headers': dict(r.headers),

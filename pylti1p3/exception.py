@@ -23,11 +23,3 @@ class LtiServiceException(LtiException):
         )
         super(LtiServiceException, self).__init__(msg)
         self.response = response
-
-    @classmethod
-    def maybe_raise(cls, response):
-        # type: (requests.Response) -> None
-        """Raise an ``LtiServiceException`` when the response is not ``ok``.
-        """
-        if not response.ok:
-            raise cls(response)
