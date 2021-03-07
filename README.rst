@@ -23,11 +23,11 @@ LTI 1.3 Advantage Tool implementation in Python
 
 
 This project is a Python implementation of the similar `PHP tool`_.
-This library contains adapters for use with the Django and Flask web frameworks. However, there are no difficulties with adapting it to other frameworks; you just need to re-implement ``OIDCLogin`` and ``MessageLaunch`` classes as it is already done in existing adapters.
+This library contains adapters for use with the Django and Flask web frameworks. However, there are no difficulties with adapting it to other frameworks; you just need to re-implement the ``OIDCLogin`` and ``MessageLaunch`` classes as it is already done in existing adapters.
 
 .. _PHP tool: https://github.com/IMSGlobal/lti-1-3-php-library
 
-Examples of usage
+Usage Examples
 =================
 
 Django: https://github.com/dmitry-viskov/pylti1.3-django-example
@@ -46,20 +46,20 @@ To configure your own tool, you may use built-in adapters:
 
     from pylti1p3.tool_config import ToolConfDict
     settings = {
-        "<issuer_1>": { },  # one issuer ~ one client-id (outdated and not recommended way)
-        "<issuer_2>": [{ }, { }]  # one issuer ~ many client-ids (preferable way)
+        "<issuer_1>": { },  # one issuer ~ one client-id (outdated and not recommended)
+        "<issuer_2>": [{ }, { }]  # one issuer ~ many client-ids (recommended method)
     }
     private_key = '...'
     public_key = '...'
     tool_conf = ToolConfDict(settings)
 
-    client_id = '...' # must be set in case of "one issuer ~ many client-ids" concept
+    client_id = '...' # must be set if implementing the "one issuer ~ many client-ids" concept
 
     tool_conf.set_private_key(iss, private_key, client_id=client_id)
     tool_conf.set_public_key(iss, public_key, client_id=client_id)
 
 or create your own implementation. The ``pylti1p3.tool_config.ToolConfAbstract`` interface must be fully implemented for this to work.
-The concept of ``one issuer ~ many client-ids`` is the preferred way to organize configs and may be useful in the case of integration with Canvas (https://canvas.instructure.com)
+The concept of ``one issuer ~ many client-ids`` is the recommended way to organize configs and may be useful in the case of integration with Canvas (https://canvas.instructure.com)
 or other Cloud LMS-es where the platform doesn't change ``iss`` for each customer.
 
 In the case of the Django Framework, you may use ``DjangoDbToolConf`` (see `Configuration using Django Admin UI`_ section below).
@@ -155,7 +155,7 @@ To handle this request, you must first create a new ``OIDCLogin`` (or ``DjangoOI
 
     oidc_login = DjangoOIDCLogin(request, tool_conf)
 
-Now you must configure your login request with a return url (this must be preconfigured and white-listed on the tool).
+You must now configure your login request with a return url (this must be preconfigured and white-listed in the tool).
 If a redirect url is not given or the registration does not exist, a ``pylti1p3.exception.OIDC_Exception`` will be thrown.
 
 .. code-block:: python
@@ -175,7 +175,7 @@ This will add a HTTP 302 location header:
 
     oidc_login.redirect(get_launch_url(request))
 
-This will display some Javascript to do the redirect instead of using a HTTP 302:
+This will display some JavaScript to do the redirect instead of using a HTTP 302:
 
 .. code-block:: python
 
@@ -219,7 +219,7 @@ You may do it more explicitly:
 
 Now that we know the launch is valid, we can find out more information about the launch.
 
-Check if we have a resource launch or a deep linking launch:
+To check if we have a resource launch or a deep linking launch:
 
 .. code-block:: python
 
@@ -230,7 +230,7 @@ Check if we have a resource launch or a deep linking launch:
     else:
         # Unknown launch type
 
-Check which services we have access to:
+To check which services we have access to:
 
 .. code-block:: python
 
@@ -268,13 +268,13 @@ Deep Linking Responses
 
 If you receive a deep linking launch, it is very likely that you are going to want to respond to the deep linking request with resources for the platform.
 
-To create a deep link response you will need to get the deep link for the current launch:
+To create a deep link response, you will need to get the deep link for the current launch:
 
 .. code-block:: python
 
     deep_link = message_launch.get_deep_link()
 
-Now we need to create ``pylti1p3.deep_link_resource.DeepLinkResource`` to return:
+We now need to create ``pylti1p3.deep_link_resource.DeepLinkResource`` to return:
 
 .. code-block:: python
 
@@ -313,7 +313,7 @@ Once we know we can access it, we can get an instance of the service from the la
 
     nrps = message_launch.get_nrps()
 
-From the service we can get list of all members by calling:
+From the service we can get a list of all members by calling:
 
 .. code-block:: python
 
@@ -389,7 +389,7 @@ Open Id Connect Login Request
 
 This is a draft of an API endpoint. Wrap it in a library of your choice.
 
-Create a ``FlaskRequest`` adapter. Then create an instance of ``FlaskOIDCLogin``. ``redirect`` method will return instance of ``werkzeug.wrappers.Response`` that points to the LTI platform if login was successful. Handle exceptions.
+Create a ``FlaskRequest`` adapter. Then create an instance of ``FlaskOIDCLogin``. The ``redirect`` method will return an instance of ``werkzeug.wrappers.Response`` that points to the LTI platform if login was successful. Make sure to handle exceptions.
 
 .. code-block:: python
 
@@ -429,7 +429,7 @@ LTI Message Launches
 
 This is a draft of an API endpoint. Wrap it in a library of your choice.
 
-Create a ``FlaskRequest`` adapter. Then create an instance of ``FlaskMessageLaunch``. This lets you access data from the LTI launch message if the launch was successful. Handle exceptions.
+Create a ``FlaskRequest`` adapter. Then create an instance of ``FlaskMessageLaunch``. This lets you access data from the LTI launch message if the launch was successful. Make sure to handle exceptions.
 
 .. code-block:: python
 
@@ -575,7 +575,7 @@ You may generate JWKS from a Tool Config object:
     # or you may specify iss and client_id:
     jwks_dict = tool_conf.get_jwks(iss, client_id)  # {"keys": [{ ... }]}
 
-Don't forget to set a public key as without it, JWKS can't be generated.
+Do not forget to set a public key as without it, JWKS cannot be generated.
 You may also generate JWK for any public key using the construction below:
 
 .. code-block:: python
