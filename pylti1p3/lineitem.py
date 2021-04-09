@@ -1,5 +1,6 @@
 import json
 import typing as t
+from .exception import LtiException
 
 if t.TYPE_CHECKING:
     T_SELF = t.TypeVar('T_SELF', bound='LineItem')
@@ -37,55 +38,96 @@ class LineItem(object):
 
     def get_label(self):
         # type: () -> t.Optional[str]
+        """
+        https://www.imsglobal.org/spec/lti-ags/v2p0/#label
+        """
         return self._label
 
     def set_label(self, value):
         # type: (T_SELF, str) -> T_SELF
+        """
+        https://www.imsglobal.org/spec/lti-ags/v2p0/#label
+        """
         self._label = value
         return self
 
     def get_score_maximum(self):
         # type: () -> t.Optional[float]
+        """
+        https://www.imsglobal.org/spec/lti-ags/v2p0/#scoremaximum
+        """
         return self._score_maximum
 
     def set_score_maximum(self, value):
         # type: (T_SELF, float) -> T_SELF
+        """
+        https://www.imsglobal.org/spec/lti-ags/v2p0/#scoremaximum
+        """
+        if not isinstance(value, (int, float)):
+            raise LtiException('Invalid scoreMaximum value: score must be integer or float')
+        if value <= 0:
+            raise LtiException('Invalid scoreMaximum value: score must be non null value, strictly greater than 0')
+
         self._score_maximum = value
         return self
 
     def get_resource_id(self):
         # type: () -> t.Optional[str]
+        """
+        https://www.imsglobal.org/spec/lti-ags/v2p0/#tool-resource-identifier-resourceid
+        """
         return self._resource_id
 
     def set_resource_id(self, value):
         # type: (T_SELF, str) -> T_SELF
+        """
+        https://www.imsglobal.org/spec/lti-ags/v2p0/#tool-resource-identifier-resourceid
+        """
         self._resource_id = value
         return self
 
     def get_tag(self):
         # type: () -> t.Optional[str]
+        """
+        https://www.imsglobal.org/spec/lti-ags/v2p0/#tag
+        """
         return self._tag
 
     def set_tag(self, value):
         # type: (T_SELF, str) -> T_SELF
+        """
+        https://www.imsglobal.org/spec/lti-ags/v2p0/#tag
+        """
         self._tag = value
         return self
 
     def get_start_date_time(self):
         # type: () -> t.Optional[str]
+        """
+        https://www.imsglobal.org/spec/lti-ags/v2p0/#startdatetime
+        """
         return self._start_date_time
 
     def set_start_date_time(self, value):
         # type: (T_SELF, str) -> T_SELF
+        """
+        https://www.imsglobal.org/spec/lti-ags/v2p0/#startdatetime
+        """
         self._start_date_time = value
         return self
 
     def get_end_date_time(self):
         # type: () -> t.Optional[str]
+        """
+        https://www.imsglobal.org/spec/lti-ags/v2p0/#enddatetime
+        """
         return self._end_date_time
 
     def set_end_date_time(self, value):
         # type: (T_SELF, str) -> T_SELF
+        """
+        https://www.imsglobal.org/spec/lti-ags/v2p0/#enddatetime
+        """
         self._end_date_time = value
         return self
 
@@ -93,7 +135,7 @@ class LineItem(object):
         # type: () -> str
         data = {
             'id': self._id if self._id else None,
-            'scoreMaximum': self._score_maximum if self._score_maximum else None,
+            'scoreMaximum': self._score_maximum,
             'label': self._label,
             'resourceId': self._resource_id,
             'tag': self._tag,
