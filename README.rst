@@ -463,7 +463,7 @@ Create a ``FlaskRequest`` adapter. Then create an instance of ``FlaskMessageLaun
         # and redirect to tool content here
 
 Cookies issues in the iframes
-============================
+=============================
 
 Some browsers may deny requests to save cookies in the iframes. For example, `Google Chrome (from ver.80 onwards) denies requests to save`_ all cookies in
 the iframes except cookies with the flags ``Secure`` (i.e HTTPS usage) and ``SameSite=None``. `Safari denies requests to save`_
@@ -480,7 +480,7 @@ all third-party cookies by default. The ``pylti1p3`` library contains workaround
             .enable_check_cookies()\
             .redirect(target_link_uri)
 
-After this, the special JS code will try to write and then read test cookie instead of redirect. The user will see a 
+After this, the special JS code will try to write and then read test cookie instead of redirect. The user will see a
 `special page`_ that will ask them to open the current URL in the new window if cookies are unavailable. If
 cookies are allowed, the user will be transparently redirected to the next page. All texts are configurable with passing arguments:
 
