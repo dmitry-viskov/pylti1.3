@@ -81,8 +81,8 @@ class Grade(object):
     def get_value(self):
         # type: () -> str
         data = {
-            'scoreGiven': self._score_given if self._score_given else None,
-            'scoreMaximum': self._score_maximum if self._score_maximum else None,
+            'scoreGiven': self._score_given,
+            'scoreMaximum': self._score_maximum,
             'activityProgress': self._activity_progress,
             'gradingProgress': self._grading_progress,
             'timestamp': self._timestamp,
