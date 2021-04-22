@@ -494,7 +494,7 @@ You may also have troubles with the default framework sessions because the ``pyl
 settings connected with the session ID cookie. Without necessary settings, the user's session could be unavailable in the
 case of iframe usage. To avoid this, it is recommended to change the default session adapter to the new cache
 adapter (with a memcache/redis backend) and as a consequence, allow the library to set its own LTI 1.3 session id cookie
-that will be set with all necessary params like `Secure` and `SameSite=None`.
+that will be set with all necessary params like ``Secure`` and ``SameSite=None``.
 
 Django cache data storage
 -------------------------
