@@ -48,8 +48,13 @@ class NamesRolesProvisioningService(object):
 
             members.extend(t.cast(t.Any, page.get('body', {})).get('members', []))
 
+            link_header = ''
+            for header, header_value in page.get('headers', {}).items():
+                if header.lower() == 'link':
+                    link_header = header_value
+                    break
+
             next_page = False
-            link_header = page.get('headers', {}).get('link', '')
             if link_header:
                 match = re.search(r'<([^>]*)>;\s*rel="next"', link_header.replace('\n', ' ').lower().strip())
                 if match:
