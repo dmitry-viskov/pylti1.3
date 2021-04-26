@@ -10,12 +10,15 @@ import requests
 from .exception import LtiServiceException
 
 if t.TYPE_CHECKING:
+    try:
+        from collections import MutableMapping
+    except ImportError:
+        from collections.abc import MutableMapping
     from mypy_extensions import TypedDict
-    from requests.structures import CaseInsensitiveDict
     from .registration import Registration
 
     _ServiceConnectorResponse = TypedDict('_ServiceConnectorResponse', {
-        'headers': t.Union[t.Dict[str, str], CaseInsensitiveDict[str]],
+        'headers': t.Union[t.Dict[str, str], MutableMapping[str, str]],
         'body': t.Union[None, int, float, t.List[object], t.Dict[str, object], str],
     })
 
