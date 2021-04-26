@@ -65,18 +65,17 @@ disable=
     import-outside-toplevel,
     no-else-return,
     too-many-boolean-expressions,
+    consider-using-with,
 
 # We can decide if names are invalid on our own
     invalid-name,
-
-# python2-compatible
-    useless-object-inheritance,
 
 # Conditional imports for type checking
     unused-import,
     import-error,
 
 # Compatibility with Python 2
+    useless-object-inheritance,
     super-with-arguments,
     raise-missing-from,
 
