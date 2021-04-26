@@ -43,7 +43,8 @@ class NamesRolesProvisioningService(object):
             page = self._service_connector.make_service_request(
                 ['https://purl.imsglobal.org/spec/lti-nrps/scope/contextmembership.readonly'],
                 next_page,  # type: ignore
-                accept='application/vnd.ims.lti-nrps.v2.membershipcontainer+json'
+                accept='application/vnd.ims.lti-nrps.v2.membershipcontainer+json',
+                case_insensitive_headers=True
             )
 
             members.extend(t.cast(t.Any, page.get('body', {})).get('members', []))
