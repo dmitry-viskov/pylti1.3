@@ -16,6 +16,9 @@ from .deep_link import DeepLink
 from .exception import LtiException
 from .launch_data_storage.base import DisableSessionId
 from .message_validators import get_validators
+from .message_validators.deep_link import DeepLinkMessageValidator
+from .message_validators.privacy_launch import PrivacyLaunchValidator
+from .message_validators.resource_message import ResourceMessageValidator
 from .names_roles import NamesRolesProvisioningService
 from .roles import StaffRole, StudentRole, TeacherRole, TeachingAssistantRole, DesignerRole, ObserverRole, \
     TransientRole
@@ -89,6 +92,21 @@ if t.TYPE_CHECKING:
         total=False,
     )
 
+    _ForUserClaim = TypedDict(
+        '_ForUserClaim', {
+            # Required data
+            'id': str,
+
+            # Optional data
+            'person_sourcedId': str,
+            'given_name': str,
+            'family_name': str,
+            'name': str,
+            'email': str,
+            'roles': t.List[str]
+        }
+    )
+
     _LaunchData = TypedDict(
         '_LaunchData', {
             # Required data
@@ -96,14 +114,13 @@ if t.TYPE_CHECKING:
             'nonce': str,
             'aud': t.Union[t.List[str], str],
             'https://purl.imsglobal.org/spec/lti/claim/message_type':
-                Literal['LtiResourceLinkRequest', 'LtiDeepLinkingRequest'],
+                Literal['LtiResourceLinkRequest', 'LtiDeepLinkingRequest', 'DataPrivacyLaunchRequest'],
             'https://purl.imsglobal.org/spec/lti/claim/version': Literal['1.3.0'],
             'https://purl.imsglobal.org/spec/lti/claim/deployment_id': str,
             'https://purl.imsglobal.org/spec/lti/claim/target_link_uri': str,
             'https://purl.imsglobal.org/spec/lti/claim/resource_link': _ResourceLinkClaim,
             'https://purl.imsglobal.org/spec/lti/claim/roles': t.List[str],
             'sub': str,
-
 
             # Optional data
             'given_name': str,
@@ -119,6 +136,7 @@ if t.TYPE_CHECKING:
             'https://purl.imsglobal.org/spec/lti/claim/tool_platform': _ToolPlatformClaim,
             'https://purl.imsglobal.org/spec/lti/claim/role_scope_mentor': t.List[str],
             'https://purl.imsglobal.org/spec/lti/claim/lti1p1': _MigrationClaim,
+            'https://purl.imsglobal.org/spec/lti/claim/for_user': _ForUserClaim
         },
         total=False
     )
@@ -367,6 +385,18 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
 
         return DeepLink(self._registration, deployment_id, deep_linking_settings)
 
+    def get_privacy_launch_user(self):
+        # type: () -> t.Optional[_ForUserClaim]
+        """
+        Applicable for DataPrivacyLaunchRequest only. Returns information about user
+        who's data the launch is intended to action upon, for instance the student
+        who has requested their data be removed under GDPR's right to be forgotten.
+
+        :return: dict
+        """
+        jwt_body = self._get_jwt_body()
+        return jwt_body.get('https://purl.imsglobal.org/spec/lti/claim/for_user')
+
     def is_deep_link_launch(self):
         # type: () -> bool
         """
@@ -374,8 +404,8 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
 
         :return: bool  Returns true if the current launch is a deep linking launch.
         """
-        return self._get_jwt_body() \
-                   .get('https://purl.imsglobal.org/spec/lti/claim/message_type', None) == 'LtiDeepLinkingRequest'
+        jwt_body = self._get_jwt_body()
+        return DeepLinkMessageValidator().can_validate(jwt_body)
 
     def is_resource_launch(self):
         # type: () -> bool
@@ -384,8 +414,8 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
 
         :return: bool  Returns true if the current launch is a resource launch.
         """
-        return self._get_jwt_body() \
-                   .get('https://purl.imsglobal.org/spec/lti/claim/message_type', None) == 'LtiResourceLinkRequest'
+        jwt_body = self._get_jwt_body()
+        return ResourceMessageValidator().can_validate(jwt_body)
 
     def is_data_privacy_launch(self):
         # type: () -> bool
@@ -394,8 +424,8 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
 
         :return: bool  Returns true if the current launch is a data privacy launch.
         """
-        return self._get_jwt_body() \
-                   .get('https://purl.imsglobal.org/spec/lti/claim/message_type', None) == 'DataPrivacyLaunchRequest'
+        jwt_body = self._get_jwt_body()
+        return PrivacyLaunchValidator().can_validate(jwt_body)
 
     def get_launch_data(self):
         # type: () -> _LaunchData

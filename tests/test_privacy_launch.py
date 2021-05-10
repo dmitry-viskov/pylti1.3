@@ -6,90 +6,104 @@ from .flask_mixin import FlaskMixin
 class PrivacyLaunchBase(TestLinkBase):
     # pylint: disable=abstract-method
 
-    iss = 'http://imsglobal.org'
+    iss = 'https://canvas.instructure.com'
     jwt_canvas_keys = {
         "keys": [
             {
-                "kty": "RSA",
                 "e": "AQAB",
-                "n": "wSJ8fSR-ZHfmj00-tQaz2TrOT3TREWIMtfhuNS6JvWFd5kg29TK8y4hBvYi6AMnSWn97Kps"
-                     "AewK2VABI7MInYRlNRtX9jLrUyatucsOBx4usU2u_qYm3sPpaUgds37mZn1_w6dfbZNG_Z4"
-                     "givpIUdSAq8QKxCQCk9MV0k94eRMn5xWfJ7hqesb6xiBGKDZUlmt3PfAaSgvk3lxLjd_Jf0"
-                     "WwZS4KspzjGdeq2ctyuRMB9QZTVvit4PXpRVxT1zwhN3kxH09kWRqNF5CIKw5m93mFmewdC"
-                     "xjHSZ9AEtTe918zFaYbrh09ZH6E-zz9rXXLvesqoPBDYIT73MeJQhclkqw",
-                "kid": "JcJy_-ZbGGXE-fiXLrqbUCyNRg1skGPXngZ5hxD64CA",
+                "kid": "NtQYzsKs_TWLQ0p3bLmfM7fOwY0nEBVVH3z3Q-zJ06Y",
+                "kty": "RSA",
+                "n": "uvEnCaUOy1l9gk3wjW3Pib1dBc5g92-6rhvZZOsN1a77fdOqKsrjWG1lDu8kq2nL-wbAzR3DdEPVw"
+                     "_1WUwtr_Q1d5m-7S4ciXT63pENs1EPwWmeN33O0zkGx8I7vdiOTSVoywEyUZe6UyS-ujLfsRc2Ime"
+                     "LP5OHxpE1yULEDSiMLtSvgzEaMvf2AkVq5EL5nLYDWXZWXUnpiT_f7iK47Mp2iQd4KYYG7YZ7lMMP"
+                     "CMBuhej7SOtZQ2FwaBjvZiXDZ172sQYBCiBAmOR3ofTL6aD2-HUxYztVIPCkhyO84mQ7W4BFsOnKW"
+                     "4WRfEySHXd2hZkFMgcFNXY3dA6de519qlcrL0YYx8ZHpzNt0foEzUsgJd8uJMUVvzPZgExwcyIbv5"
+                     "jWYBg0ILgULo7ve7VXG5lMwasW_ch2zKp7tTILnDJwITMjF71h4fn4dMTun_7MWEtSl_iFiALnIL_"
+                     "4_YY717cr4rmcG1424LyxJGRD9L9WjO8etAbPkiRFJUd5fmfqjHkO6fPxyWsMUAu8bfYdVRH7qN_e"
+                     "rfGHmykmVGgH8AfK9GLT_cjN4GHA29bK9jMed6SWdrkygbQmlnsCAHrw0RA-QE0t617h3uTrSEr5v"
+                     "kbLz-KThVEBfH84qsweqcac_unKIZ0e2iRuyVnG4cbq8HUdio8gJ62D3wZ0UvVgr4a0",
                 "alg": "RS256",
-                "use": "sig",
+                "use": "sig"
             }
         ]
     }
 
-    get_login_data = {
+    post_login_data = {
         'iss': iss,
-        'login_hint': 'PL1',
+        'login_hint': '86157096483e6b3a50bfedc6bac902c0b20a824f',
         'target_link_uri': 'http://lti.django.test/launch/',
-        'lti_message_hint': 'LTI_MESSAGE_HINT',
+        'lti_message_hint': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ2ZXJpZmllciI6Ijg0NjMxZjc1Z'
+                            'GYxNmNiZjNmYTM5YzEwMzk4YTg0M2U1NTAwZTc5MTU2OTBhN2RjYTJhNGMzMTJjYjR'
+                            'jOWU0YWY5NzE2MWVhYjg4ODhmOWJlNDc2MmViNzUzZDE5ZmI3YWU5N2I2MjAxZWZjM'
+                            'jRmODY4NWE3NjJmY2U0ZWU4MDk4IiwiY2FudmFzX2RvbWFpbiI6ImNhbnZhcy5kb2N'
+                            'rZXIiLCJjb250ZXh0X3R5cGUiOiJDb3Vyc2UiLCJjb250ZXh0X2lkIjoxMDAwMDAwM'
+                            'DAwMDAwMSwiZXhwIjoxNTY1NDQyMzcwfQ.B1Lddgthaa-YBT4-Lkm3OM_noETl3dIz'
+                            '5E14YWJ8m_Q'
     }
 
     post_launch_data = {
         'utf8': '%E2%9C%93',
-        'state': 'state-6a4356afa7462a941bbf',
-        'commit': 'Perform+Launch',
-        'id_token': 'eyJhbGciOiJSUzI1NiIsImtpZCI6IkpjSnlfLVpiR0dYRS1maVhMcnFiVUN5TlJnM'
-                    'XNrR1BYbmdaNWh4RDY0Q0EifQ.eyJpc3MiOiJodHRwOi8vaW1zZ2xvYmFsLm9yZyI'
-                    'sInN1YiI6ImE2ZDVjNDQzLTFmNTEtNDc4My1iYTFhLTc2ODZmZmUzYjU0YSIsImF1'
-                    'ZCI6InB5dGVzdDEyMzQ1IiwiZXhwIjoxNTEwMTg1NzI4LCJpYXQiOjE1MTAxODUyM'
-                    'jgsIm5vbmNlIjoiNmE0MzU2YWZhNzQ2MmE5NDFiYmYiLCJuYW1lIjoiTXMgSmFuZS'
-                    'BNYXJpZSBEb2UiLCJnaXZlbl9uYW1lIjoiSmFuZSIsImZhbWlseV9uYW1lIjoiRG9'
-                    'lIiwiZW1haWwiOiJqYW5lQGV4YW1wbGUub3JnIiwiaHR0cHM6Ly9wdXJsLmltc2ds'
-                    'b2JhbC5vcmcvc3BlYy9sdGkvY2xhaW0vZGVwbG95bWVudF9pZCI6InB5MTIzNCIsI'
-                    'mh0dHBzOi8vcHVybC5pbXNnbG9iYWwub3JnL3NwZWMvbHRpL2NsYWltL21lc3NhZ2'
-                    'VfdHlwZSI6IkRhdGFQcml2YWN5TGF1bmNoUmVxdWVzdCIsImh0dHBzOi8vcHVybC5'
-                    'pbXNnbG9iYWwub3JnL3NwZWMvbHRpL2NsYWltL3ZlcnNpb24iOiIxLjMuMCIsImh0'
-                    'dHBzOi8vcHVybC5pbXNnbG9iYWwub3JnL3NwZWMvbHRpL2NsYWltL3JvbGVzIjpbI'
-                    'mh0dHA6Ly9wdXJsLmltc2dsb2JhbC5vcmcvdm9jYWIvbGlzL3YyL3N5c3RlbS9wZX'
-                    'Jzb24jQWRtaW5pc3RyYXRvciJdLCJodHRwczovL3B1cmwuaW1zZ2xvYmFsLm9yZy9'
-                    'zcGVjL2x0aS9jbGFpbS9mb3JfdXNlciI6eyJpZCI6IjhmMDQxZDk0LTk5NDMtNDY2'
-                    'Yi05ZGViLWE2OTJhNmI4NWMwMiIsInBlcnNvbl9zb3VyY2VkaWQiOiJleGFtcGxlL'
-                    'mVkdTo3MWVlN2U0Mi1mNmQyLTQxNGEtODBkYi1iNjlhYzJkZWZkNCIsImdpdmVuX2'
-                    '5hbWUiOiJKdWRlIiwiZmFtaWx5X25hbWUiOiJXaWxiZXJ0IiwiZW1haWwiOiJqd2l'
-                    'sYmVydEBleGFtcGxlLm9yZyIsInJvbGVzIjpbImh0dHA6Ly9wdXJsLmltc2dsb2Jh'
-                    'bC5vcmcvdm9jYWIvbGlzL3YyL3N5c3RlbS9wZXJzb24jVXNlciJdfSwibG9jYWxlI'
-                    'joiZW4tVVMiLCJodHRwczovL3B1cmwuaW1zZ2xvYmFsLm9yZy9zcGVjL2x0aS9jbG'
-                    'FpbS90b29sX3BsYXRmb3JtIjp7Im5hbWUiOiJFeGFtcGxlIFBsYXRmb3JtIiwiZGV'
-                    'zY3JpcHRpb24iOiJQcm92aWRlcyBhbiBleGFtcGxlIG9mIGEgcGxhdGZvcm0uIiwi'
-                    'Z3VpZCI6IjFiNzYzYThjLTBmOTEtNDYxNS1iYTQ2LWJjM2Q3NzZjYTdmOCIsInByb'
-                    '2R1Y3RfZmFtaWx5X2NvZGUiOiJFeGFtcGxlUGxhdGZvcm0iLCJ2ZXJzaW9uIjoiMS'
-                    '4wLjAuNiIsInVybCI6Imh0dHBzOi8vcGxhdGZvcm0uZXhhbXBsZS5vcmciLCJjb25'
-                    '0YWN0X2VtYWlsIjoic29tZW9uZUBwbGF0Zm9ybS5leGFtcGxlLm9yZyJ9LCJodHRw'
-                    'czovL3B1cmwuaW1zZ2xvYmFsLm9yZy9zcGVjL2x0aS9jbGFpbS9jdXN0b20iOnsiU'
-                    '29tZV9jdXN0b21fc2V0dGluZyI6ImFfdmFsdWUxIn0sImh0dHBzOi8vcHVybC5pbX'
-                    'NnbG9iYWwub3JnL3NwZWMvbHRpL2NsYWltL2xpcyI6eyJwZXJzb25fc291cmNlZGl'
-                    'kIjoiZXhhbXBsZS5lZHU6YjZiOTMxMDUtOGQyZi00YWY4LTkzZWMtMzZjMDUwYjk4'
-                    'NDEzIn0sImh0dHBzOi8vcHVybC5pbXNnbG9iYWwub3JnL3NwZWMvbHRpL2NsYWltL'
-                    '2xhdW5jaF9wcmVzZW50YXRpb24iOnsicmV0dXJuX3VybCI6Imh0dHBzOi8vcGxhdG'
-                    'Zvcm0uZXhhbXBsZS5vcmcvbHRpL3JldHVybiJ9LCJodHRwczovL3B1cmwuaW1zZ2x'
-                    'vYmFsLm9yZy9zcGVjL2x0aS9jbGFpbS90YXJnZXRfbGlua191cmkiOiJodHRwczov'
-                    'L3BsYXRmb3JtLmV4YW1wbGUub3JnL2x0aS9wcml2YWN5In0.wE2QG82EG8WUXmC6h'
-                    'LwfryE915i_QaMk4fcmVVbSJqyqkH_lbHaIheFX-oVoXHj83PpHpebzXdGAZYkkZf'
-                    'nU5HfyMT7dKEmsjmR0z3o36klX-UEZnINqIbapgSJv3Ecfqz4PHG7alc6hbxsjADM'
-                    'o9zwclubO1gymfAtxOk3lob1c_j9gmfuB6I2EKLJZUwb4n41yrdpaXuiMEZrlQW6a'
-                    'FzCNLVaz9Dnm9H-5-hiLKbUHsmBvGB_MJ_9JEDRKZpgINYdkD9TdNYKDnK-ZSrrmc'
-                    'SCC41VgSe1BGcnsz8hgTyPon0Ot3y8bLxXwxuggIKeu0PfVLUnKJUJG8jWNs1dJPA'
+        'authenticity_token': 'oOOlsiqy2nFHP5wgWIKWSEoHKYDZg0u%2BCRKC3BWuFsORmeT2HMC%2BASxQzEoW0'
+                              'KdnfnZe6ovmOe9gVOqYPth5mw%3D%3D',
+        'state': 'state-test-uuid-1234',
+        'id_token': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ik50UVl6c0tzX1RXTFEwcDNiTG1mTTdmT'
+                    '3dZMG5FQlZWSDN6M1EtekowNlkifQ.eyJpc3MiOiJodHRwczovL2NhbnZhcy5pbnN0cnVjdHVyZS5'
+                    'jb20iLCJzdWIiOiJhNmQ1YzQ0My0xZjUxLTQ3ODMtYmExYS03Njg2ZmZlM2I1NGEiLCJhdWQiOiIx'
+                    'MDAwMDAwMDAwMDAwNCIsImV4cCI6MTU2NTQ0NTY3MCwiaWF0IjoxNTY1NDQyMDcwLCJub25jZSI6I'
+                    'nRlc3QtdXVpZC0xMjM0IiwibmFtZSI6Ik1zIEphbmUgTWFyaWUgRG9lIiwiZ2l2ZW5fbmFtZSI6Ik'
+                    'phbmUiLCJmYW1pbHlfbmFtZSI6IkRvZSIsImVtYWlsIjoiamFuZUBleGFtcGxlLm9yZyIsImh0dHB'
+                    'zOi8vcHVybC5pbXNnbG9iYWwub3JnL3NwZWMvbHRpL2NsYWltL2RlcGxveW1lbnRfaWQiOiI2Ojg4'
+                    'NjVhYTA1YjRiNzliNjRhOTFhODYwNDJlNDNhZjVlYThhZTc5ZWIiLCJodHRwczovL3B1cmwuaW1zZ'
+                    '2xvYmFsLm9yZy9zcGVjL2x0aS9jbGFpbS9tZXNzYWdlX3R5cGUiOiJEYXRhUHJpdmFjeUxhdW5jaF'
+                    'JlcXVlc3QiLCJodHRwczovL3B1cmwuaW1zZ2xvYmFsLm9yZy9zcGVjL2x0aS9jbGFpbS92ZXJzaW9'
+                    'uIjoiMS4zLjAiLCJodHRwczovL3B1cmwuaW1zZ2xvYmFsLm9yZy9zcGVjL2x0aS9jbGFpbS9yb2xl'
+                    'cyI6WyJodHRwOi8vcHVybC5pbXNnbG9iYWwub3JnL3ZvY2FiL2xpcy92Mi9zeXN0ZW0vcGVyc29uI'
+                    '0FkbWluaXN0cmF0b3IiXSwiaHR0cHM6Ly9wdXJsLmltc2dsb2JhbC5vcmcvc3BlYy9sdGkvY2xhaW'
+                    '0vZm9yX3VzZXIiOnsiaWQiOiI4ZjA0MWQ5NC05OTQzLTQ2NmItOWRlYi1hNjkyYTZiODVjMDIiLCJ'
+                    'wZXJzb25fc291cmNlZGlkIjoiZXhhbXBsZS5lZHU6NzFlZTdlNDItZjZkMi00MTRhLTgwZGItYjY5'
+                    'YWMyZGVmZDQiLCJnaXZlbl9uYW1lIjoiSnVkZSIsImZhbWlseV9uYW1lIjoiV2lsYmVydCIsImVtY'
+                    'WlsIjoiandpbGJlcnRAZXhhbXBsZS5vcmciLCJyb2xlcyI6WyJodHRwOi8vcHVybC5pbXNnbG9iYW'
+                    'wub3JnL3ZvY2FiL2xpcy92Mi9zeXN0ZW0vcGVyc29uI1VzZXIiXX0sImh0dHBzOi8vcHVybC5pbXN'
+                    'nbG9iYWwub3JnL3NwZWMvbHRpL2NsYWltL3Jlc291cmNlX2xpbmsiOnsiZXJyb3JzIjp7ImVycm9y'
+                    'cyI6e319LCJ2YWxpZGF0aW9uX2NvbnRleHQiOm51bGwsInRpdGxlIjpudWxsLCJpZCI6IjRkZGUwN'
+                    'WU4Y2ExOTczYmNjYTliZmZjMTNlMTU0ODgyMGVlZTkzYTMiLCJkZXNjcmlwdGlvbiI6bnVsbH0sIm'
+                    'xvY2FsZSI6ImVuLVVTIiwiaHR0cHM6Ly9wdXJsLmltc2dsb2JhbC5vcmcvc3BlYy9sdGkvY2xhaW0'
+                    'vdG9vbF9wbGF0Zm9ybSI6eyJuYW1lIjoiRXhhbXBsZSBQbGF0Zm9ybSIsImRlc2NyaXB0aW9uIjoi'
+                    'UHJvdmlkZXMgYW4gZXhhbXBsZSBvZiBhIHBsYXRmb3JtLiIsImd1aWQiOiIxYjc2M2E4Yy0wZjkxL'
+                    'TQ2MTUtYmE0Ni1iYzNkNzc2Y2E3ZjgiLCJwcm9kdWN0X2ZhbWlseV9jb2RlIjoiRXhhbXBsZVBsYX'
+                    'Rmb3JtIiwidmVyc2lvbiI6IjEuMC4wLjYiLCJ1cmwiOiJodHRwczovL3BsYXRmb3JtLmV4YW1wbGU'
+                    'ub3JnIiwiY29udGFjdF9lbWFpbCI6InNvbWVvbmVAcGxhdGZvcm0uZXhhbXBsZS5vcmcifSwiaHR0'
+                    'cHM6Ly9wdXJsLmltc2dsb2JhbC5vcmcvc3BlYy9sdGkvY2xhaW0vY3VzdG9tIjp7IlNvbWVfY3Vzd'
+                    'G9tX3NldHRpbmciOiJhX3ZhbHVlMSJ9LCJodHRwczovL3B1cmwuaW1zZ2xvYmFsLm9yZy9zcGVjL2'
+                    'x0aS9jbGFpbS9saXMiOnsicGVyc29uX3NvdXJjZWRpZCI6ImV4YW1wbGUuZWR1OmI2YjkzMTA1LTh'
+                    'kMmYtNGFmOC05M2VjLTM2YzA1MGI5ODQxMyJ9LCJodHRwczovL3B1cmwuaW1zZ2xvYmFsLm9yZy9z'
+                    'cGVjL2x0aS9jbGFpbS9sYXVuY2hfcHJlc2VudGF0aW9uIjp7InJldHVybl91cmwiOiJodHRwczovL'
+                    '3BsYXRmb3JtLmV4YW1wbGUub3JnL2x0aS9yZXR1cm4ifSwiaHR0cHM6Ly9wdXJsLmltc2dsb2JhbC'
+                    '5vcmcvc3BlYy9sdGkvY2xhaW0vdGFyZ2V0X2xpbmtfdXJpIjoiaHR0cHM6Ly9wbGF0Zm9ybS5leGF'
+                    'tcGxlLm9yZy9sdGkvcHJpdmFjeSJ9.rGTKzGKkr4UqnYajVlUpNsqnooCma0i9zJdreVJmBTnDMrc'
+                    '0ot3rOfpVjtupLreoGtYsSoQcyv814AmcVYe0rWhiRO6pNy4-llwDTP9LxSoRRpVYUJv3jN92RcWz'
+                    'x0h6m-ONCSkKA4IRQu4v6hSrBD32s5-daxqBoa8Db1vRFb1-ac-wM2ZPzcsqOy3BEfQBda0IF7Xfw'
+                    'guDKibTcOgORulAvvfvYqRrjs3LvdfAeEeWpnzUGeeQEnrfwptbB58XDbkG8URRF5ZgJmIlzcwe5N'
+                    'UvRk3kasrzdaMrg_zR9iOV7miWDB1AVrSp_OkplZIu-HKK877HZL4ADMqOgeOZ82EPXP1KkZ0JAc7'
+                    '8M8vG2ZvOOv-9A3zVWiWdwgjIyJW3E9FCvFEbgXiIplcobpJc0O6ybRxrRqrofA398XVGGTxZVpfu'
+                    'pZrSEatleHUpUv81vQNNshJTadiFjmImcXj-AX8IfKdczSmQUxQcflCxNsWhyYOICllLGvHkM8jCD'
+                    'aQLLi0ch6cCUSyEbblQ2rRH2O-WKeEsP3jTuM4P5t157WFIJOd8f5cncj1KjJXpZxmZNF30oIvMoF'
+                    '1MkZw5l2IN4tWRItf_zTmINHqv_FMod9p16gDBSw-iRFBm-P-TakTWrLlI2d5zYCEimsocr135FCO'
+                    'S8p3uonkEvkfYMoAAipA'
     }
 
     expected_message_launch_data = {
-        "iss": "http://imsglobal.org",
+        "iss": "https://canvas.instructure.com",
         "sub": "a6d5c443-1f51-4783-ba1a-7686ffe3b54a",
-        "aud": "pytest12345",
-        "exp": 1510185728,
-        "iat": 1510185228,
-        "nonce": "6a4356afa7462a941bbf",
+        "aud": "10000000000004",
+        "exp": 1565445670,
+        "iat": 1565442070,
+        "nonce": "test-uuid-1234",
         "name": "Ms Jane Marie Doe",
         "given_name": "Jane",
         "family_name": "Doe",
         "email": "jane@example.org",
-        "https://purl.imsglobal.org/spec/lti/claim/deployment_id": "py1234",
+        "https://purl.imsglobal.org/spec/lti/claim/deployment_id": "6:8865aa05b4b79b64a91a86042e43af5ea8ae79eb",
         "https://purl.imsglobal.org/spec/lti/claim/message_type": "DataPrivacyLaunchRequest",
         "https://purl.imsglobal.org/spec/lti/claim/version": "1.3.0",
         "https://purl.imsglobal.org/spec/lti/claim/roles": [
@@ -101,7 +115,16 @@ class PrivacyLaunchBase(TestLinkBase):
             "given_name": "Jude",
             "family_name": "Wilbert",
             "email": "jwilbert@example.org",
-            "roles": ["http://purl.imsglobal.org/vocab/lis/v2/system/person#User"]
+            "roles": [
+                "http://purl.imsglobal.org/vocab/lis/v2/system/person#User"
+            ]
+        },
+        "https://purl.imsglobal.org/spec/lti/claim/resource_link": {
+            "errors": {"errors": {}},
+            "validation_context": None,
+            "title": None,
+            "id": "4dde05e8ca1973bcca9bffc13e1548820eee93a3",
+            "description": None
         },
         "locale": "en-US",
         "https://purl.imsglobal.org/spec/lti/claim/tool_platform": {
@@ -126,7 +149,7 @@ class PrivacyLaunchBase(TestLinkBase):
     }
 
     def test_privacy_launch_success(self):
-        tool_conf, login_request, login_response = self._make_oidc_login(uuid_val='6a4356afa7462a941bbf')
+        tool_conf, login_request, login_response = self._make_oidc_login()
         launch_request = self._get_request(login_request, login_response)
         validated_message_launch = self._launch(launch_request, tool_conf, force_validation=True)
         message_launch_data = validated_message_launch.get_launch_data()
