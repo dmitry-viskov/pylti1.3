@@ -387,6 +387,16 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
         return self._get_jwt_body() \
                    .get('https://purl.imsglobal.org/spec/lti/claim/message_type', None) == 'LtiResourceLinkRequest'
 
+    def is_data_privacy_launch(self):
+        # type: () -> bool
+        """
+        Returns whether or not the current launch is a data privacy launch.
+
+        :return: bool  Returns true if the current launch is a data privacy launch.
+        """
+        return self._get_jwt_body() \
+                   .get('https://purl.imsglobal.org/spec/lti/claim/message_type', None) == 'DataPrivacyLaunchRequest'
+
     def get_launch_data(self):
         # type: () -> _LaunchData
         """
