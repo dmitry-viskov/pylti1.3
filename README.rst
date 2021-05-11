@@ -239,148 +239,6 @@ To check which services we have access to:
     if message_launch.has_nrps():
         # Has Names and Roles Service
 
-Accessing Cached Launch Requests
---------------------------------
-
-It is likely that you will want to refer back to a launch later during subsequent requests. This is done using the launch id to identify a cached request. The launch id can be found using:
-
-.. code-block:: python
-
-    launch_id = message_launch.get_launch_id()
-
-Once you have the launch id, you can link it to your session and pass it along as a query parameter.
-
-Retrieving a launch using the launch id can be done using:
-
-.. code-block:: python
-
-    message_launch = DjangoMessageLaunch.from_cache(launch_id, request, tool_conf)
-
-Once retrieved, you can call any of the methods on the launch object as normal, e.g.
-
-.. code-block:: python
-
-    if message_launch.has_ags():
-        # Has Assignments and Grades Service
-
-Deep Linking Responses
-----------------------
-
-If you receive a deep linking launch, it is very likely that you are going to want to respond to the deep linking request with resources for the platform.
-
-To create a deep link response, you will need to get the deep link for the current launch:
-
-.. code-block:: python
-
-    deep_link = message_launch.get_deep_link()
-
-We now need to create ``pylti1p3.deep_link_resource.DeepLinkResource`` to return:
-
-.. code-block:: python
-
-    resource = DeepLinkResource()
-    resource.set_url("https://my.tool/launch")\
-        .set_custom_params({'my_param': my_param})\
-        .set_title('My Resource')
-
-Everything is now set to return the resource to the platform. There are two methods of doing this.
-
-The following method will output the html for an aut-posting form for you.
-
-.. code-block:: python
-
-    deep_link.output_response_form([resource1, resource2])
-
-Alternatively you can just request the signed JWT that will need posting back to the platform by calling.
-
-.. code-block:: python
-
-    deep_link.get_response_jwt([resource1, resource2])
-
-Names and Roles Service
------------------------
-
-Before using names and roles, you should check that you have access to it:
-
-.. code-block:: python
-
-    if not message_launch.has_nrps():
-        raise Exception("Don't have names and roles!")
-
-Once we know we can access it, we can get an instance of the service from the launch.
-
-.. code-block:: python
-
-    nrps = message_launch.get_nrps()
-
-From the service we can get a list of all members by calling:
-
-.. code-block:: python
-
-    members = nrps.get_members()
-
-Assignments and Grades Service
-------------------------------
-
-Before using assignments and grades, you should check that you have access to it:
-
-.. code-block:: python
-
-    if not launch.has_ags():
-        raise Exception("Don't have assignments and grades!")
-
-Once we know we can access it, we can get an instance of the service from the launch:
-
-.. code-block:: python
-
-    ags = launch.get_ags()
-
-To pass a grade back to the platform, you will need to create a ``pylti1p3.grade.Grade`` object and populate it with the necessary information:
-
-.. code-block:: python
-
-    gr = Grade()
-    gr.set_score_given(earned_score)\
-         .set_score_maximum(100)\
-         .set_timestamp(datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S+0000'))\
-         .set_activity_progress('Completed')\
-         .set_grading_progress('FullyGraded')\
-         .set_user_id(external_user_id)
-
-To send the grade to the platform we can call:
-
-.. code-block:: python
-
-    ags.put_grade(gr)
-
-This will put the grade into the default provided lineitem. If no default lineitem exists it will create one.
-
-If you want to send multiple types of grade back, that can be done by specifying a ``pylti1p3.lineitem.LineItem``:
-
-.. code-block:: python
-
-    line_item = LineItem()
-    line_item.set_tag('grade')\
-        .set_score_maximum(100)\
-        .set_label('Grade')
-
-    ags.put_grade(gr, line_item)
-
-If a lineitem with the same ``tag`` exists, that lineitem will be used, otherwise a new lineitem will be created.
-
-Check user's role after LTI launch
-----------------------------------
-
-.. code-block:: python
-
-    user_is_staff = message_launch.check_staff_access()
-    user_is_student = message_launch.check_student_access())
-    user_is_teacher = message_launch.check_teacher_access()
-    user_is_teaching_assistant = message_launch.check_teaching_assistant_access()
-    user_is_designer = message_launch.check_designer_access()
-    user_is_observer = message_launch.check_observer_access()
-    user_is_transient = message_launch.check_transient()
-
 Usage with Flask
 ================
 
@@ -461,6 +319,160 @@ Create a ``FlaskRequest`` adapter. Then create an instance of ``FlaskMessageLaun
 
         # Place your user creation/update/login logic
         # and redirect to tool content here
+
+Accessing Cached Launch Requests
+================================
+
+It is likely that you will want to refer back to a launch later during subsequent requests. This is done using the launch id to identify a cached request. The launch id can be found using:
+
+.. code-block:: python
+
+    launch_id = message_launch.get_launch_id()
+
+Once you have the launch id, you can link it to your session and pass it along as a query parameter.
+
+Retrieving a launch using the launch id can be done using:
+
+.. code-block:: python
+
+    message_launch = DjangoMessageLaunch.from_cache(launch_id, request, tool_conf)
+
+Once retrieved, you can call any of the methods on the launch object as normal, e.g.
+
+.. code-block:: python
+
+    if message_launch.has_ags():
+        # Has Assignments and Grades Service
+
+Deep Linking Responses
+======================
+
+If you receive a deep linking launch, it is very likely that you are going to want to respond to the deep linking request with resources for the platform.
+
+To create a deep link response, you will need to get the deep link for the current launch:
+
+.. code-block:: python
+
+    deep_link = message_launch.get_deep_link()
+
+We now need to create ``pylti1p3.deep_link_resource.DeepLinkResource`` to return:
+
+.. code-block:: python
+
+    resource = DeepLinkResource()
+    resource.set_url("https://my.tool/launch")\
+        .set_custom_params({'my_param': my_param})\
+        .set_title('My Resource')
+
+Everything is now set to return the resource to the platform. There are two methods of doing this.
+
+The following method will output the html for an aut-posting form for you.
+
+.. code-block:: python
+
+    deep_link.output_response_form([resource1, resource2])
+
+Alternatively you can just request the signed JWT that will need posting back to the platform by calling.
+
+.. code-block:: python
+
+    deep_link.get_response_jwt([resource1, resource2])
+
+Names and Roles Service
+=======================
+
+Before using names and roles, you should check that you have access to it:
+
+.. code-block:: python
+
+    if not message_launch.has_nrps():
+        raise Exception("Don't have names and roles!")
+
+Once we know we can access it, we can get an instance of the service from the launch.
+
+.. code-block:: python
+
+    nrps = message_launch.get_nrps()
+
+From the service we can get a list of all members by calling:
+
+.. code-block:: python
+
+    members = nrps.get_members()
+
+Assignments and Grades Service
+==============================
+
+Before using assignments and grades, you should check that you have access to it:
+
+.. code-block:: python
+
+    if not launch.has_ags():
+        raise Exception("Don't have assignments and grades!")
+
+Once we know we can access it, we can get an instance of the service from the launch:
+
+.. code-block:: python
+
+    ags = launch.get_ags()
+
+To pass a grade back to the platform, you will need to create a ``pylti1p3.grade.Grade`` object and populate it with the necessary information:
+
+.. code-block:: python
+
+    gr = Grade()
+    gr.set_score_given(earned_score)\
+         .set_score_maximum(100)\
+         .set_timestamp(datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S+0000'))\
+         .set_activity_progress('Completed')\
+         .set_grading_progress('FullyGraded')\
+         .set_user_id(external_user_id)
+
+To send the grade to the platform we can call:
+
+.. code-block:: python
+
+    ags.put_grade(gr)
+
+This will put the grade into the default provided lineitem. If no default lineitem exists it will create one.
+
+If you want to send multiple types of grade back, that can be done by specifying a ``pylti1p3.lineitem.LineItem``:
+
+.. code-block:: python
+
+    line_item = LineItem()
+    line_item.set_tag('grade')\
+        .set_score_maximum(100)\
+        .set_label('Grade')
+
+    ags.put_grade(gr, line_item)
+
+If a lineitem with the same ``tag`` exists, that lineitem will be used, otherwise a new lineitem will be created.
+
+Data privacy launch
+===================
+
+Data Privacy Launch is a new optional LTI 1.3 message type that allows LTI-enabled tools to assist administrative
+users in managing and executing requests related to data privacy.
+
+.. code-block:: python
+
+    data_privacy_launch = message_launch.is_data_privacy_launch()
+    if data_privacy_launch:
+        user = message_launch.get_privacy_launch_user()
+
+Check user's role after LTI launch
+==================================
+
+.. code-block:: python
+
+    user_is_staff = message_launch.check_staff_access()
+    user_is_student = message_launch.check_student_access())
+    user_is_teacher = message_launch.check_teacher_access()
+    user_is_teaching_assistant = message_launch.check_teaching_assistant_access()
+    user_is_designer = message_launch.check_designer_access()
+    user_is_observer = message_launch.check_observer_access()
+    user_is_transient = message_launch.check_transient()
 
 Cookies issues in the iframes
 =============================
