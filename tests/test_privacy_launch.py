@@ -46,50 +46,39 @@ class PrivacyLaunchBase(TestLinkBase):
         'authenticity_token': 'oOOlsiqy2nFHP5wgWIKWSEoHKYDZg0u%2BCRKC3BWuFsORmeT2HMC%2BASxQzEoW0'
                               'KdnfnZe6ovmOe9gVOqYPth5mw%3D%3D',
         'state': 'state-test-uuid-1234',
-        'id_token': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ik50UVl6c0tzX1RXTFEwcDNiTG1mTTdmT'
-                    '3dZMG5FQlZWSDN6M1EtekowNlkifQ.eyJpc3MiOiJodHRwczovL2NhbnZhcy5pbnN0cnVjdHVyZS5'
-                    'jb20iLCJzdWIiOiJhNmQ1YzQ0My0xZjUxLTQ3ODMtYmExYS03Njg2ZmZlM2I1NGEiLCJhdWQiOiIx'
-                    'MDAwMDAwMDAwMDAwNCIsImV4cCI6MTU2NTQ0NTY3MCwiaWF0IjoxNTY1NDQyMDcwLCJub25jZSI6I'
-                    'nRlc3QtdXVpZC0xMjM0IiwibmFtZSI6Ik1zIEphbmUgTWFyaWUgRG9lIiwiZ2l2ZW5fbmFtZSI6Ik'
-                    'phbmUiLCJmYW1pbHlfbmFtZSI6IkRvZSIsImVtYWlsIjoiamFuZUBleGFtcGxlLm9yZyIsImh0dHB'
-                    'zOi8vcHVybC5pbXNnbG9iYWwub3JnL3NwZWMvbHRpL2NsYWltL2RlcGxveW1lbnRfaWQiOiI2Ojg4'
-                    'NjVhYTA1YjRiNzliNjRhOTFhODYwNDJlNDNhZjVlYThhZTc5ZWIiLCJodHRwczovL3B1cmwuaW1zZ'
-                    '2xvYmFsLm9yZy9zcGVjL2x0aS9jbGFpbS9tZXNzYWdlX3R5cGUiOiJEYXRhUHJpdmFjeUxhdW5jaF'
-                    'JlcXVlc3QiLCJodHRwczovL3B1cmwuaW1zZ2xvYmFsLm9yZy9zcGVjL2x0aS9jbGFpbS92ZXJzaW9'
-                    'uIjoiMS4zLjAiLCJodHRwczovL3B1cmwuaW1zZ2xvYmFsLm9yZy9zcGVjL2x0aS9jbGFpbS9yb2xl'
-                    'cyI6WyJodHRwOi8vcHVybC5pbXNnbG9iYWwub3JnL3ZvY2FiL2xpcy92Mi9zeXN0ZW0vcGVyc29uI'
-                    '0FkbWluaXN0cmF0b3IiXSwiaHR0cHM6Ly9wdXJsLmltc2dsb2JhbC5vcmcvc3BlYy9sdGkvY2xhaW'
-                    '0vZm9yX3VzZXIiOnsiaWQiOiI4ZjA0MWQ5NC05OTQzLTQ2NmItOWRlYi1hNjkyYTZiODVjMDIiLCJ'
-                    'wZXJzb25fc291cmNlZGlkIjoiZXhhbXBsZS5lZHU6NzFlZTdlNDItZjZkMi00MTRhLTgwZGItYjY5'
-                    'YWMyZGVmZDQiLCJnaXZlbl9uYW1lIjoiSnVkZSIsImZhbWlseV9uYW1lIjoiV2lsYmVydCIsImVtY'
-                    'WlsIjoiandpbGJlcnRAZXhhbXBsZS5vcmciLCJyb2xlcyI6WyJodHRwOi8vcHVybC5pbXNnbG9iYW'
-                    'wub3JnL3ZvY2FiL2xpcy92Mi9zeXN0ZW0vcGVyc29uI1VzZXIiXX0sImh0dHBzOi8vcHVybC5pbXN'
-                    'nbG9iYWwub3JnL3NwZWMvbHRpL2NsYWltL3Jlc291cmNlX2xpbmsiOnsiZXJyb3JzIjp7ImVycm9y'
-                    'cyI6e319LCJ2YWxpZGF0aW9uX2NvbnRleHQiOm51bGwsInRpdGxlIjpudWxsLCJpZCI6IjRkZGUwN'
-                    'WU4Y2ExOTczYmNjYTliZmZjMTNlMTU0ODgyMGVlZTkzYTMiLCJkZXNjcmlwdGlvbiI6bnVsbH0sIm'
-                    'xvY2FsZSI6ImVuLVVTIiwiaHR0cHM6Ly9wdXJsLmltc2dsb2JhbC5vcmcvc3BlYy9sdGkvY2xhaW0'
-                    'vdG9vbF9wbGF0Zm9ybSI6eyJuYW1lIjoiRXhhbXBsZSBQbGF0Zm9ybSIsImRlc2NyaXB0aW9uIjoi'
-                    'UHJvdmlkZXMgYW4gZXhhbXBsZSBvZiBhIHBsYXRmb3JtLiIsImd1aWQiOiIxYjc2M2E4Yy0wZjkxL'
-                    'TQ2MTUtYmE0Ni1iYzNkNzc2Y2E3ZjgiLCJwcm9kdWN0X2ZhbWlseV9jb2RlIjoiRXhhbXBsZVBsYX'
-                    'Rmb3JtIiwidmVyc2lvbiI6IjEuMC4wLjYiLCJ1cmwiOiJodHRwczovL3BsYXRmb3JtLmV4YW1wbGU'
-                    'ub3JnIiwiY29udGFjdF9lbWFpbCI6InNvbWVvbmVAcGxhdGZvcm0uZXhhbXBsZS5vcmcifSwiaHR0'
-                    'cHM6Ly9wdXJsLmltc2dsb2JhbC5vcmcvc3BlYy9sdGkvY2xhaW0vY3VzdG9tIjp7IlNvbWVfY3Vzd'
-                    'G9tX3NldHRpbmciOiJhX3ZhbHVlMSJ9LCJodHRwczovL3B1cmwuaW1zZ2xvYmFsLm9yZy9zcGVjL2'
-                    'x0aS9jbGFpbS9saXMiOnsicGVyc29uX3NvdXJjZWRpZCI6ImV4YW1wbGUuZWR1OmI2YjkzMTA1LTh'
-                    'kMmYtNGFmOC05M2VjLTM2YzA1MGI5ODQxMyJ9LCJodHRwczovL3B1cmwuaW1zZ2xvYmFsLm9yZy9z'
-                    'cGVjL2x0aS9jbGFpbS9sYXVuY2hfcHJlc2VudGF0aW9uIjp7InJldHVybl91cmwiOiJodHRwczovL'
-                    '3BsYXRmb3JtLmV4YW1wbGUub3JnL2x0aS9yZXR1cm4ifSwiaHR0cHM6Ly9wdXJsLmltc2dsb2JhbC'
-                    '5vcmcvc3BlYy9sdGkvY2xhaW0vdGFyZ2V0X2xpbmtfdXJpIjoiaHR0cHM6Ly9wbGF0Zm9ybS5leGF'
-                    'tcGxlLm9yZy9sdGkvcHJpdmFjeSJ9.rGTKzGKkr4UqnYajVlUpNsqnooCma0i9zJdreVJmBTnDMrc'
-                    '0ot3rOfpVjtupLreoGtYsSoQcyv814AmcVYe0rWhiRO6pNy4-llwDTP9LxSoRRpVYUJv3jN92RcWz'
-                    'x0h6m-ONCSkKA4IRQu4v6hSrBD32s5-daxqBoa8Db1vRFb1-ac-wM2ZPzcsqOy3BEfQBda0IF7Xfw'
-                    'guDKibTcOgORulAvvfvYqRrjs3LvdfAeEeWpnzUGeeQEnrfwptbB58XDbkG8URRF5ZgJmIlzcwe5N'
-                    'UvRk3kasrzdaMrg_zR9iOV7miWDB1AVrSp_OkplZIu-HKK877HZL4ADMqOgeOZ82EPXP1KkZ0JAc7'
-                    '8M8vG2ZvOOv-9A3zVWiWdwgjIyJW3E9FCvFEbgXiIplcobpJc0O6ybRxrRqrofA398XVGGTxZVpfu'
-                    'pZrSEatleHUpUv81vQNNshJTadiFjmImcXj-AX8IfKdczSmQUxQcflCxNsWhyYOICllLGvHkM8jCD'
-                    'aQLLi0ch6cCUSyEbblQ2rRH2O-WKeEsP3jTuM4P5t157WFIJOd8f5cncj1KjJXpZxmZNF30oIvMoF'
-                    '1MkZw5l2IN4tWRItf_zTmINHqv_FMod9p16gDBSw-iRFBm-P-TakTWrLlI2d5zYCEimsocr135FCO'
-                    'S8p3uonkEvkfYMoAAipA'
+        'id_token': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ik50UVl6c0tzX1RXTFEwcDNiTG1mTTdmT3dZMG5FQlZWSDN6M1'
+                    'EtekowNlkifQ.eyJpc3MiOiJodHRwczovL2NhbnZhcy5pbnN0cnVjdHVyZS5jb20iLCJzdWIiOiJhNmQ1YzQ0My0xZjUxL'
+                    'TQ3ODMtYmExYS03Njg2ZmZlM2I1NGEiLCJhdWQiOiIxMDAwMDAwMDAwMDAwNCIsImV4cCI6MTU2NTQ0NTY3MCwiaWF0Ijo'
+                    'xNTY1NDQyMDcwLCJub25jZSI6InRlc3QtdXVpZC0xMjM0IiwibmFtZSI6Ik1zIEphbmUgTWFyaWUgRG9lIiwiZ2l2ZW5fb'
+                    'mFtZSI6IkphbmUiLCJmYW1pbHlfbmFtZSI6IkRvZSIsImVtYWlsIjoiamFuZUBleGFtcGxlLm9yZyIsImh0dHBzOi8vcHV'
+                    'ybC5pbXNnbG9iYWwub3JnL3NwZWMvbHRpL2NsYWltL2RlcGxveW1lbnRfaWQiOiI2Ojg4NjVhYTA1YjRiNzliNjRhOTFhO'
+                    'DYwNDJlNDNhZjVlYThhZTc5ZWIiLCJodHRwczovL3B1cmwuaW1zZ2xvYmFsLm9yZy9zcGVjL2x0aS9jbGFpbS9tZXNzYWd'
+                    'lX3R5cGUiOiJEYXRhUHJpdmFjeUxhdW5jaFJlcXVlc3QiLCJodHRwczovL3B1cmwuaW1zZ2xvYmFsLm9yZy9zcGVjL2x0a'
+                    'S9jbGFpbS92ZXJzaW9uIjoiMS4zLjAiLCJodHRwczovL3B1cmwuaW1zZ2xvYmFsLm9yZy9zcGVjL2x0aS9jbGFpbS9yb2x'
+                    'lcyI6WyJodHRwOi8vcHVybC5pbXNnbG9iYWwub3JnL3ZvY2FiL2xpcy92Mi9zeXN0ZW0vcGVyc29uI0FkbWluaXN0cmF0b'
+                    '3IiXSwiaHR0cHM6Ly9wdXJsLmltc2dsb2JhbC5vcmcvc3BlYy9sdGkvY2xhaW0vZm9yX3VzZXIiOnsiaWQiOiI4ZjA0MWQ'
+                    '5NC05OTQzLTQ2NmItOWRlYi1hNjkyYTZiODVjMDIiLCJwZXJzb25fc291cmNlZGlkIjoiZXhhbXBsZS5lZHU6NzFlZTdlN'
+                    'DItZjZkMi00MTRhLTgwZGItYjY5YWMyZGVmZDQiLCJnaXZlbl9uYW1lIjoiSnVkZSIsImZhbWlseV9uYW1lIjoiV2lsYmV'
+                    'ydCIsImVtYWlsIjoiandpbGJlcnRAZXhhbXBsZS5vcmciLCJyb2xlcyI6WyJodHRwOi8vcHVybC5pbXNnbG9iYWwub3JnL'
+                    '3ZvY2FiL2xpcy92Mi9zeXN0ZW0vcGVyc29uI1VzZXIiXX0sImxvY2FsZSI6ImVuLVVTIiwiaHR0cHM6Ly9wdXJsLmltc2d'
+                    'sb2JhbC5vcmcvc3BlYy9sdGkvY2xhaW0vdG9vbF9wbGF0Zm9ybSI6eyJuYW1lIjoiRXhhbXBsZSBQbGF0Zm9ybSIsImRlc'
+                    '2NyaXB0aW9uIjoiUHJvdmlkZXMgYW4gZXhhbXBsZSBvZiBhIHBsYXRmb3JtLiIsImd1aWQiOiIxYjc2M2E4Yy0wZjkxLTQ'
+                    '2MTUtYmE0Ni1iYzNkNzc2Y2E3ZjgiLCJwcm9kdWN0X2ZhbWlseV9jb2RlIjoiRXhhbXBsZVBsYXRmb3JtIiwidmVyc2lvb'
+                    'iI6IjEuMC4wLjYiLCJ1cmwiOiJodHRwczovL3BsYXRmb3JtLmV4YW1wbGUub3JnIiwiY29udGFjdF9lbWFpbCI6InNvbWV'
+                    'vbmVAcGxhdGZvcm0uZXhhbXBsZS5vcmcifSwiaHR0cHM6Ly9wdXJsLmltc2dsb2JhbC5vcmcvc3BlYy9sdGkvY2xhaW0vY'
+                    '3VzdG9tIjp7IlNvbWVfY3VzdG9tX3NldHRpbmciOiJhX3ZhbHVlMSJ9LCJodHRwczovL3B1cmwuaW1zZ2xvYmFsLm9yZy9'
+                    'zcGVjL2x0aS9jbGFpbS9saXMiOnsicGVyc29uX3NvdXJjZWRpZCI6ImV4YW1wbGUuZWR1OmI2YjkzMTA1LThkMmYtNGFmO'
+                    'C05M2VjLTM2YzA1MGI5ODQxMyJ9LCJodHRwczovL3B1cmwuaW1zZ2xvYmFsLm9yZy9zcGVjL2x0aS9jbGFpbS9sYXVuY2h'
+                    'fcHJlc2VudGF0aW9uIjp7InJldHVybl91cmwiOiJodHRwczovL3BsYXRmb3JtLmV4YW1wbGUub3JnL2x0aS9yZXR1cm4if'
+                    'SwiaHR0cHM6Ly9wdXJsLmltc2dsb2JhbC5vcmcvc3BlYy9sdGkvY2xhaW0vdGFyZ2V0X2xpbmtfdXJpIjoiaHR0cHM6Ly9'
+                    'wbGF0Zm9ybS5leGFtcGxlLm9yZy9sdGkvcHJpdmFjeSJ9.d3NSZd283wbzzyWLU9i3EHSnNfg1t8J9wDkQXEyPebA9Hnnn'
+                    '6jsfj0li8BD8_3Q8-sLczLUFEWVDNl6J9U2gtLaGa2gW809Xw9dJ-tQgBgH3bVqRPfcIPVQ_qA5xspXx_lZVp2In4LZUPl'
+                    'Qh4l81yaIrXauoOsLrtIpqrnsExD1Xva0xtWmCOD-KrTgN4EDWrSj0Tf23siSyjVTRW_ha84zH9WWR4cbXfA2nqzbjE_-5'
+                    '0pIrzdCI9i5E23q76XEpDO-uxjfWaSo2KdZBkGibQJDPdyWtam1sS5EqbMe0kQBg-5frH-vpaRfkYJ0GWLKULUsaBYYQM-'
+                    'GG3wVmg4F86Oxvwb0fGOO6lGQx9arqoUlkCPCAmvmg7wuK7dBF7a2KZBwa1LYxtAFetQbdQs5FhLKFiQFw7IxbDza4A1aP'
+                    'N-DHwMZxFQT4nfewuC-bhU4TmYkbxO3csDYtk5ng97EY3JxaFIXYqUj9w0W8y7Dj_1qmQIVIc_pQU594YZCSbl06DWGCD1'
+                    'uKyJu0PRj6Sa3T3hG6ecqvQaf6V_OwgEd-u_f6qXbmUYstb9l8sW3yWcB6PH7-OC-I9Ttoy4vSKkPQRZ-9Tu2LZlXjMnRF'
+                    'odIoYA-LekMYldb0sabYT4yw1pmXAo5dyMfGSHIjJ21-xAiaqFTpfQ5b3fgmIlv-oZYda1c'
     }
 
     expected_message_launch_data = {
@@ -118,13 +107,6 @@ class PrivacyLaunchBase(TestLinkBase):
             "roles": [
                 "http://purl.imsglobal.org/vocab/lis/v2/system/person#User"
             ]
-        },
-        "https://purl.imsglobal.org/spec/lti/claim/resource_link": {
-            "errors": {"errors": {}},
-            "validation_context": None,
-            "title": None,
-            "id": "4dde05e8ca1973bcca9bffc13e1548820eee93a3",
-            "description": None
         },
         "locale": "en-US",
         "https://purl.imsglobal.org/spec/lti/claim/tool_platform": {
@@ -155,6 +137,9 @@ class PrivacyLaunchBase(TestLinkBase):
         message_launch_data = validated_message_launch.get_launch_data()
         self.assertDictEqual(message_launch_data, self.expected_message_launch_data)
         self.assertTrue(validated_message_launch.is_data_privacy_launch())
+        self.assertDictEqual(
+            validated_message_launch.get_privacy_launch_user(),
+            self.expected_message_launch_data.get('https://purl.imsglobal.org/spec/lti/claim/for_user'))
 
 
 class TestDjangoPrivacyLaunch(DjangoMixin, PrivacyLaunchBase):
