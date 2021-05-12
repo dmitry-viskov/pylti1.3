@@ -385,7 +385,7 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
 
         return DeepLink(self._registration, deployment_id, deep_linking_settings)
 
-    def get_privacy_launch_user(self):
+    def get_data_privacy_launch_user(self):
         # type: () -> t.Optional[_ForUserClaim]
         """
         Applicable for DataPrivacyLaunchRequest only. Returns information about user

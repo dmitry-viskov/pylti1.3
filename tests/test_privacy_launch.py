@@ -138,7 +138,7 @@ class PrivacyLaunchBase(TestLinkBase):
         self.assertDictEqual(message_launch_data, self.expected_message_launch_data)
         self.assertTrue(validated_message_launch.is_data_privacy_launch())
         self.assertDictEqual(
-            validated_message_launch.get_privacy_launch_user(),
+            validated_message_launch.get_data_privacy_launch_user(),
             self.expected_message_launch_data.get('https://purl.imsglobal.org/spec/lti/claim/for_user'))
 
 

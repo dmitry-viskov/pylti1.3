@@ -459,7 +459,7 @@ users in managing and executing requests related to data privacy.
 
     data_privacy_launch = message_launch.is_data_privacy_launch()
     if data_privacy_launch:
-        user = message_launch.get_privacy_launch_user()
+        user = message_launch.get_data_privacy_launch_user()
 
 Check user's role after LTI launch
 ==================================
