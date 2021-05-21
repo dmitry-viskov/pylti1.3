@@ -1,4 +1,3 @@
-import re
 import typing as t
 
 if t.TYPE_CHECKING:
@@ -37,23 +36,16 @@ class NamesRolesProvisioningService(object):
     def get_members(self):
         # type: () -> t.List[_Member]
         members = []  # type: t.List[_Member]
-        next_page = self._service_data['context_memberships_url']  # type: t.Union[Literal[False], str]
+        next_page_url = self._service_data['context_memberships_url']  # type: t.Optional[str]
 
-        while next_page:
+        while next_page_url:
             page = self._service_connector.make_service_request(
                 ['https://purl.imsglobal.org/spec/lti-nrps/scope/contextmembership.readonly'],
-                next_page,  # type: ignore
+                next_page_url,  # type: ignore
                 accept='application/vnd.ims.lti-nrps.v2.membershipcontainer+json',
-                case_insensitive_headers=True
             )
 
             members.extend(t.cast(t.Any, page.get('body', {})).get('members', []))
-
-            next_page = False
-            link_header = page.get('headers', {}).get('link', '')
-            if link_header:
-                match = re.search(r'<([^>]*)>;\s*rel="next"', link_header.replace('\n', ' ').lower().strip())
-                if match:
-                    next_page = match.group(1)
+            next_page_url = page.get('next_page_url')
 
         return members

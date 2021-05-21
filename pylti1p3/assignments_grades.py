@@ -55,47 +55,63 @@ class AssignmentsGradesService(object):
             content_type='application/vnd.ims.lis.v1.score+json'
         )
 
-    def get_lineitems(self):
-        # type: () -> list
+    def _get_lineitems(self, line_items_url):
+        # type: (str) -> t.Tuple[list, t.Optional[str]]
         if "https://purl.imsglobal.org/spec/lti-ags/scope/lineitem" not in self._service_data['scope']:
             raise LtiException('Missing required scope')
 
-        line_items = self._service_connector.make_service_request(
+        lineitems = self._service_connector.make_service_request(
             self._service_data['scope'],
-            self._service_data['lineitems'],
+            line_items_url,
             accept='application/vnd.ims.lis.v2.lineitemcontainer+json'
         )
-        if not isinstance(line_items['body'], list):
+        if not isinstance(lineitems['body'], list):
             raise LtiException('Unknown response type received for line items')
-        return line_items['body']
+        return lineitems['body'], lineitems['next_page_url']
+
+    def get_lineitems(self):
+        # type: () -> list
+
+        lineitems_res_lst = []
+        lineitems_url: t.Optional[str] = self._service_data['lineitems']
+
+        while lineitems_url:
+            lineitems, lineitems_url = self._get_lineitems(lineitems_url)
+            lineitems_res_lst.extend(lineitems)
+
+        return lineitems_res_lst
+
+    def find_lineitem(self, prop_name, prop_value):
+        # type: (str, t.Any) -> t.Optional[LineItem]
+        lineitems_url: t.Optional[str] = self._service_data['lineitems']
+
+        while lineitems_url:
+            lineitems, lineitems_url = self._get_lineitems(lineitems_url)
+            for lineitem in lineitems:
+                lineitem_prop_value = lineitem.get(prop_name)
+                if lineitem_prop_value == prop_value:
+                    return LineItem(lineitem)
+        return None
 
     def find_lineitem_by_id(self, ln_id):
-        # type: (t.Optional[str]) -> t.Optional[LineItem]
-        line_items = self.get_lineitems()
-
-        for line_item in line_items:
-            line_item_id = line_item.get('id')
-            if line_item_id == ln_id:
-                return LineItem(line_item)
-        return None
+        # type: (str) -> t.Optional[LineItem]
+        return self.find_lineitem('id', ln_id)
 
     def find_lineitem_by_tag(self, tag):
-        # type: (t.Optional[str]) -> t.Optional[LineItem]
-        line_items = self.get_lineitems()
-
-        for line_item in line_items:
-            line_item_tag = line_item.get('tag')
-            if line_item_tag == tag:
-                return LineItem(line_item)
-        return None
+        # type: (str) -> t.Optional[LineItem]
+        return self.find_lineitem('tag', tag)
 
     def find_or_create_lineitem(self, new_line_item, find_by='tag'):
         # type: (LineItem, Literal['tag', 'id']) -> LineItem
         if find_by == 'tag':
             tag = new_line_item.get_tag()
+            if not tag:
+                raise LtiException('Tag value is not specified')
             line_item = self.find_lineitem_by_tag(tag)
         elif find_by == 'id':
             line_id = new_line_item.get_id()
+            if not line_id:
+                raise LtiException('ID value is not specified')
             line_item = self.find_lineitem_by_id(line_id)
         else:
             raise LtiException('Invalid "find_by" value: ' + str(find_by))

@@ -1,4 +1,5 @@
 import hashlib
+import re
 import sys
 import time
 import typing as t
@@ -16,6 +17,7 @@ if t.TYPE_CHECKING:
     _ServiceConnectorResponse = TypedDict('_ServiceConnectorResponse', {
         'headers': t.Union[t.Dict[str, str], t.MutableMapping[str, str]],
         'body': t.Union[None, int, float, t.List[object], t.Dict[str, object], str],
+        'next_page_url': t.Optional[str]
     })
 
 
@@ -118,7 +120,15 @@ class ServiceConnector(object):
         if not r.ok:
             raise LtiServiceException(r)
 
+        next_page_url = None
+        link_header = r.headers.get('link', '')
+        if link_header:
+            match = re.search(r'<([^>]*)>;\s*rel="next"', link_header.replace('\n', ' ').lower().strip())
+            if match:
+                next_page_url = match.group(1)
+
         return {
             'headers': r.headers if case_insensitive_headers else dict(r.headers),
-            'body': r.json() if r.content else None
+            'body': r.json() if r.content else None,
+            'next_page_url': next_page_url if next_page_url else None
         }
