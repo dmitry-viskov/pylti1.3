@@ -33,19 +33,28 @@ class NamesRolesProvisioningService(object):
         self._service_connector = service_connector
         self._service_data = service_data
 
+    def get_members_page(self, members_url=None):
+        # type: (t.Optional[str]) -> t.Tuple[list, t.Optional[str]]
+
+        if not members_url:
+            members_url = self._service_data['context_memberships_url']
+
+        data = self._service_connector.make_service_request(
+            ['https://purl.imsglobal.org/spec/lti-nrps/scope/contextmembership.readonly'],
+            members_url,
+            accept='application/vnd.ims.lti-nrps.v2.membershipcontainer+json',
+        )
+        data_body = t.cast(t.Any, data.get('body', {}))
+        return data_body.get('members', []), data['next_page_url']
+
     def get_members(self):
         # type: () -> t.List[_Member]
-        members = []  # type: t.List[_Member]
-        next_page_url = self._service_data['context_memberships_url']  # type: t.Optional[str]
 
-        while next_page_url:
-            page = self._service_connector.make_service_request(
-                ['https://purl.imsglobal.org/spec/lti-nrps/scope/contextmembership.readonly'],
-                next_page_url,  # type: ignore
-                accept='application/vnd.ims.lti-nrps.v2.membershipcontainer+json',
-            )
+        members_res_lst = []  # type: t.List[_Member]
+        members_url = self._service_data['context_memberships_url']  # type: t.Optional[str]
 
-            members.extend(t.cast(t.Any, page.get('body', {})).get('members', []))
-            next_page_url = page.get('next_page_url')
+        while members_url:
+            members, members_url = self.get_members_page(members_url)
+            members_res_lst.extend(members)
 
-        return members
+        return members_res_lst

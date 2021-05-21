@@ -55,14 +55,17 @@ class AssignmentsGradesService(object):
             content_type='application/vnd.ims.lis.v1.score+json'
         )
 
-    def _get_lineitems(self, line_items_url):
-        # type: (str) -> t.Tuple[list, t.Optional[str]]
+    def get_lineitems_page(self, lineitems_url=None):
+        # type: (t.Optional[str]) -> t.Tuple[list, t.Optional[str]]
         if "https://purl.imsglobal.org/spec/lti-ags/scope/lineitem" not in self._service_data['scope']:
             raise LtiException('Missing required scope')
 
+        if not lineitems_url:
+            lineitems_url = self._service_data['lineitems']
+
         lineitems = self._service_connector.make_service_request(
             self._service_data['scope'],
-            line_items_url,
+            lineitems_url,
             accept='application/vnd.ims.lis.v2.lineitemcontainer+json'
         )
         if not isinstance(lineitems['body'], list):
@@ -73,20 +76,20 @@ class AssignmentsGradesService(object):
         # type: () -> list
 
         lineitems_res_lst = []
-        lineitems_url: t.Optional[str] = self._service_data['lineitems']
+        lineitems_url = self._service_data['lineitems']  # type: t.Optional[str]
 
         while lineitems_url:
-            lineitems, lineitems_url = self._get_lineitems(lineitems_url)
+            lineitems, lineitems_url = self.get_lineitems_page(lineitems_url)
             lineitems_res_lst.extend(lineitems)
 
         return lineitems_res_lst
 
     def find_lineitem(self, prop_name, prop_value):
         # type: (str, t.Any) -> t.Optional[LineItem]
-        lineitems_url: t.Optional[str] = self._service_data['lineitems']
+        lineitems_url = self._service_data['lineitems']  # type: t.Optional[str]
 
         while lineitems_url:
-            lineitems, lineitems_url = self._get_lineitems(lineitems_url)
+            lineitems, lineitems_url = self.get_lineitems_page(lineitems_url)
             for lineitem in lineitems:
                 lineitem_prop_value = lineitem.get(prop_name)
                 if lineitem_prop_value == prop_value:
