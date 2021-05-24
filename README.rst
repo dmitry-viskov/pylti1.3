@@ -400,6 +400,12 @@ From the service we can get a list of all members by calling:
 
     members = nrps.get_members()
 
+To get some specific page with the members:
+
+.. code-block:: python
+
+    members, next_page_url = nrps.get_members_page(page_url)
+
 Assignments and Grades Service
 ==============================
 
@@ -448,6 +454,24 @@ If you want to send multiple types of grade back, that can be done by specifying
     ags.put_grade(gr, line_item)
 
 If a lineitem with the same ``tag`` exists, that lineitem will be used, otherwise a new lineitem will be created.
+Additional methods:
+
+.. code-block:: python
+
+    # Get one page with line items
+    items_lst, next_page = ags.get_lineitems_page()
+
+    # Get list of all available line items
+    items_lst = ags.get_lineitems()
+
+    # Find line item by ID
+    item = ags.find_lineitem_by_id(ln_id)
+
+    # Find line item by tag
+    item = ags.find_lineitem_by_tag(ln_tag)
+
+    # Return all grades for the passed line item (across all users enrolled in the line item's context)
+    grades = ags.get_grades(ln)
 
 Data privacy launch
 ===================
