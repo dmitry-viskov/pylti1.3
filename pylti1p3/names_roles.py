@@ -35,7 +35,12 @@ class NamesRolesProvisioningService(object):
 
     def get_members_page(self, members_url=None):
         # type: (t.Optional[str]) -> t.Tuple[list, t.Optional[str]]
+        """
+        Get one page with the users.
 
+        :param members_url: LTI platform's URL (optional)
+        :return: tuple in format: (list with users, next page url)
+        """
         if not members_url:
             members_url = self._service_data['context_memberships_url']
 
@@ -49,7 +54,11 @@ class NamesRolesProvisioningService(object):
 
     def get_members(self):
         # type: () -> t.List[_Member]
+        """
+        Get list with all users.
 
+        :return: list
+        """
         members_res_lst = []  # type: t.List[_Member]
         members_url = self._service_data['context_memberships_url']  # type: t.Optional[str]
 
