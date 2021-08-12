@@ -23,7 +23,7 @@ class LtiToolKeyAdmin(admin.ModelAdmin):
         kwargs.update({'help_texts': help_texts})
         return super(LtiToolKeyAdmin, self).get_form(request, obj, **kwargs)
 
-    def get_fieldsets(self, request, obj=None):
+    def get_fieldsets(self, request, obj=None):  # pylint: disable=unused-argument
         if not obj:
             return self.add_fieldsets
         else:

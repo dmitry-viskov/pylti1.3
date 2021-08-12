@@ -1,4 +1,5 @@
 import hashlib
+import re
 import sys
 import time
 import typing as t
@@ -11,12 +12,12 @@ from .exception import LtiServiceException
 
 if t.TYPE_CHECKING:
     from mypy_extensions import TypedDict
-
     from .registration import Registration
 
     _ServiceConnectorResponse = TypedDict('_ServiceConnectorResponse', {
-        'headers': t.Dict[str, str],
+        'headers': t.Union[t.Dict[str, str], t.MutableMapping[str, str]],
         'body': t.Union[None, int, float, t.List[object], t.Dict[str, object], str],
+        'next_page_url': t.Optional[str]
     })
 
 
@@ -100,6 +101,7 @@ class ServiceConnector(object):
             data=None,  # type: t.Union[None, str]
             content_type='application/json',  # type: str
             accept='application/json',  # type: str
+            case_insensitive_headers=False,  # type: bool
     ):
         # type: (...) -> _ServiceConnectorResponse
         access_token = self.get_access_token(scopes)
@@ -118,7 +120,15 @@ class ServiceConnector(object):
         if not r.ok:
             raise LtiServiceException(r)
 
+        next_page_url = None
+        link_header = r.headers.get('link', '')
+        if link_header:
+            match = re.search(r'<([^>]*)>;\s*rel="next"', link_header.replace('\n', ' ').lower().strip())
+            if match:
+                next_page_url = match.group(1)
+
         return {
-            'headers': dict(r.headers),
-            'body': r.json() if r.content else None
+            'headers': r.headers if case_insensitive_headers else dict(r.headers),
+            'body': r.json() if r.content else None,
+            'next_page_url': next_page_url if next_page_url else None
         }

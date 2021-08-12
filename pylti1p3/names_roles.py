@@ -1,4 +1,3 @@
-import re
 import typing as t
 
 if t.TYPE_CHECKING:
@@ -34,25 +33,37 @@ class NamesRolesProvisioningService(object):
         self._service_connector = service_connector
         self._service_data = service_data
 
+    def get_members_page(self, members_url=None):
+        # type: (t.Optional[str]) -> t.Tuple[list, t.Optional[str]]
+        """
+        Get one page with the users.
+
+        :param members_url: LTI platform's URL (optional)
+        :return: tuple in format: (list with users, next page url)
+        """
+        if not members_url:
+            members_url = self._service_data['context_memberships_url']
+
+        data = self._service_connector.make_service_request(
+            ['https://purl.imsglobal.org/spec/lti-nrps/scope/contextmembership.readonly'],
+            members_url,
+            accept='application/vnd.ims.lti-nrps.v2.membershipcontainer+json',
+        )
+        data_body = t.cast(t.Any, data.get('body', {}))
+        return data_body.get('members', []), data['next_page_url']
+
     def get_members(self):
         # type: () -> t.List[_Member]
-        members = []  # type: t.List[_Member]
-        next_page = self._service_data['context_memberships_url']  # type: t.Union[Literal[False], str]
+        """
+        Get list with all users.
 
-        while next_page:
-            page = self._service_connector.make_service_request(
-                ['https://purl.imsglobal.org/spec/lti-nrps/scope/contextmembership.readonly'],
-                next_page,  # type: ignore
-                accept='application/vnd.ims.lti-nrps.v2.membershipcontainer+json'
-            )
+        :return: list
+        """
+        members_res_lst = []  # type: t.List[_Member]
+        members_url = self._service_data['context_memberships_url']  # type: t.Optional[str]
 
-            members.extend(t.cast(t.Any, page.get('body', {})).get('members', []))
+        while members_url:
+            members, members_url = self.get_members_page(members_url)
+            members_res_lst.extend(members)
 
-            next_page = False
-            link_header = page.get('headers', {}).get('link', '')
-            if link_header:
-                match = re.search(r'<([^>]*)>;\s*rel="next"', link_header.replace('\n', ' ').lower().strip())
-                if match:
-                    next_page = match.group(1)
-
-        return members
+        return members_res_lst

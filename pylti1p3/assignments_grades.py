@@ -27,23 +27,31 @@ class AssignmentsGradesService(object):
         self._service_connector = service_connector
         self._service_data = service_data
 
-    def put_grade(self, grade, line_item=None):
+    def put_grade(self, grade, lineitem=None):
         # type: (Grade, t.Optional[LineItem]) -> _ServiceConnectorResponse
+        """
+        Send grade to the LTI platform.
+
+        :param grade: Grade instance
+        :param lineitem: LineItem instance
+        :return: dict with HTTP response body and headers
+        """
+
         if "https://purl.imsglobal.org/spec/lti-ags/scope/score" not in self._service_data['scope']:
             raise LtiException('Missing required scope')
 
-        if line_item and not line_item.get_id():
-            line_item = self.find_or_create_lineitem(line_item)
-            score_url = line_item.get_id()
-        elif not line_item and self._service_data.get('lineitem'):
+        if lineitem and not lineitem.get_id():
+            lineitem = self.find_or_create_lineitem(lineitem)
+            score_url = lineitem.get_id()
+        elif not lineitem and self._service_data.get('lineitem'):
             score_url = self._service_data.get('lineitem')
         else:
-            if not line_item:
-                line_item = LineItem()
-                line_item.set_label('default')\
+            if not lineitem:
+                lineitem = LineItem()
+                lineitem.set_label('default')\
                     .set_score_maximum(100)
-                line_item = self.find_or_create_lineitem(line_item)
-            score_url = line_item.get_id()
+                lineitem = self.find_or_create_lineitem(lineitem)
+            score_url = lineitem.get_id()
 
         assert score_url is not None
         score_url = self._add_url_path_ending(score_url, 'scores')
@@ -55,83 +63,144 @@ class AssignmentsGradesService(object):
             content_type='application/vnd.ims.lis.v1.score+json'
         )
 
-    def get_lineitems(self):
-        # type: () -> list
+    def get_lineitems_page(self, lineitems_url=None):
+        # type: (t.Optional[str]) -> t.Tuple[list, t.Optional[str]]
+        """
+        Get one page with line items.
+
+        :param lineitems_url: LTI platform's URL (optional)
+        :return: tuple in format: (list with line items, next page url)
+        """
         if "https://purl.imsglobal.org/spec/lti-ags/scope/lineitem" not in self._service_data['scope']:
             raise LtiException('Missing required scope')
 
-        line_items = self._service_connector.make_service_request(
+        if not lineitems_url:
+            lineitems_url = self._service_data['lineitems']
+
+        lineitems = self._service_connector.make_service_request(
             self._service_data['scope'],
-            self._service_data['lineitems'],
+            lineitems_url,
             accept='application/vnd.ims.lis.v2.lineitemcontainer+json'
         )
-        if not isinstance(line_items['body'], list):
+        if not isinstance(lineitems['body'], list):
             raise LtiException('Unknown response type received for line items')
-        return line_items['body']
+        return lineitems['body'], lineitems['next_page_url']
+
+    def get_lineitems(self):
+        # type: () -> list
+        """
+        Get list of all available line items.
+
+        :return: list
+        """
+        lineitems_res_lst = []
+        lineitems_url = self._service_data['lineitems']  # type: t.Optional[str]
+
+        while lineitems_url:
+            lineitems, lineitems_url = self.get_lineitems_page(lineitems_url)
+            lineitems_res_lst.extend(lineitems)
+
+        return lineitems_res_lst
+
+    def find_lineitem(self, prop_name, prop_value):
+        # type: (str, t.Any) -> t.Optional[LineItem]
+        """
+        Find line item by some property (ID/Tag).
+
+        :param prop_name: property name
+        :param prop_value: property value
+        :return: LineItem instance or None
+        """
+        lineitems_url = self._service_data['lineitems']  # type: t.Optional[str]
+
+        while lineitems_url:
+            lineitems, lineitems_url = self.get_lineitems_page(lineitems_url)
+            for lineitem in lineitems:
+                lineitem_prop_value = lineitem.get(prop_name)
+                if lineitem_prop_value == prop_value:
+                    return LineItem(lineitem)
+        return None
 
     def find_lineitem_by_id(self, ln_id):
-        # type: (t.Optional[str]) -> t.Optional[LineItem]
-        line_items = self.get_lineitems()
+        # type: (str) -> t.Optional[LineItem]
+        """
+        Find line item by ID.
 
-        for line_item in line_items:
-            line_item_id = line_item.get('id')
-            if line_item_id == ln_id:
-                return LineItem(line_item)
-        return None
+        :param ln_id: str
+        :return: LineItem instance or None
+        """
+        return self.find_lineitem('id', ln_id)
 
     def find_lineitem_by_tag(self, tag):
-        # type: (t.Optional[str]) -> t.Optional[LineItem]
-        line_items = self.get_lineitems()
+        # type: (str) -> t.Optional[LineItem]
+        """
+        Find line item by Tag.
 
-        for line_item in line_items:
-            line_item_tag = line_item.get('tag')
-            if line_item_tag == tag:
-                return LineItem(line_item)
-        return None
+        :param tag: str
+        :return: LineItem instance or None
+        """
+        return self.find_lineitem('tag', tag)
 
-    def find_or_create_lineitem(self, new_line_item, find_by='tag'):
+    def find_or_create_lineitem(self, new_lineitem, find_by='tag'):
         # type: (LineItem, Literal['tag', 'id']) -> LineItem
+        """
+        Try to find line item using ID or Tag. New lime item will be created if nothing is found.
+
+        :param new_lineitem: LineItem instance
+        :param find_by: str ("tag"/"id")
+        :return: LineItem instance (based on response from the LTI platform)
+        """
         if find_by == 'tag':
-            tag = new_line_item.get_tag()
-            line_item = self.find_lineitem_by_tag(tag)
+            tag = new_lineitem.get_tag()
+            if not tag:
+                raise LtiException('Tag value is not specified')
+            lineitem = self.find_lineitem_by_tag(tag)
         elif find_by == 'id':
-            line_id = new_line_item.get_id()
-            line_item = self.find_lineitem_by_id(line_id)
+            line_id = new_lineitem.get_id()
+            if not line_id:
+                raise LtiException('ID value is not specified')
+            lineitem = self.find_lineitem_by_id(line_id)
         else:
             raise LtiException('Invalid "find_by" value: ' + str(find_by))
 
-        if line_item:
-            return line_item
+        if lineitem:
+            return lineitem
 
-        created_line_item = self._service_connector.make_service_request(
+        created_lineitem = self._service_connector.make_service_request(
             self._service_data['scope'],
             self._service_data['lineitems'],
             is_post=True,
-            data=new_line_item.get_value(),
+            data=new_lineitem.get_value(),
             content_type='application/vnd.ims.lis.v2.lineitem+json',
             accept='application/vnd.ims.lis.v2.lineitem+json'
         )
-        if not isinstance(created_line_item['body'], dict):
+        if not isinstance(created_lineitem['body'], dict):
             raise LtiException('Unknown response type received for create line item')
-        return LineItem(created_line_item['body'])
+        return LineItem(created_lineitem['body'])
 
-    def get_grades(self, line_item):
+    def get_grades(self, lineitem):
         # type: (LineItem) -> list
-        line_item_id = line_item.get_id()
-        line_item_tag = line_item.get_tag()
+        """
+        Return all grades for the passed line item (across all users enrolled in the line item's context).
+
+        :param lineitem: LineItem instance
+        :return: list of grades
+        """
+        lineitem_id = lineitem.get_id()
+        lineitem_tag = lineitem.get_tag()
 
         find_by = None  # type: t.Optional[Literal['id', 'tag']]
-        if line_item_id:
+        if lineitem_id:
             find_by = 'id'
-        elif line_item_tag:
+        elif lineitem_tag:
             find_by = 'tag'
         else:
             raise LtiException('Received LineItem did not contain a tag or id')
 
-        line_item = self.find_or_create_lineitem(line_item, find_by=find_by)
-        line_item_id = line_item.get_id()
-        assert line_item_id is not None
-        results_url = self._add_url_path_ending(line_item_id, 'results')
+        lineitem = self.find_or_create_lineitem(lineitem, find_by=find_by)
+        lineitem_id = lineitem.get_id()
+        assert lineitem_id is not None
+        results_url = self._add_url_path_ending(lineitem_id, 'results')
         scores = self._service_connector.make_service_request(
             self._service_data['scope'],
             results_url,

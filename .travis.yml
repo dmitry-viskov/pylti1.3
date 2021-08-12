@@ -24,6 +24,10 @@ jobs:
       dist: focal
       env:
         - TOX_ENV=py38
+    - python: 3.9
+      dist: focal
+      env:
+        - TOX_ENV=py39
 
 install:
   - pip install tox
