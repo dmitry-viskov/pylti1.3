@@ -19,6 +19,7 @@ from .message_validators import get_validators
 from .message_validators.deep_link import DeepLinkMessageValidator
 from .message_validators.privacy_launch import PrivacyLaunchValidator
 from .message_validators.resource_message import ResourceMessageValidator
+from .message_validators.submission_review import SubmissionReviewLaunchValidator
 from .names_roles import NamesRolesProvisioningService
 from .roles import StaffRole, StudentRole, TeacherRole, TeachingAssistantRole, DesignerRole, ObserverRole, \
     TransientRole
@@ -95,7 +96,7 @@ if t.TYPE_CHECKING:
     _ForUserClaim = TypedDict(
         '_ForUserClaim', {
             # Required data
-            'id': str,
+            'user_id': str,
 
             # Optional data
             'person_sourcedId': str,
@@ -114,7 +115,12 @@ if t.TYPE_CHECKING:
             'nonce': str,
             'aud': t.Union[t.List[str], str],
             'https://purl.imsglobal.org/spec/lti/claim/message_type':
-                Literal['LtiResourceLinkRequest', 'LtiDeepLinkingRequest', 'DataPrivacyLaunchRequest'],
+                Literal[
+                    'LtiResourceLinkRequest',
+                    'LtiDeepLinkingRequest',
+                    'DataPrivacyLaunchRequest',
+                    'LtiSubmissionReviewRequest',
+                ],
             'https://purl.imsglobal.org/spec/lti/claim/version': Literal['1.3.0'],
             'https://purl.imsglobal.org/spec/lti/claim/deployment_id': str,
             'https://purl.imsglobal.org/spec/lti/claim/target_link_uri': str,
@@ -397,6 +403,17 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
         jwt_body = self._get_jwt_body()
         return jwt_body.get('https://purl.imsglobal.org/spec/lti/claim/for_user')
 
+    def get_submission_review_user(self):
+        # type: () -> t.Optional[_ForUserClaim]
+        """
+        Applicable for LtiSubmissionReviewRequest only. Returns information about user
+        who's submission should be displayed for review.
+
+        :return: dict
+        """
+        jwt_body = self._get_jwt_body()
+        return jwt_body.get('https://purl.imsglobal.org/spec/lti/claim/for_user')
+
     def is_deep_link_launch(self):
         # type: () -> bool
         """
@@ -426,6 +443,16 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
         """
         jwt_body = self._get_jwt_body()
         return PrivacyLaunchValidator().can_validate(jwt_body)
+
+    def is_submission_review_launch(self):
+        # type: () -> bool
+        """
+        Returns whether or not the current launch is a submission review launch.
+
+        :return: bool  Returns true if the current launch is a submission review launch.
+        """
+        jwt_body = self._get_jwt_body()
+        return SubmissionReviewLaunchValidator().can_validate(jwt_body)
 
     def get_launch_data(self):
         # type: () -> _LaunchData
