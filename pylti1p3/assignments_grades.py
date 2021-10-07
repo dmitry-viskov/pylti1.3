@@ -63,6 +63,27 @@ class AssignmentsGradesService(object):
             content_type='application/vnd.ims.lis.v1.score+json'
         )
 
+    def get_lineitem(self, lineitem_url=None):
+        """
+        Retrieves an individual lineitem. By default retrieves the lineitem
+        associated with the LTI message.
+
+        :param lineitem_url: endpoint for LTI line item (optional)
+        :return: LineItem instance
+        """
+        if "https://purl.imsglobal.org/spec/lti-ags/scope/lineitem.readonly" not in self._service_data['scope']:
+            raise LtiException('Missing required scope')
+
+        if lineitem_url is None:
+            lineitem_url = self._service_data['lineitem']
+
+        lineitem_response = self._service_connector.make_service_request(
+            self._service_data['scope'],
+            lineitem_url,
+            accept='application/vnd.ims.lis.v2.lineitem+json',
+        )
+        return LineItem(lineitem_response['body'])
+
     def get_lineitems_page(self, lineitems_url=None):
         # type: (t.Optional[str]) -> t.Tuple[list, t.Optional[str]]
         """
