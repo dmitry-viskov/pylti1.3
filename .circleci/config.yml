@@ -17,9 +17,6 @@ jobs:
       - run:
           name: tox
           command: tox
-      - run:
-          name: mypy
-          command: mypy --py2 pylti1p3/
   tox35:
     docker:
       - image: circleci/python:3.5.10
@@ -36,6 +33,9 @@ jobs:
       - run:
           name: mypy
           command: mypy pylti1p3/
+      - run:
+          name: mypy (compatibility with python2)
+          command: mypy --py2 pylti1p3/
   tox36:
     docker:
       - image: circleci/python:3.6.15
