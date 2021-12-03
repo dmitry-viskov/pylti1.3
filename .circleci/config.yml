@@ -16,6 +16,8 @@ jobs:
           command: sudo pip install tox
       - run:
           command: tox
+      - run:
+          command: mypy pylti1p3/
   tox36:
     docker:
       - image: circleci/python:3.6.15
@@ -28,6 +30,8 @@ jobs:
           command: sudo pip install tox
       - run:
           command: tox
+      - run:
+          command: mypy pylti1p3/
   tox37:
     docker:
       - image: circleci/python:3.7.12
@@ -40,6 +44,8 @@ jobs:
           command: sudo pip install tox
       - run:
           command: tox
+      - run:
+          command: mypy pylti1p3/
   tox38:
     docker:
       - image: circleci/python:3.8.11
@@ -52,6 +58,8 @@ jobs:
           command: sudo pip install tox
       - run:
           command: tox
+      - run:
+          command: mypy pylti1p3/
   tox39:
     docker:
       - image: circleci/python:3.9.9
@@ -64,6 +72,8 @@ jobs:
           command: sudo pip install tox
       - run:
           command: tox
+      - run:
+          command: mypy pylti1p3/
 
 workflows:
   build:
