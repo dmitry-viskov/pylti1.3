@@ -1,0 +1,112 @@
+version: 2.1
+
+orbs:
+  python: circleci/python@1.5.0
+
+jobs:
+  tox27:
+    docker:
+      - image: circleci/python:2.7.18
+    environment:
+      TOXENV: py27
+    steps:
+      - checkout
+      - run:
+          name: Install utils
+          command: sudo pip install tox
+      - run:
+          name: tox
+          command: tox
+  tox35:
+    docker:
+      - image: circleci/python:3.5.10
+    environment:
+      TOXENV: py35
+    steps:
+      - checkout
+      - run:
+          name: Install utils
+          command: sudo pip install tox mypy==0.812
+      - run:
+          name: tox
+          command: tox
+      - run:
+          name: mypy
+          command: mypy pylti1p3/
+      - run:
+          name: mypy (compatibility with python2)
+          command: mypy --py2 pylti1p3/
+  tox36:
+    docker:
+      - image: circleci/python:3.6.15
+    environment:
+      TOXENV: py36
+    steps:
+      - checkout
+      - run:
+          name: Install utils
+          command: sudo pip install tox mypy==0.812
+      - run:
+          name: tox
+          command: tox
+      - run:
+          name: mypy
+          command: mypy pylti1p3/
+  tox37:
+    docker:
+      - image: circleci/python:3.7.12
+    environment:
+      TOXENV: py37
+    steps:
+      - checkout
+      - run:
+          name: Install utils
+          command: sudo pip install tox mypy==0.812
+      - run:
+          name: tox
+          command: tox
+      - run:
+          name: mypy
+          command: mypy pylti1p3/
+  tox38:
+    docker:
+      - image: circleci/python:3.8.11
+    environment:
+      TOXENV: py38
+    steps:
+      - checkout
+      - run:
+          name: Install utils
+          command: sudo pip install tox mypy==0.812
+      - run:
+          name: tox
+          command: tox
+      - run:
+          name: mypy
+          command: mypy pylti1p3/
+  tox39:
+    docker:
+      - image: circleci/python:3.9.9
+    environment:
+      TOXENV: py39
+    steps:
+      - checkout
+      - run:
+          name: Install utils
+          command: sudo pip install tox mypy==0.812
+      - run:
+          name: tox
+          command: tox
+      - run:
+          name: mypy
+          command: mypy pylti1p3/
+
+workflows:
+  build:
+    jobs:
+      - tox27
+      - tox35
+      - tox36
+      - tox37
+      - tox38
+      - tox39

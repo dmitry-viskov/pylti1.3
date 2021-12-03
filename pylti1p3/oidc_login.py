@@ -7,11 +7,11 @@ from .cookies_allowed_check import CookiesAllowedCheckPage
 from .exception import OIDCException
 
 if t.TYPE_CHECKING:
-    from .cookie import CookieService
-    from .request import Request
-    from .session import SessionService
+    from .cookie import CookieService  # pylint: disable=unused-import
+    from .request import Request  # pylint: disable=unused-import
+    from .session import SessionService  # pylint: disable=unused-import
     from .redirect import Redirect
-    from .tool_config import ToolConfAbstract
+    from .tool_config import ToolConfAbstract  # pylint: disable=unused-import
     from .registration import Registration
     from .launch_data_storage.base import LaunchDataStorage
 

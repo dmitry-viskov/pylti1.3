@@ -14,9 +14,10 @@ if sys.version_info < (2, 7):
 
 install_requires = [
     'pyjwt>=1.5',
-    'jwcrypto',
+    'jwcrypto==0.9.1; python_version>="2" and python_version<"3"',
+    'jwcrypto; python_version>="3"',
     'requests',
-    'typing;python_version<"3.5"'
+    'typing; python_version<"3.5"'
 ]
 
 with open("README.rst", "rt") as readme:
