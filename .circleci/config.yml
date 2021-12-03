@@ -1,25 +1,75 @@
 version: 2.1
 
 orbs:
-  python: circleci/python@1.5.0
-
-dependencies:
-  override:
-    - pip install tox tox-pyenv
-    - pyenv local 3.5.10 3.6.15 3.7.12 3.9.8
+  python: circleci/python@1.2
 
 jobs:
-  toxify:
+  tox35:
+    docker:
+      - image: circleci/python:3.5.10
+    environment:
+      TOXENV: py35
+    steps:
+      - checkout
+      - run:
+          name: Install utils
+          command: sudo pip install tox
+      - run:
+          command: tox
+  tox36:
+    docker:
+      - image: circleci/python:3.6.15
+    environment:
+      TOXENV: py36
+    steps:
+      - checkout
+      - run:
+          name: Install utils
+          command: sudo pip install tox
+      - run:
+          command: tox
+  tox37:
+    docker:
+      - image: circleci/python:3.7.12
+    environment:
+      TOXENV: py37
+    steps:
+      - checkout
+      - run:
+          name: Install utils
+          command: sudo pip install tox
+      - run:
+          command: tox
+  tox38:
     docker:
       - image: circleci/python:3.8.11
     environment:
-      TOXENV: py35,py36,py37,py38,py39
+      TOXENV: py38
     steps:
       - checkout
+      - run:
+          name: Install utils
+          command: sudo pip install tox
+      - run:
+          command: tox
+  tox39:
+    docker:
+      - image: circleci/python:3.9.9
+    environment:
+      TOXENV: py39
+    steps:
+      - checkout
+      - run:
+          name: Install utils
+          command: sudo pip install tox
       - run:
           command: tox
 
 workflows:
   build:
     jobs:
-      - toxify
+      - tox35
+      - tox36
+      - tox37
+      - tox38
+      - tox39
