@@ -13,7 +13,7 @@ jobs:
       - checkout
       - run:
           name: Install utils
-          command: sudo pip install tox mypy[python2]
+          command: sudo pip install tox
       - run:
           name: tox
           command: tox
