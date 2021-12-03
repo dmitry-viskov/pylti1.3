@@ -3,6 +3,11 @@ version: 2.1
 orbs:
   python: circleci/python@1.5.0
 
+dependencies:
+  override:
+    - pip install tox tox-pyenv
+    - pyenv local 3.5.10 3.6.15 3.7.12 3.9.8
+
 jobs:
   toxify:
     docker:
@@ -11,12 +16,6 @@ jobs:
       TOXENV: py35,py36,py37,py38,py39
     steps:
       - checkout
-      - run:
-          name: Install utils
-          command: sudo pip install tox tox-pyenv
-      - run:
-          name: Install different python versions
-          command: pyenv local 3.5.10 3.6.15 3.7.12 3.9.8
       - run:
           command: tox
 
