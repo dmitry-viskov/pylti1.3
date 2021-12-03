@@ -1,7 +1,6 @@
 import json
 import typing as t
 
-from pylti1p3.message_validators import submission_review
 from .exception import LtiException
 
 if t.TYPE_CHECKING:
@@ -16,7 +15,7 @@ if t.TYPE_CHECKING:
         # Optional data
         'label': str,
         'url': str,
-        'custom': dict[str, str],
+        'custom': t.Dict[str, str],
     }, total=False)
 
 
@@ -151,9 +150,19 @@ class LineItem(object):
         # type: () -> t.Optional[_SubmissionReview]
         return self._submission_review
 
-    def set_submission_review(self, value):
-        # type: (T_SELF, _SubmissionReview) -> T_SELF
-        self._submission_review = value
+    def set_submission_review(self, reviewable_status, label=None, url=None, custom=None):
+        # type: (T_SELF, list, t.Optional[str], t.Optional[str], t.Optional[t.Dict[str, str]]) -> T_SELF
+        if not isinstance(reviewable_status, list):
+            raise Exception('Invalid "reviewable_status" argument')
+
+        self._submission_review = {'reviewableStatus': reviewable_status}  # type: _SubmissionReview
+        if label:
+            self._submission_review['label'] = label
+        if url:
+            self._submission_review['url'] = url
+        if custom:
+            self._submission_review['custom'] = custom
+
         return self
 
     def get_value(self):
