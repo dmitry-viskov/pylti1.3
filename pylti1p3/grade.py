@@ -14,6 +14,7 @@ class Grade(object):
     _grading_progress = None  # type: t.Optional[str]
     _timestamp = None  # type: t.Optional[str]
     _user_id = None  # type: t.Optional[str]
+    _comment = None  # type: t.Optional[str]
     _extra_claims = None  # type: t.Optional[EXTRA_CLAIMS]
 
     def _validate_score(self, score_value):
@@ -119,6 +120,22 @@ class Grade(object):
         """
         self._user_id = value
         return self
+
+    def get_comment(self):
+        # type: () -> t.Optional[str]
+        """
+        https://www.imsglobal.org/spec/lti-ags/v2p0/#comment-0
+        """
+        return self._comment
+
+    def set_comment(self, value):
+        # type: (T_SELF, str) -> T_SELF
+        """
+        https://www.imsglobal.org/spec/lti-ags/v2p0/#comment-0
+        """
+        self._comment = value
+        return self
+
 
     def set_extra_claims(self, value):
         # type: (T_SELF, EXTRA_CLAIMS) -> T_SELF
