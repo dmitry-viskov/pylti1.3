@@ -1,9 +1,23 @@
 import json
 import typing as t
+
+from pylti1p3.message_validators import submission_review
 from .exception import LtiException
 
 if t.TYPE_CHECKING:
+    from mypy_extensions import TypedDict
+
     T_SELF = t.TypeVar('T_SELF', bound='LineItem')
+
+    _SubmissionReview = TypedDict('_SubmissionReview', {
+        # Required data
+        'reviewableStatus': list,
+
+        # Optional data
+        'label': str,
+        'url': str,
+        'custom': dict[str, str],
+    }, total=False)
 
 
 class LineItem(object):
@@ -14,6 +28,7 @@ class LineItem(object):
     _tag = None  # type: t.Optional[str]
     _start_date_time = None  # type: t.Optional[str]
     _end_date_time = None  # type: t.Optional[str]
+    _submission_review = None  # type: t.Optional[_SubmissionReview]
 
     def __init__(self, lineitem=None):
         # type: (t.Optional[t.Mapping[str, t.Any]]) -> None
@@ -26,6 +41,7 @@ class LineItem(object):
         self._tag = lineitem.get("tag")
         self._start_date_time = lineitem.get("startDateTime")
         self._end_date_time = lineitem.get("endDateTime")
+        self._submission_review = lineitem.get("submissionReview")
 
     def get_id(self):
         # type: () -> t.Optional[str]
@@ -131,6 +147,15 @@ class LineItem(object):
         self._end_date_time = value
         return self
 
+    def get_submission_review(self):
+        # type: () -> t.Optional[_SubmissionReview]
+        return self._submission_review
+
+    def set_submission_review(self, value):
+        # type: (T_SELF, _SubmissionReview) -> T_SELF
+        self._submission_review = value
+        return self
+
     def get_value(self):
         # type: () -> str
         data = {
@@ -140,6 +165,7 @@ class LineItem(object):
             'resourceId': self._resource_id,
             'tag': self._tag,
             'startDateTime': self._start_date_time,
-            'endDateTime': self._end_date_time
+            'endDateTime': self._end_date_time,
+            'submissionReview': self._submission_review,
         }
         return json.dumps({k: v for k, v in data.items() if v})

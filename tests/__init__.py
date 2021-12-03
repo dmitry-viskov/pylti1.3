@@ -4,3 +4,4 @@ from .test_names_roles import TestNamesRolesProvisioningService
 from .test_resource_link import TestDjangoResourceLink, TestFlaskResourceLink
 from .test_tool_conf import TestToolConf
 from .test_privacy_launch import TestDjangoPrivacyLaunch, TestFlaskPrivacyLaunch
+from .test_submission_review_launch import TestDjangoSubmissionReviewLaunch, TestFlaskSubmissionReviewLaunch

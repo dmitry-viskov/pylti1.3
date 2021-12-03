@@ -92,5 +92,9 @@ class DeepLinkResource(object):
             if tag:
                 line_item['tag'] = tag
 
+            submission_review = self._lineitem.get_submission_review()
+            if submission_review:
+                line_item['submissionReview'] = submission_review
+
             res['lineItem'] = line_item
         return res
