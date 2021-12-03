@@ -11,7 +11,7 @@ if t.TYPE_CHECKING:
     from .request import Request  # pylint: disable=unused-import
     from .session import SessionService  # pylint: disable=unused-import
     from .redirect import Redirect
-    from .tool_config import ToolConfAbstract
+    from .tool_config import ToolConfAbstract  # pylint: disable=unused-import
     from .registration import Registration
     from .launch_data_storage.base import LaunchDataStorage
 

@@ -13,7 +13,10 @@ jobs:
       - checkout
       - run:
           name: Install utils
-          command: sudo pip install tox
+          command: sudo pip install tox tox-pyenv
+      - run:
+          name: Install different python versions
+          command: pyenv local 3.5.10 3.6.15 3.7.12 3.9.8
       - run:
           command: tox
 
