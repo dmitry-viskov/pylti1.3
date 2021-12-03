@@ -31,8 +31,8 @@ if t.TYPE_CHECKING:
     from .registration import Registration, _KeySet
     from .request import Request
     from .tool_config import ToolConfAbstract  # pylint: disable=cyclic-import
-    from .session import SessionService
-    from .cookie import CookieService
+    from .session import SessionService  # pylint: disable=unused-import
+    from .cookie import CookieService  # pylint: disable=unused-import
     from .deep_link import _DeepLinkData
     from .names_roles import _NamesAndRolesData
     from .assignments_grades import _AssignmentsGradersData
