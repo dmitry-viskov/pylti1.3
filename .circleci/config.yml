@@ -13,7 +13,7 @@ jobs:
       - checkout
       - run:
           name: Install utils
-          command: pip install tox
+          command: sudo pip install tox
       - run:
           command: tox
 
