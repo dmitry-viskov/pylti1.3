@@ -136,7 +136,6 @@ class Grade(object):
         self._comment = value
         return self
 
-
     def set_extra_claims(self, value):
         # type: (T_SELF, EXTRA_CLAIMS) -> T_SELF
         self._extra_claims = value
