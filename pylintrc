@@ -71,6 +71,7 @@ disable=
     invalid-name,
 
 # Conditional imports for type checking
+    unused-import,
     import-error,
 
 # Compatibility with Python 2

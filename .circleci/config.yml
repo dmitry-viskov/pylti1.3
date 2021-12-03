@@ -4,6 +4,22 @@ orbs:
   python: circleci/python@1.5.0
 
 jobs:
+  tox27:
+    docker:
+      - image: circleci/python:2.7.18
+    environment:
+      TOXENV: py27
+    steps:
+      - checkout
+      - run:
+          name: Install utils
+          command: sudo pip install tox mypy[python2]
+      - run:
+          name: tox
+          command: tox
+      - run:
+          name: mypy
+          command: mypy --py2 pylti1p3/
   tox35:
     docker:
       - image: circleci/python:3.5.10
@@ -15,8 +31,10 @@ jobs:
           name: Install utils
           command: sudo pip install tox mypy==0.812
       - run:
+          name: tox
           command: tox
       - run:
+          name: mypy
           command: mypy pylti1p3/
   tox36:
     docker:
@@ -29,8 +47,10 @@ jobs:
           name: Install utils
           command: sudo pip install tox mypy==0.812
       - run:
+          name: tox
           command: tox
       - run:
+          name: mypy
           command: mypy pylti1p3/
   tox37:
     docker:
@@ -43,8 +63,10 @@ jobs:
           name: Install utils
           command: sudo pip install tox mypy==0.812
       - run:
+          name: tox
           command: tox
       - run:
+          name: mypy
           command: mypy pylti1p3/
   tox38:
     docker:
@@ -57,8 +79,10 @@ jobs:
           name: Install utils
           command: sudo pip install tox mypy==0.812
       - run:
+          name: tox
           command: tox
       - run:
+          name: mypy
           command: mypy pylti1p3/
   tox39:
     docker:
@@ -71,13 +95,16 @@ jobs:
           name: Install utils
           command: sudo pip install tox mypy==0.812
       - run:
+          name: tox
           command: tox
       - run:
+          name: mypy
           command: mypy pylti1p3/
 
 workflows:
   build:
     jobs:
+      - tox27
       - tox35
       - tox36
       - tox37
