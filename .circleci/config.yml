@@ -13,7 +13,7 @@ jobs:
       - checkout
       - run:
           name: Install utils
-          command: sudo pip install tox
+          command: sudo pip install tox mypy
       - run:
           command: tox
       - run:
@@ -27,7 +27,7 @@ jobs:
       - checkout
       - run:
           name: Install utils
-          command: sudo pip install tox
+          command: sudo pip install tox mypy
       - run:
           command: tox
       - run:
@@ -41,7 +41,7 @@ jobs:
       - checkout
       - run:
           name: Install utils
-          command: sudo pip install tox
+          command: sudo pip install tox mypy
       - run:
           command: tox
       - run:
@@ -55,7 +55,7 @@ jobs:
       - checkout
       - run:
           name: Install utils
-          command: sudo pip install tox
+          command: sudo pip install tox mypy
       - run:
           command: tox
       - run:
@@ -69,7 +69,7 @@ jobs:
       - checkout
       - run:
           name: Install utils
-          command: sudo pip install tox
+          command: sudo pip install tox mypy
       - run:
           command: tox
       - run:
