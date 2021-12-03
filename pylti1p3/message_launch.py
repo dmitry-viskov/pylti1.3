@@ -29,7 +29,7 @@ from .utils import encode_on_py3
 if t.TYPE_CHECKING:
     from .launch_data_storage.base import LaunchDataStorage
     from .registration import Registration, _KeySet
-    from .request import Request
+    from .request import Request  # pylint: disable=unused-import
     from .tool_config import ToolConfAbstract  # pylint: disable=cyclic-import
     from .session import SessionService  # pylint: disable=unused-import
     from .cookie import CookieService  # pylint: disable=unused-import
