@@ -1,11 +1,11 @@
 import sys
 
 try:
-    import urlparse
-    from urllib import urlencode
-except ImportError:  # python 3
     import urllib.parse as urlparse
     from urllib.parse import urlencode
+except ImportError:  # python 2 fallback
+    import urlparse  # type: ignore
+    from urllib import urlencode  # type: ignore
 
 if sys.version_info > (2, ):
     def encode_on_py3(arg, encoding):
