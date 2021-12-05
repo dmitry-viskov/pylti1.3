@@ -485,6 +485,45 @@ users in managing and executing requests related to data privacy.
     if data_privacy_launch:
         user = message_launch.get_data_privacy_launch_user()
 
+
+Submission review
+=================
+
+Submission review provides a standard way for an instructor or student to launch back from a platform's gradebook
+to the tool where the interaction took place to display the learner's submission for a particular line item.
+
+.. code-block:: python
+
+    if launch.is_submission_review_launch()
+        user = launch.get_submission_review_user()
+        ags = launch.get_ags()
+        lineitem = ags.get_lineitem()
+        submission_review = lineitem.get_submission_review()
+
+
+Course Group Service
+====================
+
+Communicates to the tool the groups available in the course and their respective enrollment.
+
+.. code-block:: python
+
+    if launch.has_cgs()
+        cgs = launch.get_cgs()
+
+        # Get all available groups
+        groups = cgs.get_groups()
+
+        # Get groups for some user
+        user_id = '0ae836b9-7fc9-4060-006f-27b2066ac545'
+        groups = cgs.get_groups(user_id)
+
+        # Get all sets
+        if cgs.has_sets():
+            sets = cgs.get_sets()
+            sets_with_groups = cgs.get_sets(include_groups=True)
+
+
 Check user's role after LTI launch
 ==================================
 
