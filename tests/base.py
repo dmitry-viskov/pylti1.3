@@ -44,6 +44,9 @@ class TestLinkBase(unittest.TestCase):
 
 
 class TestServicesBase(unittest.TestCase):
+    context_groups_url = "https://www.myuniv.example.com/2344/groups"
+    context_group_sets_url = "https://www.myuniv.example.com/2344/groups/sets"
+
     jwt_body = {
         'iss': 'https://canvas.instructure.com',
         'aud': '10000000000004',
@@ -62,7 +65,15 @@ class TestServicesBase(unittest.TestCase):
             'lineitems': 'http://canvas.docker/api/lti/courses/1/line_items',
             'errors': {'errors': {}},
             'validation_context': None
-        }
+        },
+        'https://purl.imsglobal.org/spec/lti-gs/claim/groupsservice': {
+            'scope': [
+                'https://purl.imsglobal.org/spec/lti-gs/scope/contextgroup.readonly'
+            ],
+            'context_groups_url': context_groups_url,
+            'context_group_sets_url': context_group_sets_url,
+            'service_versions': ['1.0']
+        },
     }
 
     def _get_auth_token_url(self):
