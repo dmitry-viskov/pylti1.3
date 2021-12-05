@@ -1,16 +1,17 @@
 import sys
 
-if sys.version_info > (2, ):
-    import urllib.parse as urlparse  # pylint: disable=no-name-in-module
-    from urllib.parse import urlencode  # pylint: disable=no-name-in-module
+try:
+    import urlparse
+    from urllib import urlencode
+except ImportError:  # python 3
+    import urllib.parse as urlparse
+    from urllib.parse import urlencode
 
+if sys.version_info > (2, ):
     def encode_on_py3(arg, encoding):
         # type: (str, str) -> bytes
         return arg.encode(encoding)
 else:
-    import urlparse
-    from urllib import urlencode  # pylint: disable=no-name-in-module,ungrouped-imports
-
     def encode_on_py3(arg, encoding):
         # type: (str, str) -> bytes
         # pylint: disable=unused-argument
