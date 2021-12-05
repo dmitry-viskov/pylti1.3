@@ -12,6 +12,7 @@ from jwcrypto.jwk import JWK  # type: ignore
 
 from .actions import Action
 from .assignments_grades import AssignmentsGradesService
+from .course_groups import CourseGroupsService
 from .deep_link import DeepLink
 from .exception import LtiException
 from .launch_data_storage.base import DisableSessionId
@@ -33,6 +34,7 @@ if t.TYPE_CHECKING:
     from .tool_config import ToolConfAbstract  # pylint: disable=cyclic-import
     from .session import SessionService  # pylint: disable=unused-import
     from .cookie import CookieService  # pylint: disable=unused-import
+    from .course_groups import _GroupsServiceData
     from .deep_link import _DeepLinkData
     from .names_roles import _NamesAndRolesData
     from .assignments_grades import _AssignmentsGradersData
@@ -137,6 +139,7 @@ if t.TYPE_CHECKING:
             'https://purl.imsglobal.org/spec/lti/claim/lis': _LearningInformationServicesClaim,
             'https://purl.imsglobal.org/spec/lti/claim/custom': t.Mapping[str, str],
             'https://purl.imsglobal.org/spec/lti-dl/claim/deep_linking_settings': _DeepLinkData,
+            'https://purl.imsglobal.org/spec/lti-gs/claim/groupsservice': _GroupsServiceData,
             'https://purl.imsglobal.org/spec/lti-nrps/claim/namesroleservice': _NamesAndRolesData,
             'https://purl.imsglobal.org/spec/lti-ags/claim/endpoint': _AssignmentsGradersData,
             'https://purl.imsglobal.org/spec/lti/claim/tool_platform': _ToolPlatformClaim,
@@ -373,6 +376,33 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
         if not endpoint:
             raise LtiException('endpoint is not set in jwt body')
         return AssignmentsGradesService(connector, endpoint)
+
+    def has_cgs(self):
+        # type: () -> bool
+        """
+        Returns whether or not the current launch can use the course groups service.
+
+        :return: bool  Returns a boolean indicating the availability of groups.
+        """
+        groups_service_data = self._get_jwt_body().get('https://purl.imsglobal.org/spec/lti-gs/claim/groupsservice', {})
+        return groups_service_data.get('context_groups_url', None) is not None
+
+    def get_cgs(self):
+        """
+        Fetches an instance of the course groups service for the current launch.
+
+        :return:
+        """
+        assert self._registration is not None, 'Registration not yet set'
+        connector = ServiceConnector(self._registration)
+        groups_service_data = self._get_jwt_body() \
+            .get('https://purl.imsglobal.org/spec/lti-gs/claim/groupsservice')
+        if not groups_service_data:
+            raise LtiException('groupsservice is not set in jwt body')
+        context_groups_url = groups_service_data.get('context_groups_url', None)
+        if not context_groups_url:
+            raise LtiException('context_groups_url is not set in groupsservice section')
+        return CourseGroupsService(connector, groups_service_data)
 
     def get_deep_link(self):
         # type: () -> DeepLink
