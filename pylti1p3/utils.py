@@ -4,6 +4,7 @@ try:
     import urllib.parse as urlparse
     from urllib.parse import urlencode
 except ImportError:  # python 2 fallback
+    # pylint: disable=ungrouped-imports
     import urlparse  # type: ignore
     from urllib import urlencode  # type: ignore
 
