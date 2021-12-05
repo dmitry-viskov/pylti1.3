@@ -1,8 +1,8 @@
 import sys
 
 try:
-    import urllib.parse as urlparse
-    from urllib.parse import urlencode
+    import urllib.parse as urlparse  # type: ignore
+    from urllib.parse import urlencode  # type: ignore
 except ImportError:  # python 2 fallback
     # pylint: disable=ungrouped-imports
     import urlparse  # type: ignore
