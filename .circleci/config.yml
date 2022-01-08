@@ -100,6 +100,22 @@ jobs:
       - run:
           name: mypy
           command: mypy pylti1p3/
+  tox310:
+    docker:
+      - image: circleci/python:3.10.1
+    environment:
+      TOXENV: py310
+    steps:
+      - checkout
+      - run:
+          name: Install utils
+          command: sudo pip install tox mypy==0.812
+      - run:
+          name: tox
+          command: tox
+      - run:
+          name: mypy
+          command: mypy pylti1p3/
 
 workflows:
   build:
@@ -110,3 +126,4 @@ workflows:
       - tox37
       - tox38
       - tox39
+      - tox310
