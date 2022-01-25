@@ -24,6 +24,7 @@ class LineItem(object):
     _score_maximum = None  # type: t.Optional[float]
     _label = None  # type: t.Optional[str]
     _resource_id = None  # type: t.Optional[str]
+    _resource_link_id = None  # type: t.Optional[str]
     _tag = None  # type: t.Optional[str]
     _start_date_time = None  # type: t.Optional[str]
     _end_date_time = None  # type: t.Optional[str]
@@ -37,6 +38,7 @@ class LineItem(object):
         self._score_maximum = lineitem.get("scoreMaximum")
         self._label = lineitem.get("label")
         self._resource_id = lineitem.get("resourceId")
+        self._resource_link_id = lineitem.get("resourceLinkId")
         self._tag = lineitem.get("tag")
         self._start_date_time = lineitem.get("startDateTime")
         self._end_date_time = lineitem.get("endDateTime")
@@ -99,6 +101,21 @@ class LineItem(object):
         https://www.imsglobal.org/spec/lti-ags/v2p0/#tool-resource-identifier-resourceid
         """
         self._resource_id = value
+        return self
+
+    def get_resource_link_id(self):
+        # type: () -> t.Optional[str]
+        """
+        https://www.imsglobal.org/spec/lti-ags/v2p0#resourcelinkid-and-binding-a-line-item-to-a-resource-link
+        """
+        return self._resource_link_id
+
+    def set_resource_link_id(self, value):
+        # type: (T_SELF, str) -> T_SELF
+        """
+        https://www.imsglobal.org/spec/lti-ags/v2p0#resourcelinkid-and-binding-a-line-item-to-a-resource-link
+        """
+        self._resource_link_id = value
         return self
 
     def get_tag(self):
@@ -172,6 +189,7 @@ class LineItem(object):
             'scoreMaximum': self._score_maximum,
             'label': self._label,
             'resourceId': self._resource_id,
+            'resourceLinkId': self._resource_link_id,
             'tag': self._tag,
             'startDateTime': self._start_date_time,
             'endDateTime': self._end_date_time,
