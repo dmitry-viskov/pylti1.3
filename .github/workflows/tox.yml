@@ -14,5 +14,5 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - run: pip install --upgrade pip
-      - run: pip install "tox<4"
+      - run: pip install pylint==2.8.1 "tox<4"
       - run: tox -e py
