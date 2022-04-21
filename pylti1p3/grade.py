@@ -153,7 +153,8 @@ class Grade(object):
             'activityProgress': self._activity_progress,
             'gradingProgress': self._grading_progress,
             'timestamp': self._timestamp,
-            'userId': self._user_id
+            'userId': self._user_id,
+            'comment': self._comment
         }
         if self._extra_claims is not None:
             data.update(self._extra_claims)
