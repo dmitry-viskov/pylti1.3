@@ -81,5 +81,3 @@ class NamesRolesProvisioningService(object):
         data = self.get_nrps_data()
         data_body = t.cast(t.Any, data.get('body', {}))
         return data_body.get('context', {})
-
-
