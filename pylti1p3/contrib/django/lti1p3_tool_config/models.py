@@ -4,7 +4,11 @@ import json
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
 from django.db import models
-from django.utils.translation import ugettext_lazy as _
+try:
+    from django.utils.translation import ugettext_lazy as _
+except ImportError:
+    # Django 4.0
+    from django.utils.translation import gettext_lazy as _
 from pylti1p3.registration import Registration
 
 
