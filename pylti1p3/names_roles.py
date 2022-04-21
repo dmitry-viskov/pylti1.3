@@ -33,14 +33,7 @@ class NamesRolesProvisioningService(object):
         self._service_connector = service_connector
         self._service_data = service_data
 
-    def get_members_page(self, members_url=None):
-        # type: (t.Optional[str]) -> t.Tuple[list, t.Optional[str]]
-        """
-        Get one page with the users.
-
-        :param members_url: LTI platform's URL (optional)
-        :return: tuple in format: (list with users, next page url)
-        """
+    def get_nrps_data(self, members_url=None):
         if not members_url:
             members_url = self._service_data['context_memberships_url']
 
@@ -49,6 +42,17 @@ class NamesRolesProvisioningService(object):
             members_url,
             accept='application/vnd.ims.lti-nrps.v2.membershipcontainer+json',
         )
+        return data
+
+    def get_members_page(self, members_url=None):
+        # type: (t.Optional[str]) -> t.Tuple[list, t.Optional[str]]
+        """
+        Get one page with the users.
+
+        :param members_url: LTI platform's URL (optional)
+        :return: tuple in format: (list with users, next page url)
+        """
+        data = self.get_nrps_data(members_url=members_url)
         data_body = t.cast(t.Any, data.get('body', {}))
         return data_body.get('members', []), data['next_page_url']
 
@@ -67,3 +71,15 @@ class NamesRolesProvisioningService(object):
             members_res_lst.extend(members)
 
         return members_res_lst
+
+    def get_context(self):
+        """
+        Get context data.
+
+        :return: dict
+        """
+        data = self.get_nrps_data()
+        data_body = t.cast(t.Any, data.get('body', {}))
+        return data_body.get('context', {})
+
+
