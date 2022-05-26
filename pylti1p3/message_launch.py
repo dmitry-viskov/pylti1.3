@@ -547,7 +547,7 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
             except ValueError:
                 raise LtiException("Invalid response from " + key_set_url + ". Must be JSON: " + resp.text)
 
-    def get_public_key(self):
+    def get_public_key(self, as_pem=True):
         # type: () -> str
         assert self._registration is not None, 'Registration not yet set'
         public_key_set = self._registration.get_key_set()
@@ -577,7 +577,10 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
                 try:
                     key_json = json.dumps(key)
                     jwk_obj = JWK.from_json(key_json)
-                    return jwk_obj.export_to_pem()
+                    if as_pem:
+                        return jwk_obj.export_to_pem()
+                    else:
+                        return jwk_obj
                 except (ValueError, TypeError):
                     raise LtiException("Can't convert JWT key to PEM format")
 
@@ -667,11 +670,15 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
         # type: (T_SELF) -> T_SELF
         id_token = self._get_id_token()
 
-        # Fetch public key.
-        public_key = self.get_public_key()
+        # Fetch public key object
+        jwk = self.get_public_key(as_pem=False)
+        key_alg = jwk.get('alg', 'RS256')
+
+        # then turn it into a PEM-encoded key for decoding
+        public_key = jwk.export_to_pem()
 
         try:
-            jwt.decode(id_token, public_key, algorithms=['RS256'], options=self._jwt_verify_options)
+            jwt.decode(id_token, public_key, algorithms=[key_alg], options=self._jwt_verify_options)
         except jwt.InvalidTokenError as e:
             raise LtiException("Can't decode id_token: " + str(e))
 
