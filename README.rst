@@ -470,6 +470,9 @@ Additional methods:
     # Find line item by tag
     item = ags.find_lineitem_by_tag(ln_tag)
 
+    # Find line item by resource ID
+    item = ags.find_lineitem_by_resource_id(ln_resource_id)
+
     # Return all grades for the passed line item (across all users enrolled in the line item's context)
     grades = ags.get_grades(ln)
 
