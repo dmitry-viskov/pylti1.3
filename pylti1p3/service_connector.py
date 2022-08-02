@@ -24,11 +24,13 @@ if t.TYPE_CHECKING:
 class ServiceConnector(object):
     _registration = None  # type: Registration
     _access_tokens = None  # type: t.Dict[str, str]
+    _requests_session = None  # type: Session
 
-    def __init__(self, registration):
+    def __init__(self, registration, requests_session=None):
         # type: (Registration) -> None
         self._registration = registration
         self._access_tokens = {}
+        self._requests_session = requests_session
 
     def get_access_token(self, scopes):
         # type: (t.Sequence[str]) -> str
@@ -79,7 +81,7 @@ class ServiceConnector(object):
         }
 
         # Make request to get auth token
-        r = requests.post(auth_url, data=auth_request)
+        r = (self._requests_session or requests).post(auth_url, data=auth_request)
         if not r.ok:
             raise LtiServiceException(r)
         response = r.json()
@@ -113,9 +115,9 @@ class ServiceConnector(object):
         if is_post:
             headers['Content-Type'] = content_type
             post_data = data or None
-            r = requests.post(url, data=post_data, headers=headers)
+            r = (self._requests_session or requests).post(url, data=post_data, headers=headers)
         else:
-            r = requests.get(url, headers=headers)
+            r = (self._requests_session or requests).get(url, headers=headers)
 
         if not r.ok:
             raise LtiServiceException(r)
