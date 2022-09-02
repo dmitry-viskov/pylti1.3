@@ -69,7 +69,7 @@ class DeepLinkResource(object):
         return self
 
     def get_icon_url(self):
-        # type: () -> str
+        # type: () -> t.Optional[str]
         return self._icon_url
 
     def set_icon_url(self, value):
