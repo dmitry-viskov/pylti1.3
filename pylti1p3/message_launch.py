@@ -24,7 +24,7 @@ from .message_validators.submission_review import SubmissionReviewLaunchValidato
 from .names_roles import NamesRolesProvisioningService
 from .roles import StaffRole, StudentRole, TeacherRole, TeachingAssistantRole, DesignerRole, ObserverRole, \
     TransientRole
-from .service_connector import ServiceConnector
+from .service_connector import ServiceConnector, REQUESTS_USER_AGENT
 from .utils import encode_on_py3
 
 if t.TYPE_CHECKING:
@@ -535,7 +535,7 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
                     return public_key
 
             try:
-                resp = requests.get(key_set_url)
+                resp = requests.get(key_set_url, headers={'User-Agent': REQUESTS_USER_AGENT})
             except requests.exceptions.RequestException as e:
                 raise LtiException("Error during fetch URL " + key_set_url + ": " + str(e))
             try:
