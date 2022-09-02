@@ -21,9 +21,6 @@ if t.TYPE_CHECKING:
     })
 
 
-REQUESTS_USER_AGENT = 'PyLTI1p3 client'
-
-
 class ServiceConnector(object):
     _registration = None  # type: Registration
     _access_tokens = None  # type: t.Dict[str, str]
@@ -82,7 +79,7 @@ class ServiceConnector(object):
         }
 
         # Make request to get auth token
-        r = requests.post(auth_url, data=auth_request, headers={'User-Agent': REQUESTS_USER_AGENT})
+        r = requests.post(auth_url, data=auth_request)
         if not r.ok:
             raise LtiServiceException(r)
         response = r.json()
@@ -110,8 +107,7 @@ class ServiceConnector(object):
         access_token = self.get_access_token(scopes)
         headers = {
             'Authorization': 'Bearer ' + access_token,
-            'Accept': accept,
-            'User-Agent': REQUESTS_USER_AGENT
+            'Accept': accept
         }
 
         if is_post:
