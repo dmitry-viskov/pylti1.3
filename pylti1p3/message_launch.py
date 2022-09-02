@@ -191,8 +191,8 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
     _public_key_cache_data_storage = None  # type: t.Optional[LaunchDataStorage[t.Any]]
     _public_key_cache_lifetime = None  # type: t.Optional[int]
 
-    def __init__(self, request, tool_config, session_service, cookie_service, launch_data_storage=None):
-        # type: (REQ, TCONF, SES, COOK, t.Optional[LaunchDataStorage[t.Any]]) -> None
+    def __init__(self, request, tool_config, session_service, cookie_service, launch_data_storage=None, requests_session=None):
+        # type: (REQ, TCONF, SES, COOK, t.Optional[LaunchDataStorage[t.Any], t.Optional[Session]]) -> None
         self._request = request
         self._tool_config = tool_config
         self._session_service = session_service
@@ -206,6 +206,7 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
         self._restored = False
         self._public_key_cache_data_storage = None
         self._public_key_cache_lifetime = None
+        self._requests_session = requests_session
 
         if launch_data_storage:
             self.set_launch_data_storage(launch_data_storage)
@@ -259,10 +260,10 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
 
     @classmethod
     def from_cache(cls, launch_id, request, tool_config, session_service=None, cookie_service=None,
-                   launch_data_storage=None):
+                   launch_data_storage=None, requests_session=None):
         # type: (t.Type[T_SELF], str, REQ, TCONF, SES, COOK, t.Optional[LaunchDataStorage[t.Any]]) -> T_SELF
         obj = cls(request, tool_config, session_service=session_service, cookie_service=cookie_service,
-                  launch_data_storage=launch_data_storage)
+                  launch_data_storage=launch_data_storage, requests_session=requests_session)
         launch_data = obj.get_session_service().get_launch_data(launch_id)
         if not launch_data:
             raise LtiException("Launch data not found")
@@ -346,7 +347,7 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
         :return: NamesRolesProvisioningService
         """
         assert self._registration is not None, 'Registration not yet set'
-        connector = ServiceConnector(self._registration)
+        connector = ServiceConnector(self._registration, self._requests_session)
         names_role_service = self._get_jwt_body()\
             .get('https://purl.imsglobal.org/spec/lti-nrps/claim/namesroleservice')
         if not names_role_service:
@@ -370,7 +371,7 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
         :return: AssignmentsGradesService
         """
         assert self._registration is not None, 'Registration not yet set'
-        connector = ServiceConnector(self._registration)
+        connector = ServiceConnector(self._registration, self._requests_session)
         endpoint = self._get_jwt_body() \
             .get('https://purl.imsglobal.org/spec/lti-ags/claim/endpoint')
         if not endpoint:
@@ -394,7 +395,7 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
         :return:
         """
         assert self._registration is not None, 'Registration not yet set'
-        connector = ServiceConnector(self._registration)
+        connector = ServiceConnector(self._registration, self._requests_session)
         groups_service_data = self._get_jwt_body() \
             .get('https://purl.imsglobal.org/spec/lti-gs/claim/groupsservice')
         if not groups_service_data:
@@ -535,7 +536,7 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
                     return public_key
 
             try:
-                resp = requests.get(key_set_url)
+                resp = (self._requests_session or requests).get(key_set_url)
             except requests.exceptions.RequestException as e:
                 raise LtiException("Error during fetch URL " + key_set_url + ": " + str(e))
             try:
@@ -788,3 +789,8 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
         # type: () -> bool
         jwt_body = self._get_jwt_body()
         return TransientRole(jwt_body).check()
+
+    def set_requests_session(self, session):
+        # type: (T_SELF, Session) -> T_SELF
+        self._requests_session = session
+        return self
