@@ -1,4 +1,5 @@
 import typing as t
+import urllib
 
 if t.TYPE_CHECKING:
     from mypy_extensions import TypedDict
@@ -56,15 +57,24 @@ class NamesRolesProvisioningService(object):
         data_body = t.cast(t.Any, data.get('body', {}))
         return data_body.get('members', []), data['next_page_url']
 
-    def get_members(self):
-        # type: () -> t.List[_Member]
+    def get_members(self, resource_link_id=None):
+        # type: (t.Optional[str]) -> t.List[_Member]
         """
         Get list with all users.
 
+        :param resource_link_id: resource link id (optional)
         :return: list
         """
         members_res_lst = []  # type: t.List[_Member]
         members_url = self._service_data['context_memberships_url']  # type: t.Optional[str]
+
+        if resource_link_id:
+            parsed_url = urllib.parse.urlparse(members_url)
+            new_params = {'rlid': resource_link_id}
+            original_params = dict(urllib.parse.parse_qsl(parsed_url.query))
+            original_params.update(new_params)
+            parsed_url = parsed_url._replace(query=urllib.parse.urlencode(original_params))
+            members_url = urllib.parse.urlunparse(parsed_url)
 
         while members_url:
             members, members_url = self.get_members_page(members_url)
