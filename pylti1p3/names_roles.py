@@ -1,5 +1,5 @@
 import typing as t
-import urllib
+from .utils import add_param_to_url
 
 if t.TYPE_CHECKING:
     from mypy_extensions import TypedDict
@@ -69,12 +69,7 @@ class NamesRolesProvisioningService(object):
         members_url = self._service_data['context_memberships_url']  # type: t.Optional[str]
 
         if resource_link_id:
-            parsed_url = urllib.parse.urlparse(members_url)
-            new_params = {'rlid': resource_link_id}
-            original_params = dict(urllib.parse.parse_qsl(parsed_url.query))
-            original_params.update(new_params)
-            parsed_url = parsed_url._replace(query=urllib.parse.urlencode(original_params))
-            members_url = urllib.parse.urlunparse(parsed_url)
+            members_url = add_param_to_url(members_url, 'rlid', resource_link_id)
 
         while members_url:
             members, members_url = self.get_members_page(members_url)
