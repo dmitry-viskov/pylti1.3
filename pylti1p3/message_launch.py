@@ -272,7 +272,7 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
                    cookie_service=None,  # type: COOK
                    launch_data_storage=None,  # type: t.Optional[LaunchDataStorage[t.Any]]
                    requests_session=None  # type: t.Optional[requests.Session]
-                  ):
+                   ):
         # type: (...) -> T_SELF
         obj = cls(request, tool_config, session_service=session_service, cookie_service=cookie_service,
                   launch_data_storage=launch_data_storage, requests_session=requests_session)
