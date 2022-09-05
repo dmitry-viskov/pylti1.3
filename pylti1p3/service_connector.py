@@ -21,14 +21,22 @@ if t.TYPE_CHECKING:
     })
 
 
+REQUESTS_USER_AGENT = 'PyLTI1p3-client'
+
+
 class ServiceConnector(object):
     _registration = None  # type: Registration
     _access_tokens = None  # type: t.Dict[str, str]
 
-    def __init__(self, registration):
-        # type: (Registration) -> None
+    def __init__(self, registration, requests_session=None):
+        # type: (Registration, t.Optional[requests.Session]) -> None
         self._registration = registration
         self._access_tokens = {}
+        if requests_session:
+            self._requests_session = requests_session
+        else:
+            self._requests_session = requests.Session()
+            self._requests_session.headers["User-Agent"] = REQUESTS_USER_AGENT
 
     def get_access_token(self, scopes):
         # type: (t.Sequence[str]) -> str
@@ -79,7 +87,7 @@ class ServiceConnector(object):
         }
 
         # Make request to get auth token
-        r = requests.post(auth_url, data=auth_request)
+        r = self._requests_session.post(auth_url, data=auth_request)
         if not r.ok:
             raise LtiServiceException(r)
         response = r.json()
@@ -113,9 +121,9 @@ class ServiceConnector(object):
         if is_post:
             headers['Content-Type'] = content_type
             post_data = data or None
-            r = requests.post(url, data=post_data, headers=headers)
+            r = self._requests_session.post(url, data=post_data, headers=headers)
         else:
-            r = requests.get(url, headers=headers)
+            r = self._requests_session.get(url, headers=headers)
 
         if not r.ok:
             raise LtiServiceException(r)

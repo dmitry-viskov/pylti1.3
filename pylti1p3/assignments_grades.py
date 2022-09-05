@@ -172,6 +172,16 @@ class AssignmentsGradesService(object):
         """
         return self.find_lineitem('resourceLinkId', resource_link_id)
 
+    def find_lineitem_by_resource_id(self, resource_id):
+        # type: (str) -> t.Optional[LineItem]
+        """
+        Find line item by Resource ID.
+
+        :param resource_id: str
+        :return: LineItem instance or None
+        """
+        return self.find_lineitem('resourceId', resource_id)
+
     def find_or_create_lineitem(self, new_lineitem, find_by='tag'):
         # type: (LineItem, Literal['tag', 'id']) -> LineItem
         """
@@ -194,8 +204,13 @@ class AssignmentsGradesService(object):
         elif find_by == 'resource_link_id':
             resource_link_id = new_lineitem.get_resource_link_id()
             if not resource_link_id:
-                raise LtiException('resource_link_id value is not specified')
+                raise LtiException('Resource Link ID value is not specified')
             lineitem = self.find_lineitem_by_resource_link_id(resource_link_id)
+        elif find_by == 'resource_id':
+            resource_id = new_lineitem.get_resource_id()
+            if not resource_id:
+                raise LtiException('Resource ID value is not specified')
+            lineitem = self.find_lineitem_by_resource_id(resource_id)
         else:
             raise LtiException('Invalid "find_by" value: ' + str(find_by))
 
