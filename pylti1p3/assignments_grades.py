@@ -167,7 +167,7 @@ class AssignmentsGradesService(object):
         """
         Find line item by ResourceLinkId.
 
-        :param tag: str
+        :param resource_link_id: str
         :return: LineItem instance or None
         """
         return self.find_lineitem('resourceLinkId', resource_link_id)

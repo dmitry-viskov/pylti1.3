@@ -191,11 +191,22 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
     _public_key_cache_data_storage = None  # type: t.Optional[LaunchDataStorage[t.Any]]
     _public_key_cache_lifetime = None  # type: t.Optional[int]
 
-    def __init__(self, request, tool_config, session_service, cookie_service, launch_data_storage=None,
-                 requests_session=None):
-        # type: (REQ, TCONF, SES, COOK, t.Optional[LaunchDataStorage[t.Any]], t.Optional[requests.Session]) -> None
+    def __init__(
+            self,
+            request,  # type: REQ
+            tool_config,  # type: TCONF
+            session_service=None,  # type: t.Optional[SES]
+            cookie_service=None,  # type: t.Optional[COOK]
+            launch_data_storage=None,  # type: t.Optional[LaunchDataStorage[t.Any]]
+            requests_session=None  # type: t.Optional[requests.Session]
+    ):
+        # type: (...) -> None
         self._request = request
         self._tool_config = tool_config
+
+        assert session_service is not None, 'Session Service must be set'
+        assert cookie_service is not None, 'Cookie Service must be set'
+
         self._session_service = session_service
         self._cookie_service = cookie_service
         self._launch_id = "lti1p3-launch-" + str(uuid.uuid4())
@@ -273,7 +284,7 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
                    launch_data_storage=None,  # type: t.Optional[LaunchDataStorage[t.Any]]
                    requests_session=None  # type: t.Optional[requests.Session]
                    ):
-        # type: (...) -> T_SELF
+        # type: (...) -> MessageLaunch
         obj = cls(request, tool_config, session_service=session_service, cookie_service=cookie_service,
                   launch_data_storage=launch_data_storage, requests_session=requests_session)
         launch_data = obj.get_session_service().get_launch_data(launch_id)
@@ -281,7 +292,7 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
             raise LtiException("Launch data not found")
         return obj.set_launch_id(launch_id)\
             .set_auto_validation(enable=False)\
-            .set_jwt({'body': launch_data})\
+            .set_jwt(t.cast("_JwtData", {'body': launch_data}))\
             .set_restored()\
             .validate_registration()
 
