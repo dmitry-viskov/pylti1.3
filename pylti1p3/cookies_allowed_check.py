@@ -1,3 +1,7 @@
+try:
+    from html import escape  # type: ignore
+except ImportError:
+    from cgi import escape  # type: ignore
 import json
 import typing as t
 
@@ -32,12 +36,26 @@ class CookiesAllowedCheckPage(object):
         js_block = """\
         var siteProtocol = '%s';
         var urlParams = %s;
+        var htmlEntities = {
+            "&lt;": "<",
+            "&gt;": ">",
+            "&amp;": "&",
+            "&quot;": '"',
+            "&#x27;": "'"
+        };
+
+        function unescapeHtmlEntities(str) {
+            for (var htmlCode in htmlEntities) {
+                str = str.replace(new RegExp(htmlCode, "g"), htmlEntities[htmlCode]);
+            }
+            return str;
+        }
 
         function getUpdatedUrl() {
             var newSearchParams = [];
             for (var key in urlParams) {
                 if (window.location.search.indexOf(key + '=') === -1) {
-                    newSearchParams.push(key + '=' + encodeURIComponent(urlParams[key]));
+                    newSearchParams.push(key + '=' + encodeURIComponent(unescapeHtmlEntities(urlParams[key])));
                 }
             }
             var searchParamsStr = newSearchParams.join('&');
@@ -84,7 +102,8 @@ class CookiesAllowedCheckPage(object):
 
         document.addEventListener("DOMContentLoaded", checkCookiesAllowed);
         """
-        js_block = js_block % (self._protocol, json.dumps(self._params))
+        # pylint: disable=deprecated-method
+        js_block = js_block % (self._protocol, json.dumps({k: escape(v, True) for k, v in self._params.items()}))
         return js_block
 
     def get_header_block(self):
