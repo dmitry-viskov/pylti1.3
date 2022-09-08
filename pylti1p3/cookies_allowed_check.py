@@ -1,6 +1,7 @@
 try:
     from html import escape  # type: ignore
 except ImportError:
+    # pylint: disable=deprecated-method
     from cgi import escape  # type: ignore
 import json
 import typing as t
