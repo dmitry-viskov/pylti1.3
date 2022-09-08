@@ -43,7 +43,7 @@ class CookiesAllowedCheckPage(object):
             "&quot;": '"',
             "&#x27;": "'"
         };
-        
+
         function unescapeHtmlEntities(str) {
             for (var htmlCode in htmlEntities) {
                 str = str.replace(new RegExp(htmlCode, "g"), htmlEntities[htmlCode]);
