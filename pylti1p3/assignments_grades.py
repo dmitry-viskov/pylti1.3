@@ -40,14 +40,16 @@ class AssignmentsGradesService(object):
     def can_put_grade(self):
         return "https://purl.imsglobal.org/spec/lti-ags/scope/score" in self._service_data['scope']
 
-    def put_grade(self, grade, lineitem=None, create_default_lineitem=True):
-        # type: (Grade, t.Optional[LineItem], bool) -> _ServiceConnectorResponse
+    def put_grade(self, grade, lineitem=None, create_default_lineitem=True,
+                  default_lineitem_tag='default'):
+        # type: (Grade, t.Optional[LineItem], bool, str) -> _ServiceConnectorResponse
         """
         Send grade to the LTI platform.
 
         :param grade: Grade instance
         :param lineitem: LineItem instance
         :param create_default_lineitem: create default lineitem if nothing was found
+        :param default_lineitem_tag: str
         :return: dict with HTTP response body and headers
         """
 
@@ -64,7 +66,8 @@ class AssignmentsGradesService(object):
                 raise LtiException("Can't find lineitem to put grade")
             if not lineitem:
                 lineitem = LineItem()
-                lineitem.set_label('default')\
+                lineitem.set_label('default') \
+                    .set_tag(default_lineitem_tag)\
                     .set_score_maximum(100)
                 lineitem = self.find_or_create_lineitem(lineitem)
             score_url = lineitem.get_id()
