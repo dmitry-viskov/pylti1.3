@@ -1,7 +1,6 @@
 try:
     from html import escape  # type: ignore
 except ImportError:
-    # pylint: disable=deprecated-method
     from cgi import escape  # type: ignore
 import json
 import typing as t
@@ -103,6 +102,7 @@ class CookiesAllowedCheckPage(object):
 
         document.addEventListener("DOMContentLoaded", checkCookiesAllowed);
         """
+        # pylint: disable=deprecated-method
         js_block = js_block % (self._protocol, json.dumps({k: escape(v, True) for k, v in self._params.items()}))
         return js_block
 
