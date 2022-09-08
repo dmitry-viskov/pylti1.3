@@ -64,7 +64,9 @@ class TestGrades(TestServicesBase):
                         .set_score_maximum(100) \
                         .set_label('Score')
 
-                    scores = message_launch.validate_registration().get_ags().get_grades(score_line_item)
+                    ags = message_launch.validate_registration().get_ags()
+                    line_item = ags.find_or_create_lineitem(score_line_item)
+                    scores = ags.get_grades(line_item)
                     self.assertEqual(len(scores), 1)
                     self.assertDictEqual(scores[0], {
                         'resultScore': 13.0,
