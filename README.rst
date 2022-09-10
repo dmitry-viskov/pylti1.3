@@ -422,6 +422,22 @@ Once we know we can access it, we can get an instance of the service from the la
 
     ags = launch.get_ags()
 
+There are few function to check different `ags` permissions:
+
+.. code-block:: python
+
+    # ability to read line items
+    ags.can_read_lineitem()
+
+    # ability to create new line item
+    ags.can_create_lineitem()
+
+    # ability to read grades
+    ags.can_read_grades()
+
+    # ability to pass grades
+    ags.can_put_grade()
+
 To pass a grade back to the platform, you will need to create a ``pylti1p3.grade.Grade`` object and populate it with the necessary information:
 
 .. code-block:: python
@@ -473,7 +489,10 @@ Additional methods:
     # Find line item by resource ID
     item = ags.find_lineitem_by_resource_id(ln_resource_id)
 
-    # Return all grades for the passed line item (across all users enrolled in the line item's context)
+    # Find line item by resource link ID
+    item = ags.find_lineitem_by_resource_link_id(ln_resource_link_id)
+
+    # Return all grades for the passed lineitem (across all users enrolled in the line item's context)
     grades = ags.get_grades(ln)
 
 Data privacy launch
@@ -638,6 +657,18 @@ The library will try to fetch the platform's public key every time on the messag
     launch_data_storage = FlaskCacheDataStorage(cache)
 
     message_launch.set_public_key_caching(launch_data_storage, cache_lifetime=7200)
+
+
+**Important note!** Be careful with using this function because time period of rotating keys could be less than cache lifetime.
+For example D2L appears to expire their keys approximately hourly.
+You may pass custom `requests.Session` objects during message launch which allows caching using HTTP response headers:
+
+.. code-block:: python
+
+    import requests_cache
+
+    requests_session = requests_cache.CachedSession('cache')
+    message_launch = DjangoMessageLaunch(request, tool_conf, requests_session=requests_session)
 
 
 API to get JWKS

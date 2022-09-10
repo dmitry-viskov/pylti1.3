@@ -184,7 +184,7 @@ class AssignmentsGradesService(object):
     def find_lineitem_by_resource_link_id(self, resource_link_id):
         # type: (str) -> t.Optional[LineItem]
         """
-        Find line item by ResourceLinkId.
+        Find line item by Resource LinkID.
 
         :param resource_link_id: str
         :return: LineItem instance or None
