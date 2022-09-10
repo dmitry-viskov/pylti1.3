@@ -456,7 +456,7 @@ To send the grade to the platform we can call:
 
     ags.put_grade(gr)
 
-This will put the grade into the default provided lineitem. If no default lineitem exists it will create one.
+This will put the grade into the default provided lineitem.
 
 If you want to send multiple types of grade back, that can be done by specifying a ``pylti1p3.lineitem.LineItem``:
 
