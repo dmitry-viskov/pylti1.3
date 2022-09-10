@@ -422,7 +422,7 @@ Once we know we can access it, we can get an instance of the service from the la
 
     ags = launch.get_ags()
 
-There are few function to check different `ags` permissions:
+There are few functions to check different ``ags`` permissions:
 
 .. code-block:: python
 
@@ -661,7 +661,7 @@ The library will try to fetch the platform's public key every time on the messag
 
 **Important note!** Be careful with using this function because time period of rotating keys could be less than cache lifetime.
 For example D2L appears to expire their keys approximately hourly.
-You may pass custom `requests.Session` objects during message launch which allows caching using HTTP response headers:
+You may pass custom ``requests.Session`` objects during message launch which allows caching using HTTP response headers:
 
 .. code-block:: python
 
