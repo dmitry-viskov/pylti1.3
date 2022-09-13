@@ -55,8 +55,9 @@ class AssignmentsGradesService(object):
         if not self.can_put_grade():
             raise LtiException("Can't put grade: Missing required scope")
 
-        if lineitem and not lineitem.get_id():
-            lineitem = self.find_or_create_lineitem(lineitem)
+        if lineitem:
+            if not lineitem.get_id():
+                lineitem = self.find_or_create_lineitem(lineitem)
             score_url = lineitem.get_id()
         elif not lineitem and self._service_data.get('lineitem'):
             score_url = self._service_data.get('lineitem')
