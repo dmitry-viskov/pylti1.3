@@ -1,4 +1,3 @@
-import warnings
 from pylti1p3.tool_config import ToolConfDict
 
 
@@ -10,7 +9,7 @@ TOOL_CONFIG = {
         "key_set_url": "https://lti-ri.imsglobal.org/platforms/370/platform_keys/361.json",
         "key_set": None,
         "private_key_file": "private.key",
-        "deployment_ids": ["py1234"]
+        "deployment_ids": ["py1234"],
     },
     "https://canvas.instructure.com": {
         "client_id": "10000000000004",
@@ -19,8 +18,8 @@ TOOL_CONFIG = {
         "key_set_url": "http://canvas.docker/api/lti/security/jwks",
         "key_set": None,
         "private_key_file": "private.key",
-        "deployment_ids": ["6:8865aa05b4b79b64a91a86042e43af5ea8ae79eb"]
-    }
+        "deployment_ids": ["6:8865aa05b4b79b64a91a86042e43af5ea8ae79eb"],
+    },
 }
 
 TOOL_CONFIG_ONE_ISSUES_MANY_CLIENTS = {
@@ -32,27 +31,30 @@ TOOL_CONFIG_ONE_ISSUES_MANY_CLIENTS = {
         "key_set_url": "https://lti-ri.imsglobal.org/platforms/370/platform_keys/361.json",
         "key_set": None,
         "private_key_file": "private.key",
-        "deployment_ids": ["py1234"]
+        "deployment_ids": ["py1234"],
     },
-    "https://canvas.instructure.com": [{
-        "default": False,
-        "client_id": "10000000000000",
-        "auth_login_url": "http://canvas.docker/api/lti/authorize_redirect",
-        "auth_token_url": "http://canvas.docker/login/oauth2/token",
-        "key_set_url": "http://canvas.docker/api/lti/security/jwks",
-        "key_set": None,
-        "private_key_file": "private.key",
-        "deployment_ids": ["6:xxxx"]
-    }, {
-        "default": True,
-        "client_id": "10000000000004",
-        "auth_login_url": "http://canvas.docker/api/lti/authorize_redirect",
-        "auth_token_url": "http://canvas.docker/login/oauth2/token",
-        "key_set_url": "http://canvas.docker/api/lti/security/jwks",
-        "key_set": None,
-        "private_key_file": "private.key",
-        "deployment_ids": ["6:8865aa05b4b79b64a91a86042e43af5ea8ae79eb"]
-    }]
+    "https://canvas.instructure.com": [
+        {
+            "default": False,
+            "client_id": "10000000000000",
+            "auth_login_url": "http://canvas.docker/api/lti/authorize_redirect",
+            "auth_token_url": "http://canvas.docker/login/oauth2/token",
+            "key_set_url": "http://canvas.docker/api/lti/security/jwks",
+            "key_set": None,
+            "private_key_file": "private.key",
+            "deployment_ids": ["6:xxxx"],
+        },
+        {
+            "default": True,
+            "client_id": "10000000000004",
+            "auth_login_url": "http://canvas.docker/api/lti/authorize_redirect",
+            "auth_token_url": "http://canvas.docker/login/oauth2/token",
+            "key_set_url": "http://canvas.docker/api/lti/security/jwks",
+            "key_set": None,
+            "private_key_file": "private.key",
+            "deployment_ids": ["6:8865aa05b4b79b64a91a86042e43af5ea8ae79eb"],
+        },
+    ],
 }
 
 
@@ -133,27 +135,13 @@ def get_test_tool_conf(tool_conf_cls=None, tool_conf_extended=False):
     for iss, iss_conf in tc.items():
         if isinstance(iss_conf, list):
             for iss_conf_item in iss_conf:
-                tool_conf.set_private_key(iss, PRIVATE_KEY, client_id=iss_conf_item['client_id'])
-                tool_conf.set_public_key(iss, PUBLIC_KEY, client_id=iss_conf_item['client_id'])
+                tool_conf.set_private_key(
+                    iss, PRIVATE_KEY, client_id=iss_conf_item["client_id"]
+                )
+                tool_conf.set_public_key(
+                    iss, PUBLIC_KEY, client_id=iss_conf_item["client_id"]
+                )
         else:
             tool_conf.set_private_key(iss, PRIVATE_KEY)
             tool_conf.set_public_key(iss, PUBLIC_KEY)
     return tool_conf
-
-
-class ToolConfDeprecated(ToolConfDict):
-    """
-    Conf class to check backward compatibility with the previous implementation
-    of ToolConfAbstract.find_registration_by_issuer
-
-    """
-    def find_registration(self, iss, *args, **kwargs):
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
-            result = super(ToolConfDeprecated, self).find_registration(iss, *args, **kwargs)
-            assert issubclass(w[-1].category, DeprecationWarning)
-            assert "find_registration_by_issuer" in str(w[-1].message)
-            return result
-
-    def find_registration_by_issuer(self, iss):  # pylint: disable=arguments-differ,useless-super-delegation
-        return super(ToolConfDeprecated, self).find_registration_by_issuer(iss)

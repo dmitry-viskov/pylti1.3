@@ -1,3 +1,4 @@
+# flake8: noqa
 from .cookie import FlaskCookieService
 from .oidc_login import FlaskOIDCLogin
 from .message_launch import FlaskMessageLaunch

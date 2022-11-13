@@ -1,75 +1,70 @@
 import typing as t
 from .launch_data_storage.session import SessionDataStorage
-
-if t.TYPE_CHECKING:
-    from .request import Request
-    _JWT_BODY = t.Dict[str, object]
-    _STATE_PARAMS = t.Dict[str, object]
+from .request import Request
+from .launch_data_storage.base import LaunchDataStorage
 
 
-class SessionService(object):
-    data_storage = None  # type: SessionDataStorage[t.Any]
-    _launch_data_lifetime = 86400  # type: int
-    _session_prefix = 'lti1p3'  # type: str
+TStateParams = t.Dict[str, object]
+TJwtBody = t.Mapping[str, t.Any]
 
-    def __init__(self, request):
-        # type: (Request) -> None
+
+class SessionService:
+    data_storage: LaunchDataStorage[t.Any]
+    _launch_data_lifetime = 86400
+    _session_prefix = "lti1p3"
+
+    def __init__(self, request: Request):
         self.data_storage = SessionDataStorage()
         self.data_storage.set_request(request)
 
-    def _get_key(self, key, nonce=None, add_prefix=True):
-        # type: (str, t.Optional[str], bool) -> str
-        return ((self._session_prefix + '-') if add_prefix else '') + key + (('-' + nonce) if nonce else '')
+    def _get_key(
+        self, key: str, nonce: t.Optional[str] = None, add_prefix: bool = True
+    ):
+        return (
+            ((self._session_prefix + "-") if add_prefix else "")
+            + key
+            + (("-" + nonce) if nonce else "")
+        )
 
-    def _set_value(self, key, value):
-        # type: (str, object) -> None
+    def _set_value(self, key: str, value: object):
         self.data_storage.set_value(key, value, exp=self._launch_data_lifetime)
 
-    def _get_value(self, key):
-        # type: (str) -> t.Any
+    def _get_value(self, key: str) -> t.Any:
         return self.data_storage.get_value(key)
 
-    def get_launch_data(self, key):
-        # type: (str) -> _JWT_BODY
+    def get_launch_data(self, key: str) -> TJwtBody:
         return self._get_value(self._get_key(key, add_prefix=False))
 
-    def save_launch_data(self, key, jwt_body):
-        # type: (str, _JWT_BODY) -> None
+    def save_launch_data(self, key: str, jwt_body: TJwtBody):
         self._set_value(self._get_key(key, add_prefix=False), jwt_body)
 
-    def save_nonce(self, nonce):
-        # type: (str) -> None
-        self._set_value(self._get_key('nonce', nonce), True)
+    def save_nonce(self, nonce: str):
+        self._set_value(self._get_key("nonce", nonce), True)
 
-    def check_nonce(self, nonce):
-        # type: (str) -> bool
-        nonce_key = self._get_key('nonce', nonce)
+    def check_nonce(self, nonce: str) -> bool:
+        nonce_key = self._get_key("nonce", nonce)
         return self.data_storage.check_value(nonce_key)
 
-    def save_state_params(self, state, params):
-        # type: (str, _STATE_PARAMS) -> None
+    def save_state_params(self, state: str, params: TStateParams):
         self._set_value(self._get_key(state), params)
 
-    def get_state_params(self, state):
-        # type: (str) -> _STATE_PARAMS
+    def get_state_params(self, state: str) -> TStateParams:
         return self._get_value(self._get_key(state))
 
-    def set_state_valid(self, state, id_token_hash):
-        # type: (str, str) -> None
-        return self._set_value(self._get_key(state + '-id-token-hash'), id_token_hash)
+    def set_state_valid(self, state: str, id_token_hash: str):
+        return self._set_value(self._get_key(state + "-id-token-hash"), id_token_hash)
 
-    def check_state_is_valid(self, state, id_token_hash):
-        # type: (str, str) -> bool
-        return self._get_value(self._get_key(state + '-id-token-hash')) == id_token_hash
+    def check_state_is_valid(self, state: str, id_token_hash: str) -> bool:
+        return self._get_value(self._get_key(state + "-id-token-hash")) == id_token_hash
 
-    def set_data_storage(self, data_storage):
-        # type: (SessionDataStorage[t.Any]) -> None
+    def set_data_storage(self, data_storage: LaunchDataStorage[t.Any]):
         self.data_storage = data_storage
 
-    def set_launch_data_lifetime(self, time_sec):
-        # type: (int) -> None
+    def set_launch_data_lifetime(self, time_sec: int):
         if self.data_storage.can_set_keys_expiration():
             self._launch_data_lifetime = time_sec
         else:
-            raise Exception("%s launch storage doesn't support manual change expiration of the keys"
-                            % self.data_storage.__class__.__name__)
+            raise Exception(
+                f"{self.data_storage.__class__.__name__} launch storage doesn't support "
+                f"manual change expiration of the keys"
+            )

@@ -1,14 +1,14 @@
+import typing as t
 import json
 import os
 
-from .dict import ToolConfDict
+from .dict import ToolConfDict, TIssConf, TJsonData
 
 
 class ToolConfJsonFile(ToolConfDict):
-    _configs_dir = None
+    _configs_dir: str
 
-    def __init__(self, config_file):
-        # type: (str) -> None
+    def __init__(self, config_file: str):
         """
         config_file contains JSON with issuers settings.
         Each key is issuer and value is issuer's configuration.
@@ -64,32 +64,37 @@ class ToolConfJsonFile(ToolConfDict):
             raise Exception("LTI tool config file not found: " + config_file)
         self._configs_dir = os.path.dirname(config_file)
 
-        cfg = open(config_file, 'r')
-        iss_conf_dict = json.loads(cfg.read())
-        super(ToolConfJsonFile, self).__init__(iss_conf_dict)
-        cfg.close()
+        with open(config_file, encoding="utf-8") as cfg:
+            iss_conf_dict: TJsonData = json.loads(cfg.read())
+            super().__init__(iss_conf_dict)
 
         for iss in iss_conf_dict:
             if isinstance(iss_conf_dict[iss], list):
                 for iss_conf in iss_conf_dict[iss]:
-                    self._process_iss_conf_item(iss_conf, iss, iss_conf['client_id'])
+                    client_id = t.cast(TIssConf, iss_conf).get("client_id")
+                    self._process_iss_conf_item(
+                        t.cast(TIssConf, iss_conf), iss, client_id
+                    )
             else:
-                self._process_iss_conf_item(iss_conf_dict[iss], iss)
+                self._process_iss_conf_item(t.cast(TIssConf, iss_conf_dict[iss]), iss)
 
-    def _process_iss_conf_item(self, iss_conf, iss, client_id=None):
-        private_key_file = iss_conf['private_key_file']
-        if not private_key_file.startswith('/'):
-            private_key_file = self._configs_dir + '/' + private_key_file
+    def _process_iss_conf_item(
+        self, iss_conf: TIssConf, iss: str, client_id: t.Optional[str] = None
+    ):
+        private_key_file = iss_conf.get("private_key_file")
+        if not private_key_file:
+            raise Exception("iss config error: private_key_file not found")
 
-        prf = open(private_key_file, 'r')
-        self.set_private_key(iss, prf.read(), client_id=client_id)
-        prf.close()
+        if not private_key_file.startswith("/"):
+            private_key_file = self._configs_dir + "/" + private_key_file
 
-        public_key_file = iss_conf.get('public_key_file', None)
+        with open(private_key_file, encoding="utf-8") as prf:
+            self.set_private_key(iss, prf.read(), client_id=client_id)
+
+        public_key_file = iss_conf.get("public_key_file", None)
         if public_key_file:
-            if not public_key_file.startswith('/'):
-                public_key_file = self._configs_dir + '/' + public_key_file
+            if not public_key_file.startswith("/"):
+                public_key_file = self._configs_dir + "/" + public_key_file
 
-            pubf = open(public_key_file, 'r')
-            self.set_public_key(iss, pubf.read(), client_id=client_id)
-            pubf.close()
+            with open(public_key_file, encoding="utf-8") as pubf:
+                self.set_public_key(iss, pubf.read(), client_id=client_id)

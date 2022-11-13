@@ -1,20 +1,25 @@
-try:
-    from html import escape  # type: ignore
-except ImportError:
-    from cgi import escape  # type: ignore
+from html import escape  # type: ignore
 import json
 import typing as t
 
 
-class CookiesAllowedCheckPage(object):
-    _params = {}  # type: t.Mapping[str, str]
-    _protocol = 'http'  # type: str
-    _main_text = ''  # type: str
-    _click_text = ''  # type: str
-    _loading_text = ''  # type: str
+class CookiesAllowedCheckPage:
+    _params: t.Mapping[str, str] = {}
+    _protocol: str = "http"
+    _main_text: str = ""
+    _click_text: str = ""
+    _loading_text: str = ""
 
-    def __init__(self, params, protocol, main_text, click_text, loading_text, *args, **kwargs):
-        # type: (t.Mapping[str, str], str, str, str, str, *None, **None) -> None
+    def __init__(
+        self,
+        params: t.Mapping[str, str],
+        protocol: str,
+        main_text: str,
+        click_text: str,
+        loading_text: str,
+        *args,
+        **kwargs
+    ):
         # pylint: disable=unused-argument
         self._params = params
         self._protocol = protocol
@@ -22,8 +27,7 @@ class CookiesAllowedCheckPage(object):
         self._click_text = click_text
         self._loading_text = loading_text
 
-    def get_css_block(self):
-        # type: () -> str
+    def get_css_block(self) -> str:
         css_block = """\
         body {
         font-family: Geneva, Arial, Helvetica, sans-serif;
@@ -31,8 +35,7 @@ class CookiesAllowedCheckPage(object):
         """
         return css_block
 
-    def get_js_block(self):
-        # type: () -> str
+    def get_js_block(self) -> str:
         js_block = """\
         var siteProtocol = '%s';
         var urlParams = %s;
@@ -103,15 +106,16 @@ class CookiesAllowedCheckPage(object):
         document.addEventListener("DOMContentLoaded", checkCookiesAllowed);
         """
         # pylint: disable=deprecated-method
-        js_block = js_block % (self._protocol, json.dumps({k: escape(v, True) for k, v in self._params.items()}))
+        js_block = js_block % (
+            self._protocol,
+            json.dumps({k: escape(v, True) for k, v in self._params.items()}),
+        )
         return js_block
 
-    def get_header_block(self):
-        # type: () -> str
-        return ''
+    def get_header_block(self) -> str:
+        return ""
 
-    def get_html(self):
-        # type: () -> str
+    def get_html(self) -> str:
         html = """\
         <!DOCTYPE html>
         <html lang="en">
@@ -142,5 +146,6 @@ class CookiesAllowedCheckPage(object):
             loading_text=self._loading_text,
             header_block=self.get_header_block(),
             main_text=self._main_text,
-            click_text=self._click_text)
+            click_text=self._click_text,
+        )
         return html

@@ -1,7 +1,7 @@
 from .session import FakeSession
 
 
-class FakeRequest(object):
+class FakeRequest:
     GET = {}
     POST = {}
     COOKIES = {}
