@@ -29,7 +29,10 @@ class AssignmentsGradesService(object):
         self._service_data = service_data
 
     def can_read_lineitem(self):
-        return "https://purl.imsglobal.org/spec/lti-ags/scope/lineitem.readonly" in self._service_data['scope']
+        return (
+            "https://purl.imsglobal.org/spec/lti-ags/scope/lineitem.readonly" in self._service_data['scope']
+            or "https://purl.imsglobal.org/spec/lti-ags/scope/lineitem" in self._service_data['scope']
+        )
 
     def can_create_lineitem(self):
         return "https://purl.imsglobal.org/spec/lti-ags/scope/lineitem" in self._service_data['scope']
