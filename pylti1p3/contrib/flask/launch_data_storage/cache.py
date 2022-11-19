@@ -6,4 +6,4 @@ class FlaskCacheDataStorage(CacheDataStorage):
 
     def __init__(self, cache, **kwargs):
         self._cache = cache
-        super(FlaskCacheDataStorage, self).__init__(cache, **kwargs)
+        super().__init__(cache, **kwargs)

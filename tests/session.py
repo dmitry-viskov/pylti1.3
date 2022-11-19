@@ -1,14 +1,10 @@
-try:
-    from collections.abc import MutableMapping
-except ImportError:
-    # Python 2.7
-    from collections import MutableMapping
+from collections.abc import MutableMapping
 
 
 class FakeSession(MutableMapping):
     def __init__(self, *args, **kwargs):
         # pylint: disable=super-init-not-called
-        self.store = dict()
+        self.store = {}
         self.update(dict(*args, **kwargs))
 
     def __getitem__(self, key):

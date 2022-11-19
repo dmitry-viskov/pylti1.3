@@ -5,6 +5,6 @@ from pylti1p3.launch_data_storage.cache import CacheDataStorage
 class DjangoCacheDataStorage(CacheDataStorage):
     _cache = None
 
-    def __init__(self, cache_name='default', **kwargs):
+    def __init__(self, cache_name="default", **kwargs):
         self._cache = caches[cache_name]
-        super(DjangoCacheDataStorage, self).__init__(cache_name, **kwargs)
+        super().__init__(cache_name, **kwargs)

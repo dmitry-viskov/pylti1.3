@@ -1,4 +1,4 @@
-class FakeResponse(object):
+class FakeResponse:
     data = None
     cookies = None
 
@@ -8,9 +8,9 @@ class FakeResponse(object):
 
     def set_cookie(self, name, value, **kwargs):
         self.cookies[name] = {
-            'value': value,
+            "value": value,
         }
         self.cookies[name].update(kwargs)
 
     def get_cookies_dict(self):
-        return {key: cookie['value'] for key, cookie in self.cookies.items()}
+        return {key: cookie["value"] for key, cookie in self.cookies.items()}

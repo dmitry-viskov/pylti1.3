@@ -21,7 +21,9 @@ class DjangoRequest(Request):
     def get_param(self, key):
         if self._post_only:
             return self._request.POST.get(key, self._default_params.get(key))
-        return self._request.GET.get(key, self._request.POST.get(key, self._default_params.get(key)))
+        return self._request.GET.get(
+            key, self._request.POST.get(key, self._default_params.get(key))
+        )
 
     def get_cookie(self, key):
         return self._request.COOKIES.get(key)

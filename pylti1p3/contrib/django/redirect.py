@@ -8,7 +8,7 @@ class DjangoRedirect(Redirect):
     _cookie_service = None
 
     def __init__(self, location, cookie_service=None):
-        super(DjangoRedirect, self).__init__()
+        super().__init__()
         self._location = location
         self._cookie_service = cookie_service
 
@@ -17,7 +17,10 @@ class DjangoRedirect(Redirect):
 
     def do_js_redirect(self):
         return self._process_response(
-            HttpResponse('<script type="text/javascript">window.location="%s";</script>' % self._location))
+            HttpResponse(
+                f'<script type="text/javascript">window.location="{self._location}";</script>'
+            )
+        )
 
     def set_redirect_url(self, location):
         self._location = location

@@ -1,4 +1,4 @@
-from flask import make_response, redirect
+from flask import make_response, redirect  # type: ignore
 
 from pylti1p3.redirect import Redirect
 
@@ -8,7 +8,7 @@ class FlaskRedirect(Redirect):
     _cookie_service = None
 
     def __init__(self, location, cookie_service=None):
-        super(FlaskRedirect, self).__init__()
+        super().__init__()
         self._location = location
         self._cookie_service = cookie_service
 
@@ -17,8 +17,9 @@ class FlaskRedirect(Redirect):
 
     def do_js_redirect(self):
         return self._process_response(
-            make_response('<script type="text/javascript">window.location="{}";'
-                          '</script>'.format(self._location))
+            make_response(
+                f'<script type="text/javascript">window.location="{self._location}";</script>'
+            )
         )
 
     def set_redirect_url(self, location):

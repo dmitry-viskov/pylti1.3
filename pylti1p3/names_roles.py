@@ -1,52 +1,62 @@
 import typing as t
+import typing_extensions as te
 from .utils import add_param_to_url
+from .service_connector import ServiceConnector
 
-if t.TYPE_CHECKING:
-    from mypy_extensions import TypedDict
-    from .service_connector import ServiceConnector
-    from typing_extensions import Literal
+TNamesAndRolesData = te.TypedDict(
+    "TNamesAndRolesData",
+    {
+        "context_memberships_url": str,
+    },
+    total=False,
+)
 
-    _NamesAndRolesData = TypedDict('_NamesAndRolesData', {
-        'context_memberships_url': str,
-    }, total=False)
-    _Member = TypedDict('_Member', {
-        'name': str,
-        'status': Literal['Active', 'Inactive', 'Deleted'],
-        'picture': str,
-        'given_name': str,
-        'family_name': str,
-        'middle_name': str,
-        'email': str,
-        'user_id': str,
-        'lis_person_sourcedid': str,
-        'roles': t.List[str],
-        'message': t.Union[t.List[t.Dict[str, object]], t.Dict[str, object]],
-        'lti11_legacy_user_id': t.Optional[str],
-    }, total=False)
+TMember = te.TypedDict(
+    "TMember",
+    {
+        "name": str,
+        "status": te.Literal["Active", "Inactive", "Deleted"],
+        "picture": str,
+        "given_name": str,
+        "family_name": str,
+        "middle_name": str,
+        "email": str,
+        "user_id": str,
+        "lis_person_sourcedid": str,
+        "roles": t.List[str],
+        "message": t.Union[t.List[t.Dict[str, object]], t.Dict[str, object]],
+        "lti11_legacy_user_id": t.Optional[str],
+    },
+    total=False,
+)
 
 
-class NamesRolesProvisioningService(object):
-    _service_connector = None  # type: ServiceConnector
-    _service_data = None  # type: _NamesAndRolesData
+class NamesRolesProvisioningService:
+    _service_connector: ServiceConnector
+    _service_data: TNamesAndRolesData
 
-    def __init__(self, service_connector, service_data):
-        # type: (ServiceConnector, _NamesAndRolesData) -> None
+    def __init__(
+        self, service_connector: ServiceConnector, service_data: TNamesAndRolesData
+    ):
         self._service_connector = service_connector
         self._service_data = service_data
 
-    def get_nrps_data(self, members_url=None):
+    def get_nrps_data(self, members_url: t.Optional[str] = None):
         if not members_url:
-            members_url = self._service_data['context_memberships_url']
+            members_url = self._service_data["context_memberships_url"]
 
         data = self._service_connector.make_service_request(
-            ['https://purl.imsglobal.org/spec/lti-nrps/scope/contextmembership.readonly'],
+            [
+                "https://purl.imsglobal.org/spec/lti-nrps/scope/contextmembership.readonly"
+            ],
             members_url,
-            accept='application/vnd.ims.lti-nrps.v2.membershipcontainer+json',
+            accept="application/vnd.ims.lti-nrps.v2.membershipcontainer+json",
         )
         return data
 
-    def get_members_page(self, members_url=None):
-        # type: (t.Optional[str]) -> t.Tuple[list, t.Optional[str]]
+    def get_members_page(
+        self, members_url: t.Optional[str] = None
+    ) -> t.Tuple[t.List[TMember], t.Optional[str]]:
         """
         Get one page with the users.
 
@@ -54,22 +64,21 @@ class NamesRolesProvisioningService(object):
         :return: tuple in format: (list with users, next page url)
         """
         data = self.get_nrps_data(members_url=members_url)
-        data_body = t.cast(t.Any, data.get('body', {}))
-        return data_body.get('members', []), data['next_page_url']
+        data_body = t.cast(t.Any, data.get("body", {}))
+        return data_body.get("members", []), data["next_page_url"]
 
-    def get_members(self, resource_link_id=None):
-        # type: (t.Optional[str]) -> t.List[_Member]
+    def get_members(self, resource_link_id: t.Optional[str] = None) -> t.List[TMember]:
         """
         Get list with all users.
 
         :param resource_link_id: resource link id (optional)
         :return: list
         """
-        members_res_lst = []  # type: t.List[_Member]
-        members_url = self._service_data['context_memberships_url']  # type: t.Optional[str]
+        members_res_lst: t.List[TMember] = []
+        members_url: t.Optional[str] = self._service_data["context_memberships_url"]
 
-        if resource_link_id:
-            members_url = add_param_to_url(members_url, 'rlid', resource_link_id)
+        if members_url and resource_link_id:
+            members_url = add_param_to_url(members_url, "rlid", resource_link_id)
 
         while members_url:
             members, members_url = self.get_members_page(members_url)
@@ -84,5 +93,5 @@ class NamesRolesProvisioningService(object):
         :return: dict
         """
         data = self.get_nrps_data()
-        data_body = t.cast(t.Any, data.get('body', {}))
-        return data_body.get('context', {})
+        data_body = t.cast(t.Any, data.get("body", {}))
+        return data_body.get("context", {})

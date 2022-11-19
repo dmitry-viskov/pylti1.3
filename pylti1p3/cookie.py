@@ -2,16 +2,16 @@ import typing as t
 from abc import ABCMeta, abstractmethod
 
 
-class CookieService(object):
+class CookieService:
     __metaclass__ = ABCMeta
-    _cookie_prefix = 'lti1p3'  # type: str
+    _cookie_prefix: str = "lti1p3"
 
     @abstractmethod
-    def get_cookie(self, name):
-        # type: (str) -> t.Optional[str]
+    def get_cookie(self, name: str) -> t.Optional[str]:
         raise NotImplementedError
 
     @abstractmethod
-    def set_cookie(self, name, value, exp=3600):
-        # type: (str, str, int) -> None
+    def set_cookie(
+        self, name: str, value: t.Union[str, int], exp: t.Optional[int] = 3600
+    ):
         raise NotImplementedError

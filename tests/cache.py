@@ -1,7 +1,7 @@
 from pylti1p3.launch_data_storage.cache import CacheDataStorage
 
 
-class Cache(object):
+class Cache:
     _data = None
 
     def __init__(self):
@@ -15,7 +15,6 @@ class Cache(object):
 
 
 class FakeCacheDataStorage(CacheDataStorage):
-
     def __init__(self, *args, **kwargs):
         self._cache = Cache()
-        super(FakeCacheDataStorage, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
