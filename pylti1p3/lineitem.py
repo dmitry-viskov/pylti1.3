@@ -176,7 +176,7 @@ class LineItem:
         custom: t.Optional[t.Dict[str, str]] = None,
     ) -> "LineItem":
         if not isinstance(reviewable_status, list):
-            raise Exception('Invalid "reviewable_status" argument')
+            raise ValueError('Invalid "reviewable_status" argument')
 
         self._submission_review: TSubmissionReview = {
             "reviewableStatus": reviewable_status

@@ -5,7 +5,11 @@ class LtiException(Exception):
     pass
 
 
-class OIDCException(Exception):
+class LtiConfigurationException(LtiException):
+    pass
+
+
+class OIDCException(LtiException):
     pass
 
 
