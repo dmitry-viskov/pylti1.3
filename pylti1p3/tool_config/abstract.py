@@ -2,6 +2,7 @@ import typing as t
 from abc import ABCMeta, abstractmethod
 import typing_extensions as te
 from ..deployment import Deployment
+from ..exception import LtiConfigurationException
 from ..registration import Registration
 from ..request import Request
 
@@ -109,9 +110,9 @@ class ToolConfAbstract(t.Generic[REQ]):
                 reg = self.find_registration(iss)
             elif self.check_iss_has_many_clients(iss):
                 if not client_id:
-                    raise Exception("client_id is not specified")
+                    raise LtiConfigurationException("client_id is not specified")
                 reg = self.find_registration_by_params(iss, client_id, **kwargs)
             else:
-                raise Exception("Invalid issuer relation type")
+                raise LtiConfigurationException("Invalid issuer relation type")
             keys = reg.get_jwks()
         return {"keys": keys}
