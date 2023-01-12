@@ -12,7 +12,7 @@ TDeepLinkData = te.TypedDict(
     {
         # Required data:
         "deep_link_return_url": str,
-        "accept_types": t.List[te.Literal["link", "ltiResourceLink"]],
+        "accept_types": t.List[te.Literal["link", "ltiResourceLink", "html"]],
         "accept_presentation_document_targets": t.List[
             te.Literal["iframe", "window", "embed"]
         ],

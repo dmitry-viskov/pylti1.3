@@ -10,6 +10,7 @@ class DeepLinkResource:
     _custom_params: t.Mapping[str, str] = {}
     _target: str = "iframe"
     _icon_url: t.Optional[str] = None
+    _html: t.Optional[str] = None
 
     def get_type(self):
         return self._type
@@ -60,6 +61,13 @@ class DeepLinkResource:
         self._icon_url = value
         return self
 
+    def get_html(self) -> t.Optional[str]:
+        return self._html
+
+    def set_html(self, value: str) -> "DeepLinkResource":
+        self._html = value
+        return self
+
     def to_dict(self) -> t.Dict[str, object]:
         res: t.Dict[str, object] = {
             "type": self._type,
@@ -89,6 +97,14 @@ class DeepLinkResource:
                 line_item["submissionReview"] = submission_review
 
             res["lineItem"] = line_item
+
+        if self._html and self._type == "link":
+            res["embed"] = {
+                "html": self._html
+            }
+
+        elif self._html and self._type == "html":
+            res["html"] = self._html
 
         if self._icon_url:
             res["icon"] = {"url": self._icon_url}
