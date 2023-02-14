@@ -160,13 +160,14 @@ class DeepLinkBase(TestLinkBase):
         resource = DeepLinkResource()
         resource.set_url("http://lti.django.test/launch/").set_custom_params(
             {"custom_param": "custom_value"}
-        ).set_title("Test title!")
+        ).set_title("Test title!").set_iframe({"width": 800, "height": 400})
 
         deep_link_return_url = message_launch_data.get(
             "https://purl.imsglobal.org/spec/lti-dl/claim/deep_linking_settings"
         ).get("deep_link_return_url")
 
         html = validated_message_launch.get_deep_link().output_response_form([resource])
+        print(html)
         self.assertTrue(
             html.startswith(
                 f'<form id="lti13_deep_link_auto_submit" action="{deep_link_return_url}" '
