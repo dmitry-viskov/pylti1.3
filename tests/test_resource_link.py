@@ -299,7 +299,6 @@ class ResourceLinkBase(TestLinkBase):
         return message_launch_data
 
     def test_res_link_launch_invalid_nonce(self):
-
         tool_conf, login_request, login_response = self._make_oidc_login()
 
         post_data = self.post_launch_data.copy()

@@ -2,7 +2,6 @@ import typing as t
 
 
 class Deployment:
-
     _deployment_id: t.Optional[str] = None
 
     def get_deployment_id(self) -> t.Optional[str]:
