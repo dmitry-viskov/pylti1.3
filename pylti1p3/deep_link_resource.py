@@ -65,7 +65,6 @@ class DeepLinkResource:
             "type": self._type,
             "title": self._title,
             "url": self._url,
-            "custom": self._custom_params,
         }
         if self._lineitem:
             line_item: t.Dict[str, object] = {
@@ -92,5 +91,8 @@ class DeepLinkResource:
 
         if self._icon_url:
             res["icon"] = {"url": self._icon_url}
+
+        if self._custom_params:
+            res["custom"] = self._custom_params
 
         return res
