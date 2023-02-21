@@ -1,4 +1,3 @@
-from   asgiref.sync import sync_to_async
 from   django.urls import reverse_lazy
 from   django.templatetags.static import static
 import json
@@ -22,14 +21,13 @@ class DjangoDynamicRegistration(DynamicRegistration):
 
         self.request = request
 
-    async def get_issuer_keys(self, issuer_name : str):
-        get_or_create_key = sync_to_async(LtiToolKey.objects.get_or_create)
-        key_obj, created = await get_or_create_key(name=issuer_name)
+    def get_issuer_keys(self, issuer_name : str):
+        key_obj, created = LtiToolKey.objects.get_or_create(name=issuer_name)
         if created:
-            private_key, public_key = await generate_key_pair()
+            private_key, public_key = generate_key_pair()
             key_obj.private_key = private_key
             key_obj.public_key = public_key
-            await sync_to_async(key_obj.save)()
+            key_obj.save()
         return key_obj
 
     def get_initiate_login_uri(self) -> str:
@@ -62,15 +60,15 @@ class DjangoDynamicRegistration(DynamicRegistration):
         """
         return openid_configuration.get("https://purl.imsglobal.org/spec/lti-platform-configuration",{}).get("product_family_code",'')
 
-    async def complete_registration(self, openid_configuration: Dict[str, Any], openid_registration: Dict[str, Any]):
+    def complete_registration(self, openid_configuration: Dict[str, Any], openid_registration: Dict[str, Any]):
         title = self.get_platform_name(openid_configuration)
 
-        tool_key = await self.get_issuer_keys(openid_configuration['issuer'])
+        tool_key = self.get_issuer_keys(openid_configuration['issuer'])
 
         tool_spec = "https://purl.imsglobal.org/spec/lti-tool-configuration"
         deployment_ids = [openid_registration[tool_spec]['deployment_id']]
 
-        platform_config, created = await LtiTool.objects.aupdate_or_create(
+        platform_config, created = LtiTool.objects.update_or_create(
             issuer=openid_configuration['issuer'],
             client_id=openid_registration['client_id'],
             defaults = {
@@ -84,21 +82,20 @@ class DjangoDynamicRegistration(DynamicRegistration):
             }
         )
 
-        await sync_to_async(platform_config.save)() # type: ignore
+        platform_config.save() # type: ignore
         return platform_config
 
-    async def keys_for_issuer(issuer_name: str) -> LtiToolKey:
+    def keys_for_issuer(issuer_name: str) -> LtiToolKey:
         """
             Get the public and private keys for a given issuer.
 
             If they don't exist yet, then create them.
         """
-        get_or_create_key = sync_to_async(LtiToolKey.objects.get_or_create)
-        key_obj, created = await get_or_create_key(name=issuer_name)
+        key_obj, created = LtiToolKey.objects.get_or_create(name=issuer_name)
         if created:
-            key_pair = await generate_key_pair()
+            key_pair = generate_key_pair()
             key_obj.private_key = key_pair['private']
             key_obj.public_key = key_pair['public']
-            await sync_to_async(key_obj.save)()
+            key_obj.save()
         return key_obj
 

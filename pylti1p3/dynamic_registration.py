@@ -8,7 +8,6 @@
     * https://moodlelti.theedtech.dev/dynreg/ - "LTI Advantage Automatic Registration" by Claude Vervoort
 """
 
-from asgiref.sync import sync_to_async
 import base64
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
@@ -18,17 +17,16 @@ import requests
 from typing import Any, Dict
 from urllib.parse import urlparse
 
-async def generate_key_pair(key_size : int = 4096) -> Dict[str, str]:
+def generate_key_pair(key_size : int = 4096) -> Dict[str, str]:
     """
-    Generates an RSA key pair. Async because generating a key can be resource intensive.
+    Generates an RSA key pair.
 
     :param key_size: key bits
 
     :returns: a dict with the keys "public" and "private", containing PEM-encoded RSA keys. \
         This is not returned as a tuple so that the user of this function never confuses them.
     """
-    generate_private_key = sync_to_async(rsa.generate_private_key, thread_sensitive=False)
-    private_key = await generate_private_key(
+    private_key = rsa.generate_private_key(
         public_exponent=65537,
         key_size=key_size,
     )
