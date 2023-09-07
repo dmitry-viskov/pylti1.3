@@ -629,17 +629,17 @@ Flask cache data storage
     def login():
         ...
         launch_data_storage = FlaskCacheDataStorage(cache)
-        oidc_login = DjangoOIDCLogin(request, tool_conf, launch_data_storage=launch_data_storage)
+        oidc_login = FlaskOIDCLogin(request, tool_conf, launch_data_storage=launch_data_storage)
 
     def launch():
         ...
         launch_data_storage = FlaskCacheDataStorage(cache)
-        message_launch = DjangoMessageLaunch(request, tool_conf, launch_data_storage=launch_data_storage)
+        message_launch = FlaskMessageLaunch(request, tool_conf, launch_data_storage=launch_data_storage)
 
     def restore_launch():
         ...
         launch_data_storage = FlaskCacheDataStorage(cache)
-        message_launch = DjangoMessageLaunch.from_cache(launch_id, request, tool_conf,
+        message_launch = FlaskMessageLaunch.from_cache(launch_id, request, tool_conf,
                                                         launch_data_storage=launch_data_storage)
 
 Cache for Public Key
