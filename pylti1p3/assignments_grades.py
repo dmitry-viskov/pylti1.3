@@ -89,7 +89,7 @@ class AssignmentsGradesService:
         return self._service_connector.make_service_request(
             self._service_data["scope"],
             score_url,
-            is_post=True,
+            method='POST',
             data=grade.get_value(),
             content_type="application/vnd.ims.lis.v1.score+json",
         )
@@ -114,6 +114,46 @@ class AssignmentsGradesService:
             accept="application/vnd.ims.lis.v2.lineitem+json",
         )
         return LineItem(t.cast(TLineItem, lineitem_response["body"]))
+
+    def update_lineitem(self, lineitem: LineItem):
+        """
+        Update an individual lineitem. Lineitem to be updated is identified by the lineitem ID.
+
+        :param lineitem: LineItem instance to be updated
+        :return: LineItem instance (updated, based on response from the LTI platform)
+        """
+        if not self.can_create_lineitem():
+            raise LtiException("Can't update lineitem: Missing required scope")
+
+        lineitem_url = lineitem.get_id()
+
+        lineitem_response = self._service_connector.make_service_request(
+            self._service_data["scope"],
+            lineitem_url,
+            method='PUT',
+            data=lineitem.get_value(),
+            content_type="application/vnd.ims.lis.v2.lineitem+json",
+            accept="application/vnd.ims.lis.v2.lineitem+json",
+        )
+        return LineItem(t.cast(TLineItem, lineitem_response["body"]))
+
+    def delete_lineitem(self, lineitem_url: t.Optional[str]):
+        """
+        Delete an individual lineitem.
+
+        :param lineitem_url: endpoint for LTI line item
+        :return: None
+        """
+        if not self.can_create_lineitem():
+            raise LtiException("Can't update lineitem: Missing required scope")
+
+        self._service_connector.make_service_request(
+            self._service_data["scope"],
+            lineitem_url,
+            method='DELETE',
+            content_type="application/vnd.ims.lis.v2.lineitem+json",
+            accept="application/vnd.ims.lis.v2.lineitem+json",
+        )
 
     def get_lineitems_page(
         self, lineitems_url: t.Optional[str] = None
@@ -252,7 +292,7 @@ class AssignmentsGradesService:
         created_lineitem = self._service_connector.make_service_request(
             self._service_data["scope"],
             self._service_data["lineitems"],
-            is_post=True,
+            method='POST',
             data=new_lineitem.get_value(),
             content_type="application/vnd.ims.lis.v2.lineitem+json",
             accept="application/vnd.ims.lis.v2.lineitem+json",
