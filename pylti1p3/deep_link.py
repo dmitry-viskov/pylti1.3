@@ -66,6 +66,9 @@ class DeepLink:
         }
         return message_jwt
 
+    def get_accept_types(self) -> t.List[str]:
+        return self._deep_link_settings.get('accept_types', [])
+
     def encode_jwt(self, message):
         headers = None
         kid = self._registration.get_kid()
