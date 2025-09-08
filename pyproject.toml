@@ -1,0 +1,62 @@
+[project]
+name = "PyLTI1p3"
+version = "0.1.0"
+description = "LTI 1.3 Advantage Tool implementation in Python"
+readme = "README.rst"
+license = {file = "LICENSE"}
+authors = [
+    {name = "Dmitry Viskov", email = "dmitry.viskov@webenterprise.ru"},
+]
+maintainers = [
+    {name = "Tyler Clair", email = "tyler.clair@usu.edu"},
+]
+
+requires-python = ">=3.8"
+keywords = ["lti", "lti1.3", "django", "flask", "pylti", "fastapi"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Web Environment",
+    "Framework :: Django",
+    "Framework :: Flask",
+    "Framework :: FastAPI",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9", 
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+    "Topic :: Education",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+    "jwcrypto>=1.5.6",
+    "pyjwt[crypto]>=2.9.0",
+    "requests>=2.32.4",
+    "typing-extensions>=4.13.2",
+]
+
+[project.optional-dependencies]
+django = ["django"]
+flask = ["flask"]
+fastapi = ["fastapi[standard]"]
+
+[project.urls]
+Homepage = "https://github.com/tylerclair/pylti1.3"
+Repository = "https://github.com/tylerclair/pylti1.3"
+Issues = "https://github.com/tylerclair/pylti1.3/issues"
+
+
+[tool.uv]
+dev-dependencies = [
+    "coverage>=7.10.6",
+    "django>=5.2.6",
+    "flask>=3.1.2",
+    "fastapi[standard]",
+    "responses>=0.25.8",
+]
