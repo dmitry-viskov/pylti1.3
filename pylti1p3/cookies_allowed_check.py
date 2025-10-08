@@ -89,7 +89,7 @@ class CookiesAllowedCheckPage:
         function checkCookiesAllowed() {
             var cookie = "lti1p3_test_cookie=1; path=/";
             if (siteProtocol === 'https') {
-                cookie = cookie + '; SameSite=None; secure';
+                cookie = cookie + '; SameSite=None; secure; partitioned';
             }
             document.cookie = cookie;
             var res = document.cookie.indexOf("lti1p3_test_cookie") !== -1;

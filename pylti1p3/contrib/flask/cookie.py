@@ -31,4 +31,5 @@ class FlaskCookieService(CookieService):
 
             if self._request.is_secure():
                 cookie_kwargs["samesite"] = "None"
+            cookie_kwargs["partitioned"] = True
             response.set_cookie(**cookie_kwargs)
