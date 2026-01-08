@@ -1,24 +1,26 @@
 LTI 1.3 Advantage Tool implementation in Python
 ===============================================
 
-.. image:: https://img.shields.io/pypi/v/PyLTI1p3
+This is a fork of the `pylti1p3 <https://github.com/dmitry-viskov/pylti1.3>`_ package, originally written by Dmitry Viskov.
+
+.. image:: https://img.shields.io/pypi/v/pylti1p3next
     :scale: 100%
-    :target: https://pypi.python.org/pypi/PyLTI1p3
+    :target: https://pypi.python.org/pypi/pylti1p3next
     :alt: PyPI
 
-.. image:: https://img.shields.io/pypi/pyversions/PyLTI1p3
+.. image:: https://img.shields.io/pypi/pyversions/pylti1p3next
     :scale: 100%
     :target: https://www.python.org/
     :alt: Python
 
-.. image:: https://github.com/dmitry-viskov/pylti1.3/actions/workflows/tox.yml/badge.svg
+.. image:: https://github.com/pymsglobal/pylti1p3next/actions/workflows/tox.yml/badge.svg
     :scale: 100%
-    :target: https://github.com/dmitry-viskov/pylti1.3/actions
+    :target: https://github.com/pymsglobal/pylti1p3next/actions
     :alt: Build Status
 
-.. image:: https://img.shields.io/github/license/dmitry-viskov/pylti1.3
+.. image:: https://img.shields.io/github/license/pymsglobal/pylti1p3next
     :scale: 100%
-    :target: https://raw.githubusercontent.com/dmitry-viskov/pylti1.3/master/LICENSE
+    :target: https://raw.githubusercontent.com/pymsglobal/pylti1p3next/master/LICENSE
     :alt: MIT
 
 
@@ -30,9 +32,9 @@ This library contains adapters for use with the Django and Flask web frameworks.
 Usage Examples
 =================
 
-Django: https://github.com/dmitry-viskov/pylti1.3-django-example
+Django: https://github.com/pymsglobal/pylti1p3next-django-example
 
-Flask: https://github.com/dmitry-viskov/pylti1.3-flask-example
+Flask: https://github.com/pymsglobal/pylti1p3next-flask-example
 
 Configuration
 =============
@@ -581,7 +583,7 @@ After this, the special JS code will try to write and then read test cookie inst
 `special page`_ that will ask them to open the current URL in the new window if cookies are unavailable. If
 cookies are allowed, the user will be transparently redirected to the next page. All texts are configurable with passing arguments:
 
-.. _special page: https://raw.githubusercontent.com/dmitry-viskov/repos-assets/master/pylti1p3/examples/cookies-check/001.png
+.. _special page: https://raw.githubusercontent.com/pymsglobal/repos-assets/master/pylti1p3/examples/cookies-check/001.png
 
 .. code-block:: python
 

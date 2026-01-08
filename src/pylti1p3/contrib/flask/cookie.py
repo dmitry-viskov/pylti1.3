@@ -20,14 +20,14 @@ class FlaskCookieService(CookieService):
 
     def update_response(self, response):
         for key, cookie_data in self._cookie_data_to_set.items():
-            cookie_kwargs = dict(
-                key=key,
-                value=cookie_data["value"],
-                max_age=cookie_data["exp"],
-                secure=self._request.is_secure(),
-                path="/",
-                httponly=True,
-            )
+            cookie_kwargs = {
+                "key": key,
+                "value": cookie_data["value"],
+                "max_age": cookie_data["exp"],
+                "secure": self._request.is_secure(),
+                "path": "/",
+                "httponly": True,
+            }
 
             if self._request.is_secure():
                 cookie_kwargs["samesite"] = "None"

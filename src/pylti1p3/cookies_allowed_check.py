@@ -18,7 +18,7 @@ class CookiesAllowedCheckPage:
         click_text: str,
         loading_text: str,
         *args,
-        **kwargs
+        **kwargs,
     ):
         # pylint: disable=unused-argument
         self._params = params

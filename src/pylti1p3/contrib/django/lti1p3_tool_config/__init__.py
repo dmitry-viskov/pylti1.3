@@ -1,5 +1,4 @@
 import json
-
 from pylti1p3.deployment import Deployment
 from pylti1p3.exception import LtiException
 from pylti1p3.registration import Registration

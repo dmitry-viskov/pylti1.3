@@ -1,7 +1,7 @@
 import json
 import typing as t
 import typing_extensions as te
-from .exception import LtiException
+from .exception import LineItemException
 
 
 TSubmissionReview = te.TypedDict(
@@ -89,11 +89,11 @@ class LineItem:
         https://www.imsglobal.org/spec/lti-ags/v2p0/#scoremaximum
         """
         if not isinstance(value, (int, float)):
-            raise LtiException(
+            raise LineItemException(
                 "Invalid scoreMaximum value: score must be integer or float"
             )
         if value <= 0:
-            raise LtiException(
+            raise LineItemException(
                 "Invalid scoreMaximum value: score must be non null value, strictly greater than 0"
             )
 
@@ -176,7 +176,7 @@ class LineItem:
         custom: t.Optional[t.Dict[str, str]] = None,
     ) -> "LineItem":
         if not isinstance(reviewable_status, list):
-            raise Exception('Invalid "reviewable_status" argument')
+            raise LineItemException('Invalid "reviewable_status" argument')
 
         self._submission_review: TSubmissionReview = {
             "reviewableStatus": reviewable_status

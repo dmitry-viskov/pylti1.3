@@ -1,3 +1,4 @@
+from collections.abc import Generator
 import hashlib
 import re
 import time
@@ -10,11 +11,15 @@ import typing_extensions as te
 from .exception import LtiServiceException
 from .registration import Registration
 
+TServiceConnectorResponseBody = t.Union[
+    None, int, float, t.List[object], t.Dict[str, object], str
+]
+
 TServiceConnectorResponse = te.TypedDict(
     "TServiceConnectorResponse",
     {
         "headers": t.Union[t.Dict[str, str], t.MutableMapping[str, str]],
-        "body": t.Union[None, int, float, t.List[object], t.Dict[str, object], str],
+        "body": TServiceConnectorResponseBody,
         "next_page_url": t.Optional[str],
     },
 )
@@ -108,6 +113,7 @@ class ServiceConnector:
         self,
         scopes: t.Sequence[str],
         url: str,
+        *,
         is_post: bool = False,
         data: t.Optional[str] = None,
         content_type: str = "application/json",
@@ -142,3 +148,18 @@ class ServiceConnector:
             "body": r.json() if r.content else None,
             "next_page_url": next_page_url if next_page_url else None,
         }
+
+    def get_paginated_data(
+        self, scopes: t.Sequence[str], url: t.Union[str, None], *args, **kwargs
+    ) -> Generator[TServiceConnectorResponse]:
+        """
+        Get paginated data from the service.
+        Keeps fetching pages until there are no more.
+        Yields the response for each page.
+        """
+        while url:
+            response = self.make_service_request(scopes, url, *args, **kwargs)
+
+            yield response
+
+            url = response["next_page_url"]

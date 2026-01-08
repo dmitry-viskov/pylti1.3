@@ -20,6 +20,7 @@ class TestLinkBase(unittest.TestCase):
         self,
         request,
         tool_conf,
+        *,
         key_set_url_response=None,
         force_validation=False,
         cache=False,

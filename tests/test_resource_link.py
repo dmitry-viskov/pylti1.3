@@ -1,5 +1,5 @@
 from parameterized import parameterized
-from pylti1p3.exception import LtiException
+from pylti1p3.exception import LtiException, LtiMessageValidationException
 from .base import TestLinkBase
 from .cache import FakeCacheDataStorage
 from .django_mixin import DjangoMixin
@@ -176,6 +176,7 @@ class ResourceLinkBase(TestLinkBase):
 
     def _launch_success(
         self,
+        *,
         tool_conf_cls=None,
         secure=False,
         tool_conf_extended=False,
@@ -204,9 +205,11 @@ class ResourceLinkBase(TestLinkBase):
         ]
     )
     def test_res_link_launch_success(
-        self, name, secure, tool_conf_extended  # pylint: disable=unused-argument
-    ):
-        self._launch_success(None, secure, tool_conf_extended)
+        self, name, secure, tool_conf_extended
+    ):  # pylint: disable=unused-argument,too-many-positional-arguments,too-many-function-args
+        self._launch_success(
+            tool_conf_cls=None, secure=secure, tool_conf_extended=tool_conf_extended
+        )
 
     def test_res_link_check_cookies_page(self):
         self._launch_success(enable_check_cookies=True)
@@ -219,7 +222,9 @@ class ResourceLinkBase(TestLinkBase):
 
         launch_request = self._get_request(login_request, login_response)
         with self.assertRaisesRegex(LtiException, "Invalid response"):
-            self._launch(launch_request, tool_conf, "invalid_key_set")
+            self._launch(
+                launch_request, tool_conf, key_set_url_response="invalid_key_set"
+            )
 
     def test_res_link_launch_invalid_state(self):
         tool_conf, login_request, login_response = self._make_oidc_login()
@@ -293,9 +298,9 @@ class ResourceLinkBase(TestLinkBase):
 
     def _get_data_with_invalid_message(self, *args):  # pylint: disable=unused-argument
         message_launch_data = self.expected_message_launch_data.copy()
-        message_launch_data[
-            "https://purl.imsglobal.org/spec/lti/claim/version"
-        ] = "1.2.0"
+        message_launch_data["https://purl.imsglobal.org/spec/lti/claim/version"] = (
+            "1.2.0"
+        )
         return message_launch_data
 
     def test_res_link_launch_invalid_nonce(self):
@@ -307,7 +312,7 @@ class ResourceLinkBase(TestLinkBase):
             login_request, login_response, post_data=post_data
         )
 
-        with self.assertRaisesRegex(LtiException, '"nonce" is empty'):
+        with self.assertRaisesRegex(LtiMessageValidationException, 'The "nonce" field is empty.'):
             self._launch_with_invalid_jwt_body(
                 self._get_data_without_nonce, launch_request, tool_conf
             )
@@ -342,7 +347,10 @@ class ResourceLinkBase(TestLinkBase):
             login_request, login_response, post_data=post_data
         )
 
-        with self.assertRaisesRegex(Exception, "Unable to find deployment"):
+        with self.assertRaisesRegex(
+            LtiMessageValidationException,
+            "The deployment ID \"dsfsdfsdfsdfsd\" is not recognised."
+        ):
             self._launch_with_invalid_jwt_body(
                 self._get_data_with_invalid_deployment, launch_request, tool_conf
             )

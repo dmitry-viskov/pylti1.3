@@ -170,9 +170,9 @@ class LtiTool(models.Model):
             "auth_audience": self.auth_audience,
             "key_set_url": self.key_set_url,
             "key_set": json.loads(self.key_set) if self.key_set else None,
-            "deployment_ids": json.loads(self.deployment_ids)
-            if self.deployment_ids
-            else [],
+            "deployment_ids": (
+                json.loads(self.deployment_ids) if self.deployment_ids else []
+            ),
         }
         return data
 

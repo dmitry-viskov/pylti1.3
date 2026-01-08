@@ -15,7 +15,13 @@ from .assignments_grades import AssignmentsGradesService, TAssignmentsGradersDat
 from .cookie import CookieService
 from .course_groups import CourseGroupsService, TGroupsServiceData
 from .deep_link import DeepLink, TDeepLinkData
-from .exception import LtiException
+from .exception import (
+    LtiException,
+    LtiJWTException,
+    LtiMessageValidationException,
+    LtiInvalidNonceException,
+    LtiKeyException,
+)
 from .launch_data_storage.base import DisableSessionId, LaunchDataStorage
 from .message_validators import get_validators
 from .message_validators.deep_link import DeepLinkMessageValidator
@@ -37,7 +43,6 @@ from .request import Request
 from .session import SessionService
 from .service_connector import ServiceConnector, REQUESTS_USER_AGENT
 from .tool_config import ToolConfAbstract
-
 
 TResourceLinkClaim = te.TypedDict(
     "TResourceLinkClaim",
@@ -204,6 +209,7 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
         self,
         request: REQ,
         tool_config: TCONF,
+        *,
         session_service: t.Optional[SES] = None,
         cookie_service: t.Optional[COOK] = None,
         launch_data_storage: t.Optional[LaunchDataStorage[t.Any]] = None,
@@ -265,7 +271,9 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
     def get_iss(self) -> str:
         iss = self._get_jwt_body().get("iss")
         if not iss:
-            raise LtiException('"iss" is empty')
+            raise LtiMessageValidationException(
+                'The "iss" field in the launch message is empty.'
+            )
         return iss
 
     def get_client_id(self) -> str:
@@ -279,6 +287,7 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
         launch_id: str,
         request: REQ,
         tool_config: TCONF,
+        *,
         session_service: t.Optional[SES] = None,
         cookie_service: t.Optional[COOK] = None,
         launch_data_storage: t.Optional[LaunchDataStorage[t.Any]] = None,
@@ -294,7 +303,7 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
         )
         launch_data = obj.get_session_service().get_launch_data(launch_id)
         if not launch_data:
-            raise LtiException("Launch data not found")
+            raise LtiException("Could not find LTI launch data in the session service.")
         return (
             obj.set_launch_id(launch_id)
             .set_auto_validation(enable=False)
@@ -308,7 +317,7 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
         Validates all aspects of an incoming LTI message launch and caches the launch if successful.
         """
         if self._restored:
-            raise LtiException("Can't validate restored launch")
+            raise LtiMessageValidationException("A restored launch can't be validated.")
         self._validated = True
         try:
             return (
@@ -333,13 +342,17 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
     def _get_iss(self) -> str:
         iss = self._get_jwt_body().get("iss")
         if not iss:
-            raise LtiException('"iss" is empty')
+            raise LtiMessageValidationException(
+                'The LTI launch message "iss" field is empty.'
+            )
         return iss
 
     def _get_id_token(self) -> str:
         id_token = self._get_request_param("id_token")
         if not id_token:
-            raise LtiException("Missing id_token")
+            raise LtiMessageValidationException(
+                'The LTI launch message "id_token" field is empty.'
+            )
         return id_token
 
     def _get_id_token_hash(self) -> str:
@@ -354,7 +367,9 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
             "https://purl.imsglobal.org/spec/lti/claim/deployment_id"
         )
         if not deployment_id:
-            raise LtiException("deployment_id is not set in jwt body")
+            raise LtiMessageValidationException(
+                'The "deployment_id" field is not set in the launch message\'s JWT body.'
+            )
         return deployment_id
 
     def get_service_connector(self) -> ServiceConnector:
@@ -386,7 +401,9 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
             "https://purl.imsglobal.org/spec/lti-nrps/claim/namesroleservice"
         )
         if not names_role_service:
-            raise LtiException("namesroleservice is not set in jwt body")
+            raise LtiJWTException(
+                'The "namesroleservice" field is not set in the launch message\'s JWT body.'
+            )
         return NamesRolesProvisioningService(connector, names_role_service)
 
     def has_ags(self) -> bool:
@@ -414,7 +431,7 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
             "https://purl.imsglobal.org/spec/lti-ags/claim/endpoint"
         )
         if not endpoint:
-            raise LtiException("endpoint is not set in jwt body")
+            raise LtiJWTException('The "endpoint" field is not set.')
         return AssignmentsGradesService(connector, endpoint)
 
     def has_cgs(self) -> bool:
@@ -440,10 +457,12 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
             "https://purl.imsglobal.org/spec/lti-gs/claim/groupsservice"
         )
         if not groups_service_data:
-            raise LtiException("groupsservice is not set in jwt body")
+            raise LtiJWTException('The "groupsservice" field is not set.')
         context_groups_url = groups_service_data.get("context_groups_url", None)
         if not context_groups_url:
-            raise LtiException("context_groups_url is not set in groupsservice section")
+            raise LtiJWTException(
+                'The "context_groups_url" field is not set in the groupsservice section.'
+            )
         return CourseGroupsService(connector, groups_service_data)
 
     def get_deep_link(self) -> DeepLink:
@@ -459,7 +478,7 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
             "https://purl.imsglobal.org/spec/lti-dl/claim/deep_linking_settings"
         )
         if not deep_linking_settings:
-            raise LtiException("deep_linking_settings is not set in jwt body")
+            raise LtiJWTException('The "deep_linking_settings" field is not set.')
 
         return DeepLink(self._registration, deployment_id, deep_linking_settings)
 
@@ -568,8 +587,8 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
             try:
                 resp = self._requests_session.get(key_set_url)
             except requests.exceptions.RequestException as e:
-                raise LtiException(
-                    f"Error during fetch URL {key_set_url}: {str(e)}"
+                raise LtiKeyException(
+                    f"Error while fetching the public key URL {key_set_url}: {str(e)}"
                 ) from e
             try:
                 public_key = resp.json()
@@ -579,8 +598,9 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
                     )
                 return public_key
             except ValueError as e:
-                raise LtiException(
-                    f"Invalid response from {key_set_url}. Must be JSON: {resp.text}"
+                raise LtiKeyException(
+                    f"Invalid response while fetching the platform's public key from {key_set_url}."
+                    f"Must be JSON: {resp.text}"
                 ) from e
 
     def get_public_key(self) -> t.Tuple[str, str]:
@@ -596,16 +616,18 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
                 public_key_set = self.fetch_public_key(key_set_url)
                 self._registration.set_key_set(public_key_set)
             else:
-                raise LtiException("Invalid URL: " + key_set_url)
+                raise LtiKeyException(
+                    "The public key set URL is invalid: " + key_set_url
+                )
 
         # Find key used to sign the JWT (matches the KID in the header)
         kid = self._jwt.get("header", {}).get("kid", None)
         alg = self._jwt.get("header", {}).get("alg", None)
 
         if not kid:
-            raise LtiException("JWT KID not found")
+            raise LtiKeyException("JWT KID not found")
         if not alg:
-            raise LtiException("JWT ALG not found")
+            raise LtiKeyException("JWT ALG not found")
 
         for key in public_key_set["keys"]:
             key_kid = key.get("kid")
@@ -617,16 +639,16 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
                     public_key = jwk_obj.export_to_pem()
                     return public_key, key_alg
                 except (ValueError, TypeError) as e:
-                    raise LtiException("Can't convert JWT key to PEM format") from e
+                    raise LtiKeyException("Can't convert JWT key to PEM format") from e
 
         # Could not find public key with a matching kid and alg.
-        raise LtiException("Unable to find public key")
+        raise LtiKeyException("Unable to find public key")
 
     def validate_state(self) -> "MessageLaunch":
         # Check State for OIDC.
         state_from_request = self._get_request_param("state")
         if not state_from_request:
-            raise LtiException("Missing state param")
+            raise LtiMessageValidationException("Missing state param")
 
         id_token_hash = self._get_id_token_hash()
         if not self._session_service.check_state_is_valid(
@@ -635,7 +657,7 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
             state_from_cookie = self._cookie_service.get_cookie(state_from_request)
             if state_from_request != state_from_cookie:
                 # Error if state doesn't match.
-                raise LtiException("State not found")
+                raise LtiMessageValidationException("State not found")
 
         return self
 
@@ -645,7 +667,9 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
 
         if len(jwt_parts) != 3:
             # Invalid number of parts in JWT.
-            raise LtiException("Invalid id_token, JWT must contain 3 parts")
+            raise LtiMessageValidationException(
+                "Invalid id_token, JWT must contain 3 parts"
+            )
 
         try:
             # Decode JWT headers.
@@ -656,18 +680,20 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
             body = self.urlsafe_b64decode(jwt_parts[1])
             self._jwt["body"] = json.loads(body)
         except Exception as e:
-            raise LtiException("Invalid JWT format, can't be decoded") from e
+            raise LtiMessageValidationException(
+                "Invalid JWT format, can't be decoded"
+            ) from e
 
         return self
 
     def validate_nonce(self) -> "MessageLaunch":
         nonce = self._get_jwt_body().get("nonce")
         if not nonce:
-            raise LtiException('"nonce" is empty')
+            raise LtiMessageValidationException('The "nonce" field is empty.')
 
         res = self._session_service.check_nonce(nonce)
         if not res:
-            raise LtiException("Invalid Nonce")
+            raise LtiInvalidNonceException("Invalid Nonce.")
 
         return self
 
@@ -697,11 +723,13 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
             )
 
         if not self._registration:
-            raise LtiException("Registration not found.")
+            raise LtiMessageValidationException("Registration not found.")
 
         # Check client id
         if client_id != self._registration.get_client_id():
-            raise LtiException("Client id not registered for this issuer")
+            raise LtiMessageValidationException(
+                "Client id not registered for this issuer"
+            )
 
         return self
 
@@ -719,7 +747,9 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
                 options=self._jwt_verify_options,
             )
         except jwt.InvalidTokenError as e:
-            raise LtiException(f"Can't decode id_token: {str(e)}") from e
+            raise LtiMessageValidationException(
+                f"Can't decode id_token: {str(e)}"
+            ) from e
 
         return self
 
@@ -737,7 +767,9 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
                 iss, deployment_id, client_id
             )
         if not deployment:
-            raise LtiException("Unable to find deployment")
+            raise LtiMessageValidationException(
+                f'The deployment ID "{deployment_id}" is not recognised.'
+            )
 
         return self
 
@@ -747,21 +779,21 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
             "https://purl.imsglobal.org/spec/lti/claim/message_type", None
         )
         if not message_type:
-            raise LtiException("Invalid message type")
+            raise LtiMessageValidationException("Invalid message type")
 
         validators = get_validators()
         validated = False
         for validator in validators:
             if validator.can_validate(jwt_body):
                 if validated:
-                    raise LtiException("Validator conflict")
+                    raise LtiMessageValidationException("Validator conflict")
                 validated = True
                 res = validator.validate(jwt_body)
                 if not res:
-                    raise LtiException("Message validation failed")
+                    raise LtiMessageValidationException("Message validation failed")
 
         if not validated:
-            raise LtiException("Unrecognized message type")
+            raise LtiMessageValidationException("Unrecognized message type")
 
         return self
 
@@ -775,7 +807,7 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
             if session_id:
                 data_storage.set_session_id(session_id)
             else:
-                raise LtiException(f"Missing %s cookie {session_cookie_name}")
+                raise LtiException(f"Missing cookie {session_cookie_name}")
         self._session_service.set_data_storage(data_storage)
         return self
 

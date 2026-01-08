@@ -18,6 +18,7 @@ class FlaskMixin:
         self,
         login_request,
         login_response,
+        *,
         request_is_secure=False,
         post_data=None,
         empty_session=False,
@@ -37,6 +38,7 @@ class FlaskMixin:
 
     def _make_oidc_login(
         self,
+        *,
         uuid_val=None,
         tool_conf_cls=None,
         secure=False,

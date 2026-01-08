@@ -2,6 +2,7 @@ import typing as t
 from abc import ABCMeta, abstractmethod
 import typing_extensions as te
 from ..deployment import Deployment
+from ..exception import ToolConfException
 from ..registration import Registration
 from ..request import Request
 
@@ -39,14 +40,14 @@ class ToolConfAbstract(t.Generic[REQ]):
         return iss_type == IssuerToClientRelation.MANY_CLIENTS_IDS_PER_ISSUER
 
     def set_iss_has_one_client(self, iss: str):
-        self.issuers_relation_types[
-            iss
-        ] = IssuerToClientRelation.ONE_CLIENT_ID_PER_ISSUER
+        self.issuers_relation_types[iss] = (
+            IssuerToClientRelation.ONE_CLIENT_ID_PER_ISSUER
+        )
 
     def set_iss_has_many_clients(self, iss: str):
-        self.issuers_relation_types[
-            iss
-        ] = IssuerToClientRelation.MANY_CLIENTS_IDS_PER_ISSUER
+        self.issuers_relation_types[iss] = (
+            IssuerToClientRelation.MANY_CLIENTS_IDS_PER_ISSUER
+        )
 
     def find_registration(self, iss: str, *args, **kwargs) -> Registration:
         """
@@ -109,9 +110,9 @@ class ToolConfAbstract(t.Generic[REQ]):
                 reg = self.find_registration(iss)
             elif self.check_iss_has_many_clients(iss):
                 if not client_id:
-                    raise Exception("client_id is not specified")
+                    raise ToolConfException("client_id is not specified")
                 reg = self.find_registration_by_params(iss, client_id, **kwargs)
             else:
-                raise Exception("Invalid issuer relation type")
+                raise ToolConfException("Invalid issuer relation type")
             keys = reg.get_jwks()
         return {"keys": keys}

@@ -1,4 +1,5 @@
 import typing as t
+from .exception import SessionException
 from .launch_data_storage.session import SessionDataStorage
 from .request import Request
 from .launch_data_storage.base import LaunchDataStorage
@@ -64,7 +65,7 @@ class SessionService:
         if self.data_storage.can_set_keys_expiration():
             self._launch_data_lifetime = time_sec
         else:
-            raise Exception(
+            raise SessionException(
                 f"{self.data_storage.__class__.__name__} launch storage doesn't support "
-                f"manual change expiration of the keys"
+                f"changing the expiration time of keys"
             )

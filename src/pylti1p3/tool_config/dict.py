@@ -1,6 +1,7 @@
 import typing as t
 import typing_extensions as te
 from ..deployment import Deployment
+from ..exception import ToolConfException
 from ..registration import Registration, TKeySet
 from ..request import Request
 from .abstract import ToolConfAbstract
@@ -79,7 +80,7 @@ class ToolConfDict(ToolConfAbstract[Request]):
         """
         super().__init__()
         if not isinstance(json_data, dict):
-            raise Exception("Invalid tool conf format. Must be dict")
+            raise ToolConfException("Invalid tool conf format. Must be dict")
 
         for iss, iss_conf in json_data.items():
             if isinstance(iss_conf, dict):
@@ -90,7 +91,7 @@ class ToolConfDict(ToolConfAbstract[Request]):
                 for v in iss_conf:
                     self._validate_iss_config_item(iss, v)
             else:
-                raise Exception(
+                raise ToolConfException(
                     "Invalid tool conf format. Allowed types of elements: list or dict"
                 )
 
@@ -102,7 +103,7 @@ class ToolConfDict(ToolConfAbstract[Request]):
 
     def _validate_iss_config_item(self, iss: str, iss_conf: TIssConf):
         if not isinstance(iss_conf, dict):
-            raise Exception(
+            raise ToolConfException(
                 f"Invalid configuration {iss} for the {str(iss_conf)} issuer. Must be dict"
             )
         required_keys = [
@@ -113,11 +114,11 @@ class ToolConfDict(ToolConfAbstract[Request]):
         ]
         for key in required_keys:
             if key not in iss_conf:
-                raise Exception(
+                raise ToolConfException(
                     f"Key '{key}' is missing in the {str(iss_conf)} config for the {iss} issuer"
                 )
         if not isinstance(iss_conf["deployment_ids"], list):
-            raise Exception(
+            raise ToolConfException(
                 f"Invalid deployment_ids value in the {str(iss_conf)} config for the {iss} issuer. "
                 f"Must be a list"
             )
@@ -175,7 +176,7 @@ class ToolConfDict(ToolConfAbstract[Request]):
     ):
         if self.check_iss_has_many_clients(iss):
             if not client_id:
-                raise Exception("Can't set public key: missing client_id")
+                raise ToolConfException("Can't set public key: missing client_id")
             if iss not in self._public_key_many_clients:
                 self._public_key_many_clients[iss] = {}
             self._public_key_many_clients[iss][client_id] = key_content
@@ -185,10 +186,10 @@ class ToolConfDict(ToolConfAbstract[Request]):
     def get_public_key(self, iss: str, client_id: t.Optional[str] = None):
         if self.check_iss_has_many_clients(iss):
             if not client_id:
-                raise Exception("Can't get public key: missing client_id")
+                raise ToolConfException("Can't get public key: missing client_id")
             clients_dict = self._public_key_many_clients.get(iss, {})
             if not isinstance(clients_dict, dict):
-                raise Exception("Invalid clients data")
+                raise ToolConfException("Invalid clients data")
             return clients_dict.get(client_id)
         return self._public_key_one_client.get(iss)
 
@@ -197,7 +198,7 @@ class ToolConfDict(ToolConfAbstract[Request]):
     ):
         if self.check_iss_has_many_clients(iss):
             if not client_id:
-                raise Exception("Can't set private key: missing client_id")
+                raise ToolConfException("Can't set private key: missing client_id")
             if iss not in self._private_key_many_clients:
                 self._private_key_many_clients[iss] = {}
             self._private_key_many_clients[iss][client_id] = key_content  # type: ignore
@@ -207,18 +208,18 @@ class ToolConfDict(ToolConfAbstract[Request]):
     def get_private_key(self, iss: str, client_id: t.Optional[str] = None):
         if self.check_iss_has_many_clients(iss):
             if not client_id:
-                raise Exception("Can't get private key: missing client_id")
+                raise ToolConfException("Can't get private key: missing client_id")
             clients_dict = self._private_key_many_clients.get(iss, {})
             if not isinstance(clients_dict, dict):
-                raise Exception("Invalid clients data")
+                raise ToolConfException("Invalid clients data")
             return clients_dict.get(client_id)
         return self._private_key_one_client.get(iss)
 
     def get_iss_config(self, iss: str, client_id: t.Optional[str] = None):
         if not self._config:
-            raise Exception("Config is not set")
+            raise ToolConfException("Config is not set")
         if iss not in self._config:
-            raise Exception(f"iss {iss} not found in settings")
+            raise ToolConfException(f"iss {iss} not found in settings")
         config_iss = self._config[iss]
 
         if isinstance(config_iss, list):
@@ -231,7 +232,9 @@ class ToolConfDict(ToolConfAbstract[Request]):
                     or (not client_id and items_len == 1)
                 ):
                     return subitem
-            raise Exception(f"iss {iss} [client_id={client_id}] not found in settings")
+            raise ToolConfException(
+                f"iss {iss} [client_id={client_id}] not found in settings"
+            )
         return config_iss
 
     def get_jwks(

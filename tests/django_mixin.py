@@ -10,6 +10,7 @@ class DjangoMixin:
 
     def _get_request(
         self,
+        *,
         login_request,
         login_response,
         request_is_secure=False,
@@ -29,6 +30,7 @@ class DjangoMixin:
 
     def _make_oidc_login(
         self,
+        *,
         uuid_val=None,
         tool_conf_cls=None,
         secure=False,

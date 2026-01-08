@@ -2,6 +2,7 @@ import typing as t
 import json
 import os
 
+from ..exception import ToolConfException
 from .dict import ToolConfDict, TIssConf, TJsonData
 
 
@@ -61,7 +62,7 @@ class ToolConfJsonFile(ToolConfDict):
         deployment_ids (list) - The deployment_id passed by the platform during launch
         """
         if not os.path.isfile(config_file):
-            raise Exception("LTI tool config file not found: " + config_file)
+            raise ToolConfException("LTI tool config file not found: " + config_file)
         self._configs_dir = os.path.dirname(config_file)
 
         with open(config_file, encoding="utf-8") as cfg:
@@ -83,7 +84,7 @@ class ToolConfJsonFile(ToolConfDict):
     ):
         private_key_file = iss_conf.get("private_key_file")
         if not private_key_file:
-            raise Exception("iss config error: private_key_file not found")
+            raise ToolConfException("iss config error: private_key_file not found")
 
         if not private_key_file.startswith("/"):
             private_key_file = self._configs_dir + "/" + private_key_file
