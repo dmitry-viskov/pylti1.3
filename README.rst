@@ -1,3 +1,7 @@
+See https://github.com/pymsglobal/pylti1p3next for currently maintained pylti1.3 library.
+
+--
+
 LTI 1.3 Advantage Tool implementation in Python
 ===============================================
 
