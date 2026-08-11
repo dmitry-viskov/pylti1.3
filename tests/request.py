@@ -8,7 +8,9 @@ class FakeRequest:
     session = None
     secure = False
 
-    def __init__(self, get=None, post=None, cookies=None, session=None, secure=False):
+    def __init__(
+        self, *, get=None, post=None, cookies=None, session=None, secure=False
+    ):
         self.GET = get if get else {}
         self.POST = post if post else {}
         self.COOKIES = cookies if cookies else {}

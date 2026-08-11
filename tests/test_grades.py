@@ -91,7 +91,7 @@ class TestGrades(TestServicesBase):
                     line_item = ags.find_or_create_lineitem(score_line_item)
                     self.assertIsNotNone(line_item)
 
-                    scores = ags.get_grades(line_item)
+                    scores = list(ags.get_grades(line_item))
                     self.assertEqual(len(scores), 1)
                     self.assertDictEqual(
                         scores[0],

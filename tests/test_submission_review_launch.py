@@ -4,6 +4,7 @@ from .flask_mixin import FlaskMixin
 
 
 class SubmissionReviewLaunchBase(TestLinkBase):
+    __test__ = False
     # pylint: disable=abstract-method,no-member
 
     iss = "https://canvas.instructure.com"
@@ -126,7 +127,9 @@ class SubmissionReviewLaunchBase(TestLinkBase):
 
     def test_submission_review_launch_success(self):
         tool_conf, login_request, login_response = self._make_oidc_login()
-        launch_request = self._get_request(login_request, login_response)
+        launch_request = self._get_request(
+            login_request=login_request, login_response=login_response
+        )
         validated_message_launch = self._launch(
             launch_request, tool_conf, force_validation=True
         )
@@ -142,8 +145,8 @@ class SubmissionReviewLaunchBase(TestLinkBase):
 
 
 class TestDjangoSubmissionReviewLaunch(DjangoMixin, SubmissionReviewLaunchBase):
-    pass
+    __test__ = True
 
 
 class TestFlaskSubmissionReviewLaunch(FlaskMixin, SubmissionReviewLaunchBase):
-    pass
+    __test__ = True

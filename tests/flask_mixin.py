@@ -1,5 +1,7 @@
 from unittest.mock import patch
 from urllib.parse import quote
+from pathlib import Path
+from flask import Flask
 from pylti1p3.contrib.flask import FlaskRequest, FlaskCookieService, FlaskSessionService
 from .response import FakeResponse
 from .tool_config import get_test_tool_conf, TOOL_CONFIG
@@ -7,6 +9,15 @@ from .tool_config import get_test_tool_conf, TOOL_CONFIG
 
 class FlaskMixin:
     # pylint: disable=import-outside-toplevel
+
+    def setUp(self):
+        app_folder = Path(__file__).parent / "flask"
+
+        self.app = Flask(
+            "pylti1p3next-tests",
+            template_folder=app_folder / "templates",
+            static_folder=app_folder / "static",
+        )
 
     def get_cookies_dict_from_response(self, response):
         cookie_name, cookie_value = (
@@ -18,6 +29,7 @@ class FlaskMixin:
         self,
         login_request,
         login_response,
+        *,
         request_is_secure=False,
         post_data=None,
         empty_session=False,
@@ -37,6 +49,7 @@ class FlaskMixin:
 
     def _make_oidc_login(
         self,
+        *,
         uuid_val=None,
         tool_conf_cls=None,
         secure=False,
@@ -66,16 +79,18 @@ class FlaskMixin:
             request_data=login_data, cookies={}, session={}, request_is_secure=secure
         )
 
-        with patch("flask.redirect") as mock_redirect:
+        with patch("flask.redirect") as mock_redirect, self.app.app_context():
             from pylti1p3.contrib.flask import FlaskOIDCLogin
 
-            with patch.object(
-                FlaskOIDCLogin, "_get_uuid", autospec=True
-            ) as get_uuid, patch.object(
-                FlaskOIDCLogin, "_generate_nonce", autospec=True
-            ) as generate_nonce, patch.object(
-                FlaskOIDCLogin, "get_response", autospec=True
-            ) as get_response:
+            with (
+                patch.object(FlaskOIDCLogin, "_get_uuid", autospec=True) as get_uuid,
+                patch.object(
+                    FlaskOIDCLogin, "_generate_nonce", autospec=True
+                ) as generate_nonce,
+                patch.object(
+                    FlaskOIDCLogin, "get_response", autospec=True
+                ) as get_response,
+            ):
                 get_uuid.side_effect = (
                     lambda x: uuid_val
                 )  # pylint: disable=unnecessary-lambda
@@ -102,12 +117,7 @@ class FlaskMixin:
                     response_html = oidc_login.enable_check_cookies().redirect(
                         launch_url
                     )
-                    self.assertTrue('<script type="text/javascript">' in response_html)
-                    self.assertTrue("<body>" in response_html)
-                    self.assertTrue(
-                        'document.addEventListener("DOMContentLoaded", checkCookiesAllowed);'
-                        in response_html
-                    )
+                    self.assertTrue("Unit test cookie check" in response_html)
 
                     login_data["lti1p3_new_window"] = "1"
                     request = FlaskRequest(

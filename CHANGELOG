@@ -1,0 +1,11 @@
+2.0.2 (2026-06-02)
+==================
+* Add compatibility with pyjwt 2.x.
+
+2.0.1 (2026-05-06)
+==================
+* Fixed various lint errors
+
+2.0.0 (2026-05-02)
+==================
+* Initial release for this library

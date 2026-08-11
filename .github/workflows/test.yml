@@ -1,0 +1,29 @@
+name: test
+on: [push, workflow_dispatch]
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python: ['3.10', '3.11', '3.12', '3.13', '3.14']
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python }}
+
+      - run: python -m pip install -e .[dev]
+      - run: flake8 .
+      - run: pylint --rcfile=pylintrc pylti1p3 tests
+      - run: mypy src
+      - run: black src --check --diff --extend-exclude ".*/migrations/.*"
+      - run: black tests --check --diff
+
+      - name: Run tests
+        env:
+          DJANGO_SETTINGS_MODULE: tests.settings
+        run: coverage run -m unittest -v tests
+
+      - run: coverage report -m

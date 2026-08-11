@@ -1,6 +1,5 @@
 from pylti1p3.tool_config import ToolConfDict
 
-
 TOOL_CONFIG = {
     "http://imsglobal.org": {
         "client_id": "pytest12345",

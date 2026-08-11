@@ -6,6 +6,7 @@ from .flask_mixin import FlaskMixin
 
 class DeepLinkBase(TestLinkBase):
     # pylint: disable=abstract-method,no-member
+    __test__ = False
 
     iss = "http://imsglobal.org"
     jwt_canvas_keys = {
@@ -150,7 +151,10 @@ class DeepLinkBase(TestLinkBase):
             uuid_val="462a941bbf6a4356afa7"
         )
 
-        launch_request = self._get_request(login_request, login_response)
+        launch_request = self._get_request(
+            login_request=login_request, login_response=login_response
+        )
+
         validated_message_launch = self._launch(
             launch_request, tool_conf, force_validation=True
         )
@@ -184,8 +188,8 @@ class DeepLinkBase(TestLinkBase):
 
 
 class TestDjangoDeepLink(DjangoMixin, DeepLinkBase):
-    pass
+    __test__ = True
 
 
 class TestFlaskDeepLink(FlaskMixin, DeepLinkBase):
-    pass
+    __test__ = True

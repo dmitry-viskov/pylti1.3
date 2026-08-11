@@ -1,0 +1,91 @@
+[project]
+name = "pylti1p3next"
+dynamic = ["version"]
+authors = [
+  { name="Christian Lawson-Perfect", email="christian.perfect@ncl.ac.uk" },
+  { name="Dmitry Viskov", email="dmitry.viskov@webenterprise.ru" }
+]
+maintainers = [
+  { name="Sébastien Philippot", email="sebastien@philippot.co" },
+  { name="Christian Lawson-Perfect", email="christian.perfect@ncl.ac.uk" },
+  { name="Nikolas Nyby", email="nikolas@gnu.org" }
+]
+description = "LTI 1.3 Advantage Tool implementation in Python"
+readme = "README.rst"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+keywords = [
+    "pylti",
+    "pylti1p3",
+    "lti",
+    "lti1.3",
+    "lti1p3",
+    "django",
+    "flask"
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Web Environment",
+    "Framework :: Django",
+    "Framework :: Flask",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: Education",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Internet :: WWW/HTTP :: WSGI",
+    "Topic :: Security",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+    "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+    "jwcrypto~=1.5",
+    "pyjwt>=1.5",
+    "requests~=2.32",
+    "typing_extensions~=4.2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "black",
+    "coverage",
+    "django",
+    "flake8",
+    "flask",
+    "jwcrypto",
+    "mock",
+    "mypy>=1,<2",
+    "parameterized",
+    "pyjwt>=1.5",
+    "pylint",
+    "requests~=2.32",
+    "requests-mock",
+    "types-requests",
+    "django-types",
+    "pylint-django",
+]
+
+[project.urls]
+Homepage = "https://github.com/pymsglobal/pylti1p3next#readme"
+Issues = "https://github.com/pymsglobal/pylti1p3next/issues"
+Source = "https://github.com/pymsglobal/pylti1p3next"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.dynamic]
+version = {attr = "pylti1p3.__version__"}
+
+[tool.coverage.paths]
+pylti1p3next = ["pylti1p3"]
+tests = ["tests"]

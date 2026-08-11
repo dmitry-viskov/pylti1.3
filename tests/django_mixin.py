@@ -10,6 +10,7 @@ class DjangoMixin:
 
     def _get_request(
         self,
+        *,
         login_request,
         login_response,
         request_is_secure=False,
@@ -29,6 +30,7 @@ class DjangoMixin:
 
     def _make_oidc_login(
         self,
+        *,
         uuid_val=None,
         tool_conf_cls=None,
         secure=False,
@@ -53,13 +55,15 @@ class DjangoMixin:
         with patch("django.shortcuts.redirect") as mock_redirect:
             from pylti1p3.contrib.django import DjangoOIDCLogin
 
-            with patch.object(
-                DjangoOIDCLogin, "_get_uuid", autospec=True
-            ) as get_uuid, patch.object(
-                DjangoOIDCLogin, "_generate_nonce", autospec=True
-            ) as generate_nonce, patch.object(
-                DjangoOIDCLogin, "get_response", autospec=True
-            ) as get_response:
+            with (
+                patch.object(DjangoOIDCLogin, "_get_uuid", autospec=True) as get_uuid,
+                patch.object(
+                    DjangoOIDCLogin, "_generate_nonce", autospec=True
+                ) as generate_nonce,
+                patch.object(
+                    DjangoOIDCLogin, "get_response", autospec=True
+                ) as get_response,
+            ):
                 get_uuid.side_effect = (
                     lambda x: uuid_val
                 )  # pylint: disable=unnecessary-lambda
